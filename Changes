@@ -1,0 +1,6 @@
+Revision history for Perl extension WebService::GData.
+
+0.01  Wed Sep  1 23:57:09 2010
+	- original version; created by h2xs 1.23 with options
+		-AX -n WebService::GData -b 5.8.8
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
