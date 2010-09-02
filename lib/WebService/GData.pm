@@ -5,7 +5,7 @@ use warnings;
 use Data::Dumper;
 use overload '""'=>"__to_string";
 
-our $VERSION  = 0.01_02;
+our $VERSION  = 0.01_03;
 
 	sub import {
    		strict->import;
@@ -58,63 +58,63 @@ WebService::GData - represent a base GData object.
 
 =head1 SYNOPSIS
 
-	package WebService::MyService;
-	use WebService::GData;#strict/warnings turned on
-	use base 'WebService::GData';
+    package WebService::MyService;
+    use WebService::GData;#strict/warnings turned on
+    use base 'WebService::GData';
 
-	#this is the base implementation of the __init method in WebService::GData
-	#it is call when new is used
-	#you should overwrite it if necessary.
-	sub __init {
-		my ($this,%params) = @_;
-		while(my ($prop,$val)=each %params){
-			$this->{$prop}=$val;
-		}
-		return $this;
-	}
+    #this is the base implementation of the __init method in WebService::GData
+    #it is call when new is used
+    #you should overwrite it if necessary.
+    sub __init {
+        my ($this,%params) = @_;
+        while(my ($prop,$val)=each %params){
+            $this->{$prop}=$val;
+        }
+        return $this;
+    }
 
-	WebService::GData::install_in_package([qw(firstname lastname age gender)],sub {
-			my $func = shift;
-			return sub {
-				my $this = shift;
-				return $this->{$func};
-			}
-	});
+    WebService::GData::install_in_package([qw(firstname lastname age gender)],sub {
+            my $func = shift;
+            return sub {
+                my $this = shift;
+                return $this->{$func};
+            }
+    });
 
-	#the above is equal to writing these simple getters:
+    #the above is equal to writing these simple getters:
 
-	#sub firstname {
-	#	my $this = shift;
-	#	return $this->{firstname};
-	#}
+    #sub firstname {
+    #    my $this = shift;
+    #    return $this->{firstname};
+    #}
 
     #sub lastname {
-	#	my $this = shift;
-	#	return $this->{lastname};
-	#}
+    #    my $this = shift;
+    #    return $this->{lastname};
+    #}
 
     #sub age {
-	#	my $this = shift;
-	#	return $this->{age};
-	#}  
+    #    my $this = shift;
+    #    return $this->{age};
+    #}  
 
     #sub gender {
-	#	my $this = shift;
-	#	return $this->{gender};
-	#}  
+    #    my $this = shift;
+    #    return $this->{gender};
+    #}  
 
-	1;
+    1;
 
     
     use WebService::MyService; 
 
     #create an object
-   	my $object = new WebService::MyService(name=>'test');
+       my $object = new WebService::MyService(name=>'test');
 
-	$object->name;#test
+    $object->name;#test
 
-	#overloaded string will dump the object with Data::Dumper;
-	print $object;#$VAR1 = bless( { 'name' => 'test' }, 'WebService::MyService' );
+    #overloaded string will dump the object with Data::Dumper;
+    print $object;#$VAR1 = bless( { 'name' => 'test' }, 'WebService::MyService' );
 
 
 =head1 DESCRIPTION
@@ -141,13 +141,23 @@ Mostly, you will want to look at the following abstract classes from which servi
 
 =item L<WebService::GData::Base>
 
+Implements the base get/post/insert/update/delete methods
+
 =item L<WebService::GData::ClientLogin>
+
+Implements the ClientLogin authorization system
 
 =item L<WebService::GData::Error>
 
+Represents a Google data protocol Error
+
 =item L<WebService::GData::Query>
 
+Implements the basic query parameters and create a query string.
+
 =item L<WebService::GData::Feed>
+
+Represents the basic tags found in a Atom Feed (JSON format).
 
 =back
 
@@ -156,6 +166,8 @@ A service in progress:
 =over
 
 =item L<WebService::GData::YouTube>
+
+Implements some of the YouTube API functionalities.
 
 =back
 
@@ -190,9 +202,9 @@ Example:
     use WebService::GData; 
 
     #create an object
-   	my $object = new WebService::GData(firstname=>'doe',lastname=>'john',age=>'123');
+    my $object = new WebService::GData(firstname=>'doe',lastname=>'john',age=>'123');
 
-	$object->{firstname};#doe
+    $object->{firstname};#doe
 
 =head2 METHODS
 
@@ -223,7 +235,7 @@ I<Parameters>:
 
 =item C<subnames:ArrayRef>
 
-The array reference should list the name of the function you want to install in the package.
+The array reference should list the name of the methods you want to install in the package.
 
 =item C<callback:Sub>
 
@@ -242,26 +254,28 @@ I<Return>:
 =back
 
 Example:
-    
-	#install simple setters; it could also be setter/getters
-	WebService::GData::install_in_package([qw(firstname lastname age gender)],sub {
-			my $func = shift;#firstname then lastname then age...
-			return sub {
-				my $this = shift;
-				return $this->{$func};
-			}
-	});
 
-	#you can use in the package:
-	sub user_info {
-		my $this = shift;
-		return {
-			age      => $this->age,
-			firstname=> $this->firstname,
-			lastname => $this->lastname,
-			gender   => $this->gender
-		}
-	}
+    package Basic::User;
+    use WebService::GData;
+    use base 'WebService::GData';
+    
+    #install simple setters; it could also be setter/getters
+    WebService::GData::install_in_package([qw(firstname lastname age gender)],sub {
+            my $func = shift;#firstname then lastname then age...
+            return sub {
+                my $this = shift;
+                return $this->{$func};
+            }
+    });
+
+    1;
+
+    #in user code:
+
+    my $user = new Basic::User(firstname=>'doe',lastname=>'john',age=>100,gender=>'need_confirmation');
+
+    $user->age;#100
+    $user->firstname;#doe
 
 
 

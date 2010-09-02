@@ -1,7 +1,7 @@
 package WebService::GData::Constants;
 use strict;
 use warnings;
-our $VERSION  = 0.01_01;
+our $VERSION  = 0.01_02;
 
 use constant  {
 	#general...
@@ -76,9 +76,6 @@ __END__
 
 WebService::GData::Constants - constants (namespaces,format,services...) used for Google data APIs v2.
 
-=head1 VERSION
-
-0.01
 
 =head1 SYNOPSIS
 
@@ -111,39 +108,39 @@ WebService::GData::Constants - constants (namespaces,format,services...) used fo
 
 This package contains some constants for Google data API available protocol formats, namespaces and general matters (version,xml header).
 
-You can import all of them by using :all or import only a subset by using :format,:namespace,:general
+You can import all of them by using :all or import only a subset by using :format,:namespace or :general
 
-=head1 GENERAL CONSTANTS
+=head2 GENERAL CONSTANTS
 
 The general consants map the google data API version number and the xml header.
 
 You can choose to import format related constants by writing use WebService::GData::Constants qw(:general);
 
-=head2 GDATA_MINIMUM_VERSION
+=head3 GDATA_MINIMUM_VERSION
 
-=head2 XML_HEADER
-
-
-import with :general
+=head3 XML_HEADER
 
 
-=head1 FORMAT CONSTANTS
+I<import with :general>
+
+
+=head2 FORMAT CONSTANTS
 
 The format consants map the available protocol format as of version 2 of the google data API.
 
 You can choose to import format related constants by writing use WebService::GData::Constants qw(:format);
 
-=head2 JSON
+=head3 JSON
 
-=head2 JSONC
+=head3 JSONC
 
-=head2 RSS
+=head3 RSS
 
-=head2 ATOM
+=head3 ATOM
 
-import with :format
+I<import with :format>
 
-=head1 NAMESPACE CONSTANTS
+=head2 NAMESPACE CONSTANTS
 
 The namespace consants map the available namespace used as of version 2 of the google data API.
 
@@ -151,23 +148,23 @@ You can choose to import namespace related constants by writing use WebService::
 
 The namespace follow the following format: xmlns:namespace_name="uri"
 
-=head2 ATOM_NAMESPACE
+=head3 ATOM_NAMESPACE
 
-=head2 OPENSEARCH_NAMESPACE
+=head3 OPENSEARCH_NAMESPACE
 
-=head2 GDATA_NAMESPACE
+=head3 GDATA_NAMESPACE
 
-=head2 GEORSS_NAMESPACE
+=head3 GEORSS_NAMESPACE
 
-=head2 GML_NAMESPACE
+=head3 GML_NAMESPACE
 
-=head2 MEDIA_NAMESPACE
+=head3 MEDIA_NAMESPACE
 
-=head2 APP_NAMESPACE
+=head3 APP_NAMESPACE
 
-import with:namespace
+I<import with :namespace>
 
-=head1 SERVICE CONSTANTS
+=head2 SERVICE CONSTANTS
 
 The service consants map the available services used for the ClientLogin authentication system.
 
@@ -179,26 +176,47 @@ In case the service name came to change, you won't need to change it in every pe
 
 You can choose to import service related constants by writing use WebService::GData::Constants qw(:service);
 
-=head2 ANALYTICS_SERVICE
-=head2 APPS_SERVICE		
-=head2 BASE_SERVICE		
-=head2 SITES_SERVICE	
-=head2 BLOGGER_SERVICE		
-=head2 BOOK_SERVICE		
-=head2 CALENDAR_SERVICE	
-=head2 CODE_SERVICE		
-=head2 CONTACTS_SERVICE	
-=head2 DOCUMENTS_SERVICE  
-=head2 FINANCE_SERVICE		
-=head2 GMAIL_SERVICE		
-=head2 HEALTH_SERVICE		
-=head2 HEALTH_SB_SERVICE	
-=head2 MAPS_SERVICE		
-=head2 PICASA_SERVICE	
-=head2 SIDEWIKI_SERVICE	
-=head2 SPREADSHEETS_SERVICE
-=head2 WEBMASTER_SERVICE	
-=head2 YOUTUBE_SERVICE	
+
+=head3 ANALYTICS_SERVICE
+
+=head3 APPS_SERVICE
+
+=head3 BASE_SERVICE
+
+=head3 SITES_SERVICE
+
+=head3 BLOGGER_SERVICE
+	
+=head3 BOOK_SERVICE
+
+=head3 CALENDAR_SERVICE
+
+=head3 CODE_SERVICE
+
+=head3 CONTACTS_SERVICE
+
+=head3 DOCUMENTS_SERVICE
+ 
+=head3 FINANCE_SERVICE
+	
+=head3 GMAIL_SERVICE
+		
+=head3 HEALTH_SERVICE
+	
+=head3 HEALTH_SB_SERVICE
+
+=head3 MAPS_SERVICE
+
+=head3 PICASA_SERVICE
+
+=head3 SIDEWIKI_SERVICE
+
+=head3 SPREADSHEETS_SERVICE
+
+=head3 WEBMASTER_SERVICE
+	
+=head3 YOUTUBE_SERVICE
+
 
 =head1  CONFIGURATION AND ENVIRONMENT
 
@@ -220,7 +238,7 @@ i will try to do my best to fix it (patches welcome)!
 
 =head1 AUTHOR
 
-shiriru E<lt>shiriru0111[arobas]hotmail.comE<gt>
+shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
 
 =head1 LICENSE AND COPYRIGHT
 

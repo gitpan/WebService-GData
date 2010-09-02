@@ -1,8 +1,11 @@
 package WebService::GData::Error;
 use WebService::GData;
 use base 'WebService::GData';
+
 use WebService::GData::Error::Entry;
-our $VERSION  = 0.01_01;
+
+our $VERSION  = 0.01_02;
+
 	#avoid stringification
 	sub __to_string {
 		shift();
@@ -14,7 +17,7 @@ our $VERSION  = 0.01_01;
 		$this->{_errstr}    = $errstr;
 
 		$this->{_errors} = [];
-		$this->_parse();
+		$this->_parse() if($errstr);
 		return $this;
 	}
 
@@ -53,44 +56,40 @@ __END__
 
 WebService::GData::Error - create an error and parse errors from Google data APIs v2.
 
-=head1 VERSION
-
-0.01
 
 =head1 SYNOPSIS
 
-	use WebService::GData::Error;
+    use WebService::GData::Error;
 
     #create an error object that you can throw by dying...
-   	my $error = new WebService::GData::Error(401,'Unauthorized');
-	# $error->code;
-	# $error->content;
-	#die $error;
+    my $error = new WebService::GData::Error(401,'Unauthorized');
+    # $error->code;
+    # $error->content;
 
     #create an error object in response to a Google Service.
-   	my $error = new WebService::GData::Error(401,$responseFromAService);
-	print $error->code;
-	print $error->content;#raw xml content
+    my $error = new WebService::GData::Error(401,$responseFromAService);
+    print $error->code;
+    print $error->content;#raw xml content
 
-	my @errors = $error->errors;#send back WebService::GData::Error::Entry objects
+    my @errors = $error->errors;#send back WebService::GData::Error::Entry objects
 
-	foreach my $error (@{$error->errors}){
-			print $error->code;
-			print $error->internalreason;
-			print $error->domain;
-			print $error->location->{type};#this is just a hash
-			print $error->location->{content};#this is just a hash
-	}
+    foreach my $error (@{$error->errors}){
+        print $error->code;
+        print $error->internalreason;
+        print $error->domain;
+        print $error->location->{type};#this is just a hash
+        print $error->location->{content};#this is just a hash
+    }
 
 
 
 =head1 DESCRIPTION
 
-inherits from WebService::GData;
+I<inherits from WebService::GData>.
 
 This package can parse error response from Google APIs service. You can also create your own basic error.
 
-All WebService::GData::* classes die a WebService::GData::Error object when something went wrong.
+All WebService::GData::* classes die a WebService::GData::Error object when something goes wrong.
 
 You should use an eval {}; block to catch the error.
 
@@ -100,67 +99,114 @@ Example:
 
 
     my $base = new WebService::GData::Base();
-	eval {
-	   $base->get($url);
-
-	};
-	#$error is a WebService::GData::Error;
-	if(my $error=$@){
-		#error->code,$error->content, $error->errors
-	}
-
-
-=head1 METHODS
+    eval {
+        $base->get($url);
+    };
+    #$error is a WebService::GData::Error;
+    if(my $error=$@){
+        #error->code,$error->content, $error->errors
+    }
 
 
-=head2 new (code:Int,content:Scalar)
+=head2 CONSTRUCTOR
 
-=over
 
-Accept two parameters: a code number (ie,a http status code) and a string.
+=head3 new 
 
-The string can be a Google xml error response, in which case, it will parse the contents and give you access to it via errors() method. 
+Create a WebService::GData::Error instance.
 
-=head2 code
+I<Parameters>:
 
 =over
 
-Get back the error code.
+=item C<code:*>
 
-=head2 content
+This could be an http status or a short string error_code.
 
-=over
+=item C<content:Scalar>
 
-Get back the raw content of the error.
+The string can be a Google xml error response, in which case, 
 
-When getting an error from querying one of Google data services, you will get an xml response containing possible errors.
-
-In such case,you should loop through the result of errors() which send back WebService::GData::Error::Entry.
-
-
-=head2 errors 
+it will parse the contents that you can access via the errors() method of the instance. 
 
 =over
 
-Get back a reference array filled with  WebService::GData::Error::Entry.
+I<Return>:
 
-When getting an error from querying one of Google data services, you will get an xml response containing possible errors.
+=over
 
-In such case,you should loop through the result of errors() which send back WebService::GData::Error::Entry.
+=item L<WebService::GData::Error>
 
-errors allways send back a reference array (even if there is no error).
+=back
 
 Example:
 
-	my @errors = $error->errors;#send back WebService::GData::Error::Entry objects
+    use WebService::GData::Error;
 
-	foreach my $error (@{$error->errors}){
-			print $error->code;
-			print $error->internalreason;
-			print $error->domain;
-			print $error->location->{type};#this is just a hash
-			print $error->location->{content};#this is just a hash
-	}
+    #create an error object that you can throw by dying...
+    my $error = new WebService::GData::Error(401,'Unauthorized');
+
+
+=head2 GET METHODS
+
+=head3 code
+
+Get back the error code.
+
+I<Return>:
+
+=over
+
+=item L<code:Scalar>
+
+=back
+
+=head3 content
+
+Get back the raw content of the error.
+
+When getting an error from querying one of Google data services, you will get a raw xml response containing possible errors.
+
+In such case,you should loop through the result by using the errors() instance which send back L<WebService::GData::Error::Entry>.
+
+I<Return>:
+
+=over
+
+=item L<content:Scalar>
+
+=back
+
+=head3 errors
+
+Get back a reference array filled with  L<WebService::GData::Error::Entry>.
+
+When getting an error from querying one of Google data services, you will get an xml response containing possible errors.
+
+In such case,you should loop through the result of errors().
+
+Errors always send back a reference array (even if there is no error).
+
+I<Return>:
+
+=over
+
+=item L<WebService::GData::Error::Entry>
+
+=back
+
+Example:
+
+    my @errors = $error->errors;#send back WebService::GData::Error::Entry objects
+
+    foreach my $error (@{$error->errors}){
+        print $error->code;
+        print $error->internalreason;
+        print $error->domain;
+        print $error->location->{type};#this is just a hash
+        print $error->location->{content};#this is just a hash
+    }
+
 
 =head1  CONFIGURATION AND ENVIRONMENT
 
@@ -169,9 +215,7 @@ none
 
 =head1  DEPENDENCIES
 
-L<JSON>
-
-L<LWP>
+none
 
 =head1  INCOMPATIBILITIES
 
@@ -184,7 +228,7 @@ i will try to do my best to fix it (patches welcome)!
 
 =head1 AUTHOR
 
-shiriru E<lt>shiriru0111[arobas]hotmail.comE<gt>
+shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
 
 =head1 LICENSE AND COPYRIGHT
 
