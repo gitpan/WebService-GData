@@ -5,7 +5,7 @@ use warnings;
 use Data::Dumper;
 use overload '""'=>"__to_string";
 
-our $VERSION  = 0.01_01;
+our $VERSION  = 0.01_02;
 
 	sub import {
    		strict->import;
@@ -56,10 +56,6 @@ __END__
 
 WebService::GData - represent a base GData object.
 
-=head1 VERSION
-
-0.01
-
 =head1 SYNOPSIS
 
 	package WebService::MyService;
@@ -77,10 +73,35 @@ WebService::GData - represent a base GData object.
 		return $this;
 	}
 
-	sub name {
-		my $this = shift;
-		return $this->{name};
-	}
+	WebService::GData::install_in_package([qw(firstname lastname age gender)],sub {
+			my $func = shift;
+			return sub {
+				my $this = shift;
+				return $this->{$func};
+			}
+	});
+
+	#the above is equal to writing these simple getters:
+
+	#sub firstname {
+	#	my $this = shift;
+	#	return $this->{firstname};
+	#}
+
+    #sub lastname {
+	#	my $this = shift;
+	#	return $this->{lastname};
+	#}
+
+    #sub age {
+	#	my $this = shift;
+	#	return $this->{age};
+	#}  
+
+    #sub gender {
+	#	my $this = shift;
+	#	return $this->{gender};
+	#}  
 
 	1;
 
@@ -98,13 +119,13 @@ WebService::GData - represent a base GData object.
 
 =head1 DESCRIPTION
 
-This package does not do much.You should inherit and extends it. 
+This package does not do much.It is a blueprint that you should inherit and extend. 
 
-It just offers a basic hashed based object creation via the word new. 
+It offers a basic hashed based object creation via the word new. 
 
 All sub classes should be hash based. If you want to pock into the instance, it's easy 
 
-but everything that is not documented should considered private to the API. 
+but everything that is not documented should be considered private. 
 
 If you play around with undocumented properties/methods and that it changes,
 
@@ -114,32 +135,134 @@ so...
 
 dont.
 
-Mostly, you will want to look the abstract classes from which services extend their feature:
-
-- WebService::GData::Base
-
-- WebService::GData::ClientLogin
-
-- WebService::GData::Error
-
-- WebService::GData::Query
-
-- WebService::GData::Feed
-
-A service in progress:
-
-- WebService::GData::YouTube
-
-
-
-=head1  SUBROUTINE
-
-
-=head2 new
+Mostly, you will want to look at the following abstract classes from which services extend their feature:
 
 =over
 
+=item L<WebService::GData::Base>
+
+=item L<WebService::GData::ClientLogin>
+
+=item L<WebService::GData::Error>
+
+=item L<WebService::GData::Query>
+
+=item L<WebService::GData::Feed>
+
+=back
+
+A service in progress:
+
+=over
+
+=item L<WebService::GData::YouTube>
+
+=back
+
+=head2  CONSTRUCTOR
+
+=head3 new
+
+
 Takes an hash which keys will be attached to the instance.
+
+You can also use install_in_package() to create setters/getters for these parameters.
+
+I<Parameters>:
+
+=over
+
+=item C<parameters:RefHash>
+
+=back
+
+I<Return>:
+
+=over
+
+=item C<object:RefHash>
+
+=back
+
+
+Example:
+    
+    use WebService::GData; 
+
+    #create an object
+   	my $object = new WebService::GData(firstname=>'doe',lastname=>'john',age=>'123');
+
+	$object->{firstname};#doe
+
+=head2 METHODS
+
+=head3 __init
+
+This method is called by the constructor new().
+
+This function receives the parameters set in new() and by default assign the key/values pairs to the instance.
+
+You should overwrite it and add your own logic.
+
+=head3 __to_string
+
+This method overloads the stringification quotes to display a dump of the object by using Data::Dumper. 
+
+You should overwrite it should you need to create a specific output.
+
+=head2  SUB
+
+=head3 install_in_package
+
+Install in the package the methods/subs specified. 
+Mostly use to avoid writting boiler plate getter/setter methods.
+
+I<Parameters>:
+
+=over
+
+=item C<subnames:ArrayRef>
+
+The array reference should list the name of the function you want to install in the package.
+
+=item C<callback:Sub>
+
+The callback is a _sub_ that will receive the name of the function.
+
+This callback should itself send back a function.
+
+=back
+
+I<Return>:
+
+=over
+
+=item C<void>
+
+=back
+
+Example:
+    
+	#install simple setters; it could also be setter/getters
+	WebService::GData::install_in_package([qw(firstname lastname age gender)],sub {
+			my $func = shift;#firstname then lastname then age...
+			return sub {
+				my $this = shift;
+				return $this->{$func};
+			}
+	});
+
+	#you can use in the package:
+	sub user_info {
+		my $this = shift;
+		return {
+			age      => $this->age,
+			firstname=> $this->firstname,
+			lastname => $this->lastname,
+			gender   => $this->gender
+		}
+	}
+
 
 
 =head1  CONFIGURATION AND ENVIRONMENT
@@ -162,7 +285,7 @@ i will try to do my best to fix it (patches welcome)!
 
 =head1 AUTHOR
 
-shiriru E<lt>shiriru0111[arobas]hotmail.comE<gt>
+shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
 
 =head1 LICENSE AND COPYRIGHT
 

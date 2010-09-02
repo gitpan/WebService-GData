@@ -3,6 +3,9 @@ Makefile.PL
 MANIFEST
 README
 t/00-WebService-GData-load.t
+t/01-WebService-GData-instance.t
+t/02-WebService-GData-install_in_package.t
+t/MyWeb.pm
 lib/WebService/GData.pm
 lib/WebService/GData/Query.pm
 lib/WebService/GData/Constants.pm

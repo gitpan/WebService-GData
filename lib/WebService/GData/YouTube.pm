@@ -9,7 +9,7 @@ use WebService::GData::YouTube::Feed::PlaylistLink;
 
 	our $PROJECTION     = 'api';
 	our $BASE_URI       = 'http://gdata.youtube.com/feeds/';
-our $VERSION  = 0.01_01;
+	our $VERSION  = 0.01_02;
 
 	sub __init {
 		my ($this,$auth) = @_;
@@ -191,10 +191,6 @@ __END__
 
 WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
 
-=head1 VERSION
-
-0.01
-
 =head1 SYNOPSIS
 
 	use WebService::GData::YouTube;
@@ -220,26 +216,27 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
 		key		=>'...'
 	);
 
-	#give write access with a $auth object that you created
+	#give write access
    	my $yt = new WebService::GData::YouTube($auth);
 
-	my $playlists  = $yt->get_user_videos();#returns videos from the loggedin user even if private
+    #returns all the videos from the logged in user 
+	#including private ones.
+	my $videos  = $yt->get_user_videos();
 
-	#update the playlist by adding the playlist title as a keyword
-	foreach my $playlist (@$playlists) {
+	#update the videos by adding the common keywords if they are public
+	#delete a certain video by checking its id.
+	foreach my $video (@$videos) {
 
 		if($video->video_id eq $myid) {
 			$video->delete($myid);
 		}else {
 			if($video->is_listed_allowed){
-				$playlist->kewords($playlist->title.','.$playlist->keywords);
-				$playlist->save();
+				$video->keywords($video->title.','.$video->keywords);
+				$video->save();
 			}
 		}
 	}
 	 
-
-
 
 =head1 DESCRIPTION
 
@@ -251,11 +248,13 @@ It also offers some helper methods to shorten up the code.
 
 Most of the methods will return one of the following object:
 
-- WebService::GData::YouTube::Feed::Video
+=over 
+
+=item L<WebService::GData::YouTube::Feed::Video>
 
 This object handles the manipulation of the video data such as inserting/editing the metadata, uploading a video,etc.
 
-- WebService::GData::YouTube::Feed::Playlist
+=item L<WebService::GData::YouTube::Feed::Playlist>
 
 This object inherits from WebService::GData::YouTube::Feed::Video.
 
@@ -265,193 +264,542 @@ It contains a list of all the videos within this particular playlist.
 
 The only difference with Video is that it offers the position tag that specifies the position of the video within the playlist.
 
-- WebService::GData::YouTube::Feed::PlaylistLink
+=item L<WebService::GData::YouTube::Feed::PlaylistLink>
 
 This object represents all the playlists metadata of a user.
 
 It is not possible to get the metadata of one playlist. You need to query them all and then get the one you want to edit.
 
+=back
 
-=head1 CONSTRUCTOR
+
+=head2 CONSTRUCTOR
 
 
-=head2 new
+=head3 new
 
-=over
+Create a L<WebService::GData::YouTube> instance.
 
-Accept an optional authorization object (ClientLogin only implemented for now) which if set
-
-will allow you to access private contents and insert/edit/delete them.
-
-=head1 GENERAL METHODS
-
-=head2 query
+I<Parameters>:
 
 =over
 
-set/get a query object that handles the creation of the query string. Default : WebService::GData::YouTube::Query.
+=item C<auth:Scalar> (optional) 
 
-=head2 base_uri
+Accept an optional authorization object.
+
+Only L<WebService::GData::ClientLogin> is available for now but OAuth should come anytime soon.
+
+Passing an auth object allows you to access private contents and insert/edit/delete data.
+
+=back
+
+I<Return>:
 
 =over
 
-get the base uri used to query the data.
+=item L<WebService::GData::YouTube> instance 
 
-=head2 base_query
+=back
+
+
+Example:
+
+	use WebService::GData::ClientLogin;
+	use WebService::GData::YouTube;
+
+    #create an object that only has read access
+   	my $yt = new WebService::GData::YouTube();
+
+	#connect to a YouTube account
+	my $auth = new WebService::GData::ClientLogin(
+		email=>'...'
+		password=>'...',
+		key		=>'...'
+	);
+
+	#give write access with a $auth object that you created
+   	my $yt = new WebService::GData::YouTube($auth);
+
+
+=head2 GENERAL METHODS
+
+=head3 query
+
+Set/get a query object that handles the creation of the query string.
+The query object will build the query string required to access the data.
+Most of the time you will not need it unless you want to do a particular query.
+
+I<Parameters>:
 
 =over
 
-get the base query string used in all get methods. Default: ?alt=json&prettyprint=false&strict=true
+=item C<query:Object> (Default : L<WebService::GData::YouTube::Query>)
 
-=head1 STANDARD FEED METHODS
+=back
 
-All the standard feed methods are implemented.
+I<Return>:
 
-This allow you to grab feeds from YouTube main categories feed (top_rated,most_viewed,...).
+=over
 
-All the following methods accept optional arguments:
+=item C<query:Object> (Default : L<WebService::GData::YouTube::Query>)
 
-- region zone (ie,JP,US)
+or 
 
-- category (Comedy,Sports...)
+=item C<void> 
 
-- time (today,this_week,this_month,all_time)
+=back
 
-All these methods send back WebService::GData::Youtube::Feed::Video objects.
+Example:
+
+	use WebService::GData::YouTube;
+
+   	my $yt = new WebService::GData::YouTube();
+
+	$yt->query()->q("ski")->limit(10,0);
+	#or set your own query object
+	$yt->query($myquery);
+	my $videos = $yt->search_video();
+
+
+=head3 base_uri
+
+Get the base uri used to query the data.
+
+I<Parameters>:
+
+=over
+
+=item none
+
+=back
+
+I<Return>:
+
+=over
+
+=item C<url:Scalar> 
+
+=back
+
+
+=head3 base_query
+
+Get the base query string used to query the data.
+
+I<Parameters>:
+
+=over
+
+=item none
+
+=back
+
+I<Return>:
+
+=over
+
+=item C<url:Scalar> (Default: ?alt=json&prettyprint=false&strict=true)
+
+=back
+
+
+=head2 STANDARD FEED METHODS
+
+All the standard feed methods are implemented:
+
+I<methods>:
+
+=head3 get_top_rated 
+
+=head3 get_top_favorites
+
+=head3 get_most_viewed
+
+=head3 get_most_popular
+
+=head3 get_most_recent
+
+=head3 get_most_discussed
+
+=head3 get_most_responded 
+
+=head3 get_recently_featured
+
+=head3 get_watch_on_mobile 
+
+This allows you to grab feeds from YouTube main categories (top_rated,most_viewed,...).
+
+All the above standard feed methods accept the following optional parameters:
+
+I<Parameters>:
+
+=over
+
+=item <region_zone:Scalar> (ie,JP,US)
+
+=item <category:Scalar> (ie,Comedy,Sports...)
+
+=item <time:Scalar> (ie,today,this_week,this_month,all_time)
+
+=back
+
+I<Return>:
+
+=over
+
+=item L<WebService::GData::Youtube::Feed::Video> objects
+
+=back
+
+I<Throw>:
+
+=over
+
+=item L<WebService::GData::Error>
+
+=back
 
 Example:
 
     use WebService::GData::YouTube;
 	
     my $yt   = new WebService::GData::YouTube();
-    my @videos = $yt->get_top_rated();
-    my @videos = $yt->get_top_rated('JP');#top rated videos in Japan
-    my @videos = $yt->get_top_rated('JP','Comedy');#top rated videos in Japanese Comedy 
-    my @videos = $yt->get_top_rated('JP','Comedy','today');#top rated videos of the day in Japanese Comedy 
+    my $videos = $yt->get_top_rated();
+    my $videos = $yt->get_top_rated('JP');#top rated videos in Japan
+    my $videos = $yt->get_top_rated('JP','Comedy');#top rated videos in Japanese Comedy 
+    my $videos = $yt->get_top_rated('JP','Comedy','today');#top rated videos of the day in Japanese Comedy 
 
 
+I<See also>:
 
 See L<http://code.google.com/intl/en/apis/youtube/2.0/reference.html#Standard_feeds>
 
 
-=head2 get_top_rated 
+=head2 VIDEO FEED METHODS
 
-=head2 get_top_favorites
+These methods allow you to access videos.
+You do not need to be logged in to use these methods.
 
-=head2 get_most_viewed
+=head3 get_video_by_id
 
-=head2 get_most_popular
+Get a video by its id.
 
-=head2 get_most_recent
+I<Parameters>:
 
-=head2 get_most_discussed
+=over
 
-=head2 get_most_responded 
+=item C<video_id:Scalar>
 
-=head2 get_recently_featured
+=back
 
-=head2 get_watch_on_mobile 
+I<Return>:
 
-=head1 VIDEO FEED METHODS
+=over
 
-All these methods allow you to access a video.
-You do not need to be logged in.
+=item L<WebService::GData::YouTube::Feed::Video>
 
-=head2 get_video_by_id
+=back
 
-Return a WebService::GData::YouTube::Feed::Video object for the specified video id.
-You must specify the video id.
+I<Throw>:
 
-=head2 search_video
+=over
 
-Return WebService::GData::YouTube::Feed::Video objects for the specified query.
+=item L<WebService::GData::Error>
+
+=back
 
 Example:
 
     use WebService::GData::YouTube;
 	
     my $yt   = new WebService::GData::YouTube();
-		$yt->query->q("ski")->limit(10,0);
+
+	my $video = $yt->get_video_by_id($myvideoid);
+
+
+=head3 search_video
+
+Search for videos responding to a particular query.
+
+I<Parameters>:
+
+=over
+
+=item none
+
+=back
+
+I<Return>:
+
+=over
+
+=item L<WebService::GData::YouTube::Feed::Video>
+
+=back
+
+I<Throw>:
+
+=over
+
+=item L<WebService::GData::Error>
+
+=back
+
+Example:
+
+    use WebService::GData::YouTube;
+	
+    my $yt   = new WebService::GData::YouTube();
+
+	   $yt->query->q("ski")->limit(10,0);
+
 	my $videos = $yt->search_video();
 
-	#or the same
-    my $yt   = new WebService::GData::YouTube();
-	my $query = $yt->query;
-		$query->q("ski")->limit(10,0);
+	#or
+    my $yt     = new WebService::GData::YouTube();
+	my $query  = $yt->query;
+	   $query -> q("ski")->limit(10,0);
 	my $videos = $yt->search_video();
 
-	#or set a new query object:
-    my $yt   = new WebService::GData::YouTube();
-	my $query = new WebService::GData::YouTube::Query();#it could be a sub class that has predefined value
-		$query->q("ski")->limit(10,0);
+	#or set a new query object
+    my $yt     = new WebService::GData::YouTube();
+
+	#it could be a sub class that has predefined value
+	my $query  = new WebService::GData::YouTube::Query();
+	   $query -> q("ski")->limit(10,0);
 	my $videos = $yt->search_video($query);
 
+I<See also>:
 
-=head2 get_video_by_id
-
-Return a WebService::GData::YouTube::Feed::Video object for the specified video id.
-
-=head2 get_related_for_video_id
-
-Return WebService::GData::YouTube::Feed::Video objects for the specified video id.
-
-The related videos are returned by the YouTube program by following its own algorythm.
+L<WebService::GData::YouTube::Query>
 
 
-=head1 USER VIDEO FEED METHODS
+=head3 get_related_for_video_id
 
-All these methods allow you to access the video of the user logged in or for a certain user that you set as an argument.
+Get the related videos for a video.
+These videos are returned by following YouTube own algorithm.
 
-If you are not logged in,you should set the user name you want to access.
-
-=head2 get_user_video_by_id
-
-Return a WebService::GData::YouTube::Feed::Video object for the specified video id.
-
-If you are logged in, you can get access to private videos or to the latest uploads.
-
-If you are not logged in, you can set a user name as the first parameter but will not get access to private contents.
-
-=head2 get_user_videos
-
-Return WebService::GData::YouTube::Feed::Video objects for the logged in user or for the user name you specified.
-
-If you are logged in, you can get access to private videos or to the latest uploads.
-
-If you are not logged in, you will not get access to private videos.
-
-=head2 get_user_favorite_videos
-
-Return WebService::GData::YouTube::Feed::Video objects for the logged in user or for the user name you specified.
-
-
-=head1 USER PLAYLIST METHODS
-
-All these methods allow you to access the videos in a playlist or a list of the playlists of a user.
-
-If you are not logged in,you should set the user name you want to access.
-
-=head2 get_user_playlist_by_id
+I<Parameters>:
 
 =over
 
-Return a WebService::GData::YouTube::Feed::Playlist object for the specified playlist id.
+=item C<video_id:Scalar>
 
-A WebService::GData::YouTube::Feed::Playlist contains the same information as a Video Feed but adds the position of the video within the feed.
+=back
 
-=head2 get_user_playlists
+I<Return>:
 
 =over
 
-Return a WebService::GData::YouTube::Feed::PlaylistLink object for the logged in user or for the user name you specified.
+=item L<WebService::GData::YouTube::Feed::Video> objects 
 
-If you are logged in, you can get access to private playlists.
+=back
 
-WebService::GData::YouTube::Feed::PlaylistLink is a list of playlists. If you want to modify one playlist information,
-you need to get all of them, loop until you find the one you want and then edit the playlist.
+I<Throw>:
+
+=over
+
+=item  L<WebService::GData::Error> 
+
+=back
 
 
-=head1  HANDLING ERRORS
+
+=head2 USER VIDEO FEED METHODS
+
+All these methods allow you to access the videos of the logged in user.
+
+If not logged in,you should set the user name you want to access.
+
+=head3 get_user_video_by_id
+
+Get a video for the logged in user or for the user name you specified.
+
+I<Parameters>:
+
+=over
+
+=item C<video_id:Scalar>
+
+=item C<user_name:Scalar> (optional)
+
+=back
+
+I<Return>:
+
+=over
+
+=item L<WebService::GData::YouTube::Feed::Video> objects 
+
+=back
+
+I<Throw>:
+
+=over
+
+=item  L<WebService::GData::Error> 
+
+=back
+
+
+=head3 get_user_favorite_videos
+
+I<Parameters>:
+
+=over
+
+=item C<user_name:Scalar> (optional)
+
+=back
+
+I<Return>:
+
+=over
+
+=item L<WebService::GData::YouTube::Feed::Video> objects 
+
+=back
+
+I<Throw>:
+
+=over
+
+=item  L<WebService::GData::Error> 
+
+=back
+
+
+=head3 get_user_videos
+
+Get the videos for the logged in user or for the user name you specified.
+
+I<Parameters>:
+
+=over
+
+=item C<user_name:Scalar> (optional)
+
+=back
+
+I<Return>:
+
+=over
+
+=item L<WebService::GData::YouTube::Feed::Video> objects 
+
+=back
+
+I<Throw>:
+
+=over
+
+=item  L<WebService::GData::Error> 
+
+=back
+
+
+=head3 get_user_favorite_videos
+
+I<Parameters>:
+
+=over
+
+=item C<user_name:Scalar> (optional)
+
+=back
+
+I<Return>:
+
+=over
+
+=item L<WebService::GData::YouTube::Feed::Video> objects 
+
+=back
+
+I<Throw>:
+
+=over
+
+=item  L<WebService::GData::Error> 
+
+=back
+
+
+=head2 USER PLAYLIST METHODS
+
+These methods allow you to access the videos in a playlist or a list of the playlists for a certain user.
+
+If you are not logged in,you must set the user name.
+
+=head3 get_user_playlist_by_id
+
+Retrieve the videos in a playlist by passing the playlist id.
+
+I<Parameters>:
+
+=over
+
+=item C<playlist_id:Scalar>
+
+=item C<user_name:Scalar> (optional)
+
+=back
+
+I<Return>:
+
+=over
+
+=item  L<WebService::GData::YouTube::Feed::Playlist>
+
+A L<WebService::GData::YouTube::Feed::Playlist> contains the same information as a L<WebService::GData::YouTube::Feed::Video> instance
+
+but adds the position information of the video within the playlist.
+
+=back
+
+I<Throw>:
+
+=over
+
+=item  L<WebService::GData::Error> 
+
+=back
+
+=head3 get_user_playlists
+
+Get the playlists metadata for the logged in user or the user set as a parameter.
+
+I<Parameters>:
+
+=over
+
+=item C<user_name:Scalar> (optional)
+
+=back
+
+I<Return>:
+
+=over
+
+=item L<WebService::GData::YouTube::Feed::PlaylistLink> objects
+
+If you are logged in, you can access private playlists.
+
+L<WebService::GData::YouTube::Feed::PlaylistLink> is a list of playlists. 
+If you want to modify one playlist metadata, you must get them all, loop until you find the one you want and then edit.
+
+=back
+
+I<Throw>:
+
+=over
+
+=item  L<WebService::GData::Error> 
+
+=back
+
+=head2  HANDLING ERRORS
 
 Google data APIs relies on querying remote urls on particular services.
 
@@ -465,18 +813,20 @@ You should enclose all code that requires connecting to a service within eval bl
 Example:
 
     use WebService::GData::Base;
+
+	my $auth = new WebService::GData::ClientLogin(email=>...);
 	
-    my $base   = new WebService::GData::Base();
+    my $yt   = new WebService::GData::YouTube($auth);
     
 	#the server is dead or the url is not available anymore or you've reach your quota of the day.
 	#boom the application dies and your program fails...
-    $base->get('http://gdata.youtube.com/feeds/api/standardfeeds/top_rated');
+    my $videos = $yt->get_user_videos;
 
 	#with error handling...
 
 	#enclose your code in a eval block...
 	eval {
-   		$base->get('http://gdata.youtube.com/feeds/api/standardfeeds/top_rated');
+   		    my $videos = $yt->get_user_videos;;
 	}; 
 
 	#if something went wrong, you will get a WebService::GData::Error object back:
@@ -487,16 +837,46 @@ Example:
 	}	
 
 
+=head2  TODO
+
+Many things are left to be implemented!
+
+The YouTube API is very thorough and it will take some time but by priority:
+
+=over
+
+=item OAuth authorization system
+
+=item Partial Upload
+
+=item Channel search
+
+=item Playlist search
+
+=item Check the query parameters
+
+=item Partial feed read/write
+
+=item know the status of a video
+
+=back
+
+Certainly missing other stuffs...
+
+
 =head1  CONFIGURATION AND ENVIRONMENT
 
 none
 
-
 =head1  DEPENDENCIES
 
-L<JSON>
+=over
 
-L<LWP>
+=item L<JSON>
+
+=item L<LWP>
+
+=back
 
 =head1  INCOMPATIBILITIES
 
@@ -509,7 +889,7 @@ i will try to do my best to fix it (patches welcome)!
 
 =head1 AUTHOR
 
-shiriru E<lt>shiriru0111[arobas]hotmail.comE<gt>
+shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
 
 =head1 LICENSE AND COPYRIGHT
 
