@@ -5,7 +5,7 @@ use warnings;
 use Data::Dumper;
 use overload '""'=>"__to_string";
 
-our $VERSION  = 0.01_03;
+our $VERSION  = 0.01_04;
 
 	sub import {
    		strict->import;
@@ -32,12 +32,13 @@ our $VERSION  = 0.01_03;
 	}
 
 	sub install_in_package {
-		my($subnames,$callback)=@_;
+		my($subnames,$callback,$package)=@_;
 
-	    my $package = caller;
+	    $package = $package || caller;
 	    return if($package eq 'main'); #never import into main
 		#install
 		no strict 'refs';
+		no warnings 'redefine';
 		foreach my $sub (@$subnames) {
 			*{$package.'::'.$sub} = &$callback($sub);
 		}
@@ -242,6 +243,10 @@ The array reference should list the name of the methods you want to install in t
 The callback is a _sub_ that will receive the name of the function.
 
 This callback should itself send back a function.
+
+=item C<package_name:Scalar> (optional)
+
+You can add functions at distance by specifying an other module.
 
 =back
 

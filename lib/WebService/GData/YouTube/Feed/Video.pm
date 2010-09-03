@@ -1,6 +1,6 @@
 package WebService::GData::YouTube::Feed::Video;
 use base WebService::GData::Feed::Entry;
-our $VERSION  = 0.01_01;
+our $VERSION  = 0.01_02;
 use constant {
 	DIRECT_UPLOAD  =>'DIRECT_UPLOAD',
 	BROWSER_UPLOAD =>'BROWSER_UPLOAD'
@@ -300,6 +300,7 @@ XML
 	}
 
 
+	#move this in Base?
 	sub direct_uploading {
 		my ($this,$uri,$content) = @_;
 
@@ -365,52 +366,56 @@ __END__
 
 WebService::GData::YouTube::Feed::Video - a Video YouTube contents(read/write) for data API v2.
 
-=head1 VERSION
-
-0.01
-
 =head1 SYNOPSIS
 
-	use WebService::GData::YouTube;
+    use WebService::GData::YouTube;
 
     #create an object that only has read access
-   	my $yt = new WebService::GData::YouTube();
+    my $yt = new WebService::GData::YouTube();
 
-	#get a feed response from YouTube;
-	my $videos  = $yt->get_top_rated;
-	#more specific:
-	my $videos  = $yt->get_top_rated('JP','Comedy');
+    #get a feed response from YouTube;
+    my $videos  = $yt->get_top_rated;
+    #more specific:
+    my $videos  = $yt->get_top_rated('JP','Comedy');
 
-	foreach my $video (@$videos) {
-		$video->video_id;
-		$video->title;
-		$video->content;
-	}
+    foreach my $video (@$videos) {
+        $video->video_id;
+        $video->title;
+        $video->content;
+		$video->view_count;
+		$video->favorite_count;
+		$video->duration;
+		#...etc
+    }
 
-	#connect to a YouTube account
-	my $auth = new WebService::GData::ClientLogin(
-		email=>'...'
-		password=>'...',
-		key		=>'...'
-	);
+    #connect to a YouTube account
+    my $auth = new WebService::GData::ClientLogin(
+        email=>'...'
+        password=>'...',
+        key        =>'...'
+    );
 
-	#give write access with a $auth object that you created
-   	my $yt = new WebService::GData::YouTube($auth);
+    #give write access with a $auth object that you created
+    my $yt = new WebService::GData::YouTube($auth);
 
-	my $playlists  = $yt->get_user_videos();#returns videos from the loggedin user even if private
+    my $videos  = $yt->get_user_videos();#returns videos from the loggedin user even if private
 
-	#update the playlist by adding the playlist title as a keyword
-	foreach my $playlist (@$playlists) {
+    #update the playlist by adding the playlist title as a keyword
+    foreach my $video (@$videos) {
 
-		if($video->video_id eq $myid) {
-			$video->delete($myid);
-		}else {
-			if($video->is_listed_allowed){
-				$playlist->kewords($playlist->title.','.$playlist->keywords);
-				$playlist->save();
-			}
-		}
-	}
+        if($video->video_id eq $myid) {
+
+            $video->delete();
+
+        }else {
+
+            if($video->is_listing_allowed){
+
+                $video->kewords($playlist->title.','.$video->keywords);
+                $video->save();
+            }
+        }
+    }
 	 
 
 
@@ -424,54 +429,117 @@ This package represents a Youtube Video. If you are logged in you can edit exist
 Most of the time you will not instantiate this class directly but use some of the helpers in the WebService::GData::YouTube class.
 
 
-=head1 CONSTRUCTOR
+=head2 CONSTRUCTOR
 
 
-=head2 new
+=head3 new
 
 =over
 
-inherited from WebService::GData::Feed::Entry. Accepts the same parameters: 
+Create a L<WebService::GData::YouTube::Feed::Video> instance. 
 
-- a video entry feed in json format
+=back
 
-- an optional authorization object (ClientLogin only implemented for now).
+I<Parameters>:
 
-If authorization object is set, it will allow you to access private contents and insert/edit/delete/upload videos.
+=over
 
-=head1 GET METHODS
+=item C<jsonc_video_entry_feed:Object>
 
-=head2 view_count
-=head2 favorite_count
-=head2 media_player
-=head2 aspect_ratio
-=head2 duration
-=head2 content
-=head2 comments
-=head2 thumbnails
-=head2 uploaded
-=head2 etag
-=head2 appcontrol_state
+=item C<authorization:Object> (Optional)
 
-=head1 SET/GET METHODS
+=back
 
-=head2 video_id
-=head2 access_controll
-=head2 category
-=head2 description
-=head2 keywords
-=head2 is_listing_allowed
-=head2 is_comment_allowed
-=head2 is_comment_vote_allowed
-=head2 is_video_response_allowed
-=head2 is_rating_allowed
-=head2 is_embedding_allowed
-=head2 is_syndication_allowed
-=head2 private
-=head2 delete
-=head2 save
-=head2 filename
-=head2 upload_mode
+If an authorization object is set (L<WebService::GData::ClientLogin>), 
+
+it will allow you to access private contents and insert/edit/delete/upload videos.
+
+=head2 GET METHODS
+
+All the following methods are information that a video contains.
+
+You can not update them and are read only.
+
+=head3 view_count
+
+=head3 favorite_count
+
+=head3 media_player
+
+=head3 aspect_ratio
+
+=head3 duration
+
+=head3 content
+
+=head3 comments
+
+=head3 thumbnails
+
+=head3 uploaded
+
+=head3 etag
+
+=head3 appcontrol_state
+
+
+=head2 GENERAL SET/GET METHODS
+
+All these methods represents information about the video but as these information can be updated,
+
+you have read/write access to them.
+
+It is therefore necessary to be logged in programmaticly to be able to use them.
+
+=head3 video_id
+
+=head3 category
+
+=head3 description
+
+=head3 keywords
+
+=head3 filename
+
+=head3 upload_mode
+
+
+=head2 ACCESS CONTROL SET/GET METHODS
+
+These methods allow to grant access to certain activity to the users.
+
+You can decide to unlist the video from the search, make it private or forbid comments,etc.
+
+
+=head3 access_controll
+
+=head3 is_listing_allowed
+
+=head3 is_comment_allowed
+
+=head3 is_comment_vote_allowed
+
+=head3 is_video_response_allowed
+
+=head3 is_rating_allowed
+
+=head3 is_embedding_allowed
+
+=head3 is_syndication_allowed
+
+=head3 private
+
+=head2 QUERY METHODS
+
+These methods actually query the service to save your edits.
+
+You must be logged in programmaticly to be able to use them.
+
+The L<save> method will do an insert if there is no video_id or an update if there is one.
+
+=head3 delete
+
+=head3 save
 
 
 =head1  CONFIGURATION AND ENVIRONMENT
@@ -496,7 +564,7 @@ i will try to do my best to fix it (patches welcome)!
 
 =head1 AUTHOR
 
-shiriru E<lt>shiriru0111[arobas]hotmail.comE<gt>
+shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
 
 =head1 LICENSE AND COPYRIGHT
 

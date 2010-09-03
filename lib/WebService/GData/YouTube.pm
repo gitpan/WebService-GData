@@ -9,7 +9,7 @@ use WebService::GData::YouTube::Feed::PlaylistLink;
 
 	our $PROJECTION     = 'api';
 	our $BASE_URI       = 'http://gdata.youtube.com/feeds/';
-	our $VERSION  = 0.01_03;
+	our $VERSION  = 0.01_04;
 
 	sub __init {
 		my ($this,$auth) = @_;
@@ -196,7 +196,7 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
     use WebService::GData::YouTube;
 
     #create an object that only has read access
-       my $yt = new WebService::GData::YouTube();
+    my $yt = new WebService::GData::YouTube();
 
     #get a feed response from YouTube;
     my $videos  = $yt->get_top_rated;
@@ -217,7 +217,7 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
     );
 
     #give write access
-       my $yt = new WebService::GData::YouTube($auth);
+    my $yt = new WebService::GData::YouTube($auth);
 
     #returns all the videos from the logged in user 
     #including private ones.
@@ -228,9 +228,13 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
     foreach my $video (@$videos) {
 
         if($video->video_id eq $myid) {
+
             $video->delete();
-        }else {
+
+        } else {
+
             if($video->is_listing_allowed){
+
                 $video->keywords('music,live,guitar,'.$video->keywords);
                 $video->save();
             }
@@ -243,6 +247,8 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
 inherits from WebService::GData;
 
 This package is a point of entry giving access to general YouTube feeds.
+
+Passing an optional authorization object (WebService::GData::ClientLogin) will allow you to access private contents.
 
 It also offers some helper methods to shorten up the code.
 
@@ -282,7 +288,7 @@ I<Parameters>:
 
 =over
 
-=item C<auth:Scalar> (optional) 
+=item C<auth:Object> (optional) 
 
 Accept an optional authorization object.
 
@@ -298,30 +304,31 @@ I<Return>: L<WebService::GData::YouTube> instance
 
 Example:
 
-	use WebService::GData::ClientLogin;
-	use WebService::GData::YouTube;
+    use WebService::GData::ClientLogin;
+    use WebService::GData::YouTube;
 
     #create an object that only has read access
-   	my $yt = new WebService::GData::YouTube();
+    my $yt = new WebService::GData::YouTube();
 
-	#connect to a YouTube account
-	my $auth = new WebService::GData::ClientLogin(
-		email=>'...'
-		password=>'...',
-		key		=>'...'
-	);
+    #connect to a YouTube account
+    my $auth = new WebService::GData::ClientLogin(
+        email=>'...'
+        password=>'...',
+        key        =>'...'
+    );
 
-	#give write access with a $auth object that you created
-   	my $yt = new WebService::GData::YouTube($auth);
+    #give write access with a $auth object that you created
+    my $yt = new WebService::GData::YouTube($auth);
 
 
 =head2 GENERAL METHODS
 
 =head3 query
 
-Set/get a query object that handles the creation of the query string.
+Set/get a query object that handles the creation of the query string sent to the service.
 The query object will build the query string required to access the data.
-Most of the time you will not need it unless you want to do a particular query.
+All queries contains some default parameters like the alt,v,strict parameters.
+You can add other parameters in order to do a search.
 
 I<Parameters>:
 
@@ -350,8 +357,10 @@ Example:
    	my $yt = new WebService::GData::YouTube();
 
 	$yt->query()->q("ski")->limit(10,0);
+
 	#or set your own query object
 	$yt->query($myquery);
+
 	my $videos = $yt->search_video();
 
 
@@ -363,7 +372,7 @@ I<Parameters>:
 
 =over
 
-=item none
+=item C<none>
 
 =back
 
@@ -387,6 +396,8 @@ I<Return>: C<url:Scalar> (Default: ?alt=json&prettyprint=false&strict=true)
 
 =head2 STANDARD FEED METHODS
 
+YouTube offers some feeds regarding videos like the most discussed videos or the most viewed videos.
+
 All the standard feed methods are implemented:
 
 I<methods>:
@@ -408,8 +419,6 @@ I<methods>:
 =head3 get_recently_featured
 
 =head3 get_watch_on_mobile 
-
-This allows you to grab feeds from YouTube main categories (top_rated,most_viewed,...).
 
 All the above standard feed methods accept the following optional parameters:
 
@@ -478,18 +487,20 @@ Example:
 	
     my $yt   = new WebService::GData::YouTube();
 
-	my $video = $yt->get_video_by_id('Xzek3skD');
+    my $video = $yt->get_video_by_id('Xzek3skD');
 
 
 =head3 search_video
 
-Search for videos responding to a particular query.
+Send a request to search for videos.
+
+You create the query by calling $yt->query and by setting the available parameters.
 
 I<Parameters>:
 
 =over
 
-=item none
+=item C<query:Object> (optional)
 
 =back
 
@@ -500,37 +511,39 @@ I<Throw>: L<WebService::GData::Error>
 Example:
 
     use WebService::GData::YouTube;
-	
+    
     my $yt   = new WebService::GData::YouTube();
 
-	   $yt->query->q("ski")->limit(10,0);
+       $yt->query->q("ski")->limit(10,0);
 
-	my $videos = $yt->search_video();
+    my $videos = $yt->search_video();
 
-	#or
+    #or
+
     my $yt     = new WebService::GData::YouTube();
-	my $query  = $yt->query;
-	   $query -> q("ski")->limit(10,0);
-	my $videos = $yt->search_video();
+    my $query  = $yt->query;
+       $query -> q("ski")->limit(10,0);
+    my $videos = $yt->search_video();
 
-	#or set a new query object
-    my $yt     = new WebService::GData::YouTube();
+    #or set a new query object
+    #it could be a sub class that has predefined value
 
-	#it could be a sub class that has predefined value
-	my $query  = new WebService::GData::YouTube::Query();
-	   $query -> q("ski")->limit(10,0);
-	my $videos = $yt->search_video($query);
+    my $query  = new WebService::GData::YouTube::Query();
+
+       $query -> q("ski")->limit(10,0);
+
+    my $videos = $yt->search_video($query);#this is a helper the same as doing: $yt->query($query); $yt->search_video();
 
 I<See also>:
 
-List all the possible query parameters for the YouTube Service.
+A list of all the query parameters and related methods you can use with the default query object:
 
 L<WebService::GData::YouTube::Query>
 
 =head3 get_related_for_video_id
 
 Get the related videos for a video.
-These videos are returned by following YouTube own algorithm.
+These videos are returned by following YouTube's own algorithm.
 
 I<Parameters>:
 
@@ -557,13 +570,19 @@ Example:
 
 All these methods allow you to access the videos of the programmaticly logged in user.
 
-If not logged in,you should set the user name.
+Being logged in allow you to access private contents or contents that have been uploaded but is not public yet.
+
+The responses will also have a read/write access so you will be able to edit the videos.
+
+It does not mean that you need to be logged in to use these methods.
+
+By setting the name of the user (channel name),you will only get a read access to the public data.
 
 =head3 get_user_video_by_id
 
 Get a video for the logged in user or for the user name you specified.
 
-It queries the uploads data which can be more up to date than get_video_by_id();
+It queries the uploads feed which can be more up to date than get_video_by_id();
 
 I<Parameters>:
 
@@ -577,6 +596,8 @@ I<Parameters>:
 
 I<Return>: L<WebService::GData::YouTube::Feed::Video> objects 
 
+I<Throw>: L<WebService::GData::Error> 
+
 Example:
 
     use WebService::GData::Base;
@@ -588,10 +609,10 @@ Example:
     my $videos = $yt->get_user_video_by_id('Xz2eFFexA');
 
 	#if not logged in.
-    my $videos = $yt->get_user_videos('Xz2eFFexA','live');
+    my $videos = $yt->get_user_video_by_id('Xz2eFFexA','live');#you must specify the user if not logged in!
 
 
-I<Throw>: L<WebService::GData::Error> 
+
 
 
 =head3 get_user_videos
@@ -620,7 +641,7 @@ Example:
     
     my $videos = $yt->get_user_videos();
 
-	#if not logged in
+	#if not logged in, pass the user name as the first parameter
     my $videos = $yt->get_user_videos('live');
 
 
@@ -648,15 +669,17 @@ Example:
     
     my $videos = $yt->get_user_favorite_videos();
 
-	#if not logged in
+	#if not logged in, pass the user name as the first parameter
     my $videos = $yt->get_user_favorite_videos('live');
 
 
 =head2 USER PLAYLIST METHODS
 
-These methods allow you to access the videos in a playlist or a list of the playlists for a certain user.
+These methods allow you to access the videos in a playlist or a list of playlists created by a user.
 
-If you are not logged in,you must set the user name.
+If you are logged in, you will be able to modify the data.
+
+If you are not logged in,you will only have a read access and you must set the user name.
 
 =head3 get_user_playlist_by_id
 
@@ -769,7 +792,7 @@ Many things are left to be implemented!
 
 The YouTube API is very thorough and it will take some time but by priority:
 
-=over
+=over 4
 
 =item OAuth authorization system
 

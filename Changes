@@ -1,5 +1,14 @@
 Revision history for Perl extension WebService::GData.
 
+0.01_04  2010/09/02 19:10
+	- updated/fix the doc
+    - created new tests
+	- created new doc
+    - added some new feature to WebService::GData::Query: install/disable
+      These functions will be used in sub classes to create easily the methods.
+      It will also try to call _FUNC_NAME_is_valid before setting the value.
+	- modified install_in_package to accept an optional package
+
 0.01_03  2010/09/02 19:10
 
 	- updated the doc

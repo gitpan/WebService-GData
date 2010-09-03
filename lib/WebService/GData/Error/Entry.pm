@@ -2,7 +2,7 @@ package WebService::GData::Error::Entry;
 use WebService::GData;
 use base 'WebService::GData';
 
-our $VERSION  = 0.01_02;
+our $VERSION  = 0.01_03;
 
 WebService::GData::install_in_package([qw(internalreason domain code location)],
 	sub {
@@ -62,22 +62,22 @@ WebService::GData::Error::Entry - Wrap an xml error sent back by Google data API
 
 =head1 SYNOPSIS
 
-	use WebService::GData::Error;
+    use WebService::GData::Error;
 
     #parse an error from a Google data API server...
-   	my $entry = new WebService::GData::Error::Entry($xmlerror);
-	$entry->code;
-	$entry->internalreason;
-	$entry->domain;
-	$entry->location->{type};#this is just a hash
-	$entry->location->{content};#this is just a hash
+    my $entry = new WebService::GData::Error::Entry($xmlerror);
+    $entry->code;
+    $entry->internalreason;
+    $entry->domain;
+    $entry->location->{type};#this is just a hash
+    $entry->location->{content};#this is just a hash
 
     #create an error from a Google data API server...
-   	my $entry = new WebService::GData::Error::Entry();
-	$entry->code('too_long');
-	$entry->domain('your_domain');
-	$entry->location({type=>'header',content=>'Missing Version header'});
-	print $entry->serialize()#return <error>...</error> 
+    my $entry = new WebService::GData::Error::Entry();
+    $entry->code('too_long');
+    $entry->domain('your_domain');
+    $entry->location({type=>'header',content=>'Missing Version header'});
+    print $entry->serialize()#return <error>...</error> 
 
 
 
@@ -135,18 +135,12 @@ I<Parameters>:
 
 =back
 
-I<Return>:
+I<Return>: L<WebService::GData::Error::Entry>
 
-=over
-
-=item L<WebService::GData::Error::Entry>
-
-=back
 
 =head2 GET/SET METHODS
 
 These methods return their content if no parameters is passed or set their content if a parameter is set.
-
 
 =head3 code
 
@@ -156,7 +150,7 @@ I<Parameters>:
 
 =over
 
-=item none
+=item C<none>
 
 Work as a getter
 
@@ -166,15 +160,8 @@ Work as a setter
 
 =back
 
-I<Return>:
+I<Return>:C<content:Scalar> (as a getter)
 
-=over
-
-=item C<content:Scalar>
-
-When use as a getter
-
-=back
 
 =head3 location
 
@@ -186,7 +173,7 @@ I<Parameters>:
 
 =over
 
-=item none
+=item C<none>
 
 Work as a getter
 
@@ -196,15 +183,7 @@ Work as a setter. the hash must be in contain the following : {type=>'...',conte
 
 =back
 
-I<Return>:
-
-=over
-
-=item C<content:HashRef>
-
-When use as a getter
-
-=back
+I<Return>:C<content:HashRef> (as a getter)
 
 =head3 domain
 
@@ -224,15 +203,8 @@ Work as a setter.
 
 =back
 
-I<Return>:
+I<Return>: C<content:Scalar> (as a getter)
 
-=over
-
-=item C<content:Scalar>
-
-When use as a getter
-
-=back
 
 =head3 serialize
 
@@ -246,20 +218,14 @@ I<Parameters>:
 
 =back
 
-I<Return>:
-
-=over
-
-=item C<content:Scalar>
+I<Return>: C<content:Scalar>
 
 Where the content is an xml representation of the error.
-
-=back
 
 
 =head2 SEE ALSO
 
-Format of the xml and explanation of the different kind of errors you can encounter:
+XML format overview and explanation of the different kind of errors you can encounter:
 
 L<http://code.google.com/intl/en/apis/youtube/2.0/developers_guide_protocol_error_responses.html>
 

@@ -4,7 +4,7 @@ use base 'WebService::GData';
 
 use WebService::GData::Error::Entry;
 
-our $VERSION  = 0.01_02;
+our $VERSION  = 0.01_03;
 
 	#avoid stringification
 	sub __to_string {
@@ -129,15 +129,9 @@ The string can be a Google xml error response, in which case,
 
 it will parse the contents that you can access via the errors() method of the instance. 
 
-=over
-
-I<Return>:
-
-=over
-
-=item L<WebService::GData::Error>
-
 =back
+
+I<Return>: L<WebService::GData::Error>
 
 Example:
 
@@ -157,7 +151,7 @@ I<Return>:
 
 =over
 
-=item L<code:Scalar>
+=item C<code:Scalar>
 
 =back
 
@@ -169,13 +163,7 @@ When getting an error from querying one of Google data services, you will get a 
 
 In such case,you should loop through the result by using the errors() instance which send back L<WebService::GData::Error::Entry>.
 
-I<Return>:
-
-=over
-
-=item L<content:Scalar>
-
-=back
+I<Return>: C<content:Scalar>
 
 =head3 errors
 
@@ -183,15 +171,11 @@ Get back a reference array filled with  L<WebService::GData::Error::Entry>.
 
 When getting an error from querying one of Google data services, you will get an xml response containing possible errors.
 
-In such case,you should loop through the result of errors().
+In such a case,you should loop through the result of L<errors>.
 
 Errors always send back a reference array (even if there is no error).
 
-I<Return>:
-
-=over
-
-=item L<WebService::GData::Error::Entry>
+I<Return>: L<WebService::GData::Error::Entry>:ArrayRef
 
 =back
 

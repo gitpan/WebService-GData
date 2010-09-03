@@ -8,6 +8,10 @@ use constant  {
 	XML_HEADER			 => '<?xml version="1.0" encoding="UTF-8"?>',
 	GDATA_MINIMUM_VERSION=> 2,
 
+	#QUERY
+	TRUE				=>'true',
+	FALSE				=>'false',
+
 	#URLS
 	CLIENT_LOGIN_URL	=> 'https://www.google.com/accounts/ClientLogin',
 	CAPTCHA_URL			=> 'http://www.google.com/accounts/',
@@ -52,6 +56,8 @@ use constant  {
 };
 my  @general   = qw(XML_HEADER GDATA_MINIMUM_VERSION);
 
+my  @query   = qw(TRUE FALSE);
+
 my  @format    = qw(JSON JSONC ATOM RSS);
 
 my  @namespace = qw(ATOM_NAMESPACE OPENSEARCH_NAMESPACE GDATA_NAMESPACE GEORSS_NAMESPACE GML_NAMESPACE MEDIA_NAMESPACE APP_NAMESPACE);
@@ -61,8 +67,8 @@ my  @service   = qw(YOUTUBE_SERVICE WEBMASTER_SERVICE SPREADSHEETS_SERVICE SIDEW
 					BLOGGER_SERVICE SITES_SERVICE BASE_SERVICE APPS_SERVICE ANALYTICS_SERVICE);
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK   = (@format,@namespace,@general,@service);
-our %EXPORT_TAGS = (service=>[@service],format => [@format],namespace=>[@namespace],general=>[@general],all=>[@format,@namespace,@general,@service]);
+our @EXPORT_OK   = (@format,@namespace,@general,@service,@query);
+our %EXPORT_TAGS = (service=>[@service],format => [@format],namespace=>[@namespace],general=>[@general],all=>[@format,@namespace,@general,@service,@query]);
 
 
 "The earth is blue like an orange.";
@@ -114,7 +120,7 @@ You can import all of them by using :all or import only a subset by using :forma
 
 The general consants map the google data API version number and the xml header.
 
-You can choose to import format related constants by writing use WebService::GData::Constants qw(:general);
+You can choose to import general related constants by writing use WebService::GData::Constants qw(:general);
 
 =head3 GDATA_MINIMUM_VERSION
 
@@ -216,6 +222,21 @@ You can choose to import service related constants by writing use WebService::GD
 =head3 WEBMASTER_SERVICE
 	
 =head3 YOUTUBE_SERVICE
+
+
+=head2 QUERY CONSTANTS
+
+The query consants map the possible values for query parameters of version 2 of the google data API.
+
+You can choose to import query related constants by writing use WebService::GData::Constants qw(:query);
+
+
+=head3 TRUE
+
+=head3 FALSE
+
+
+I<import with :general>
 
 
 =head1  CONFIGURATION AND ENVIRONMENT
