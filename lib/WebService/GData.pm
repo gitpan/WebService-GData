@@ -6,7 +6,7 @@ use Data::Dumper;
 use Carp;
 use overload '""'=>"__to_string";
 
-our $VERSION  = 0.01_05;
+our $VERSION  = 0.01_06;
 
 	sub import {
    		strict->import;
@@ -79,7 +79,7 @@ __END__
 
 =head1 NAME
 
-WebService::GData - Base object to inherit from.
+WebService::GData - Google data protocol v2 base object to inherit from.
 
 =head1 SYNOPSIS
 
@@ -146,11 +146,7 @@ WebService::GData - Base object to inherit from.
 This package is a blueprint that you should inherit and extend. It offers a basic hashed based object creation via the word new. 
 
 All sub classes should be hash based. If you want to pock into the instance, it's easy but everything that is not documented 
-
-should be considered private. 
-
-If you play around with undocumented properties/methods and that it changes,upgrading to the new version with all 
-
+should be considered private. If you play around with undocumented properties/methods and that it changes,upgrading to the new version with all 
 the extra new killer features will be very hard to do. 
 
 so...
@@ -163,15 +159,15 @@ The following classes extends L<WebService::GData> to implement their feature:
 
 =item L<WebService::GData::Base>
 
-Implements the base get/post/insert/update/delete methods
+Implements the base get/post/insert/update/delete methods for the Google data protocol.
 
 =item L<WebService::GData::ClientLogin>
 
-Implements the ClientLogin authorization system
+Implements the ClientLogin authorization system.
 
 =item L<WebService::GData::Error>
 
-Represents a Google data protocol Error
+Represents a Google data protocol Error.
 
 =item L<WebService::GData::Query>
 
@@ -200,21 +196,25 @@ Implements some of the YouTube API functionalities.
 =over 
 
 Takes an hash which keys will be attached to the instance.
-You can also use L<install_in_package>() to create setters/getters for these parameters.
+You can also use C<install_in_package()> to create setters/getters for these parameters.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<parameters:RefHash>
 
 =back
 
-B<Returns> C<object:RefHash>
+B<Returns> 
+
+=over 4
+
+=item C<object:RefHash>
+
+=back
 
 Example:
-    
-    use WebService::GData; 
 
     #create an object
     my $object = new WebService::GData(firstname=>'doe',lastname=>'john',age=>'123');
@@ -229,9 +229,8 @@ Example:
 
 =over
 
-This method is called by the constructor L<new>().
-This function receives the parameters set in L<new>() and assign the key/values pairs to the instance.
-
+This method is called by the constructor C<new()>.
+This function receives the parameters set in C<new()> and assign the key/values pairs to the instance.
 You should overwrite it and add your own logic.
 
 =back
@@ -257,7 +256,7 @@ Install in the package the methods/subs specified. Mostly use to avoid writting 
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<subnames:ArrayRef> - Should list the name of the methods you want to install in the package.
 
@@ -267,7 +266,13 @@ B<Parameters>
 
 =back
 
-B<Returns> C<void>
+B<Returns> 
+
+=over 4
+
+=item C<void>
+
+=back
 
 Example:
 
@@ -276,6 +281,7 @@ Example:
     use base 'WebService::GData';
     
     #install simple setters; it could also be setter/getters
+	
     WebService::GData::install_in_package([qw(firstname lastname age gender)],sub {
             my $func = shift;#firstname then lastname then age...
             return sub {
@@ -313,9 +319,21 @@ B<Parameters>
 
 =back
 
-B<Returns> C<void>
+B<Returns> 
 
-B<Throws> C<error:Hash> - an hash containing the code: 'forbidden_access' and the content:'private method called outside of its package'.
+=over 4 
+
+=item C<void>
+
+=back
+
+B<Throws> 
+
+=over 4 
+
+=item C<error:Hash> - an hash containing the code: 'forbidden_access' and the content:'private method called outside of its package'.
+
+=back
 
 Example:
 
@@ -343,18 +361,6 @@ Example:
 	}
 	
 =back
-
-=head1  CONFIGURATION AND ENVIRONMENT
-
-none
-
-=head1  DEPENDENCIES
-
-none
-
-=head1  INCOMPATIBILITIES
-
-none
 
 =head1 BUGS AND LIMITATIONS
 

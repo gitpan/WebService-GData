@@ -4,7 +4,7 @@ use base 'WebService::GData';
 
 use WebService::GData::Error::Entry;
 
-our $VERSION  = 1.0;
+our $VERSION  = 1.01;
 
 	#avoid stringification
 	sub __to_string {
@@ -88,21 +88,21 @@ WebService::GData::Error - create an error and parse errors from Google data API
 I<inherits from L<WebService::GData>>.
 
 This package can parse error response from Google APIs service. You can also create your own basic error.
-
 All WebService::GData::* classes die a WebService::GData::Error object when something goes wrong.
-
 You should use an eval {}; block to catch the error.
 
 Example:
 
     use WebService::GData::Base;
 
-
     my $base = new WebService::GData::Base();
+	
     eval {
         $base->get($url);
     };
+	
     #$error is a WebService::GData::Error;
+	
     if(my $error=$@){
         #error->code,$error->content, $error->errors
     }
@@ -120,7 +120,7 @@ Will parse the contents that you can access via the errors() method of the insta
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<code:*> - This could be an http status or a short string error_code.
 
@@ -128,7 +128,13 @@ B<Parameters>
 
 =back
 
-B<Returns>: L<WebService::GData::Error>
+B<Returns>
+
+=over 4
+
+=item L<WebService::GData::Error>
+
+=back
 
 Example:
 
@@ -150,13 +156,19 @@ Get back the error code.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none>
 
 =back
 
-B<Returns> C<code:Scalar>
+B<Returns>
+
+=over 4 
+
+=item C<code:Scalar>
+
+=back
 
 Example:
 
@@ -180,13 +192,19 @@ In such case,you should loop through the result by using the errors() instance w
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none>
 
 =back
 
-B<Returns>: C<content:Scalar>
+B<Returns>
+
+=over 4
+
+=item C<content:Scalar>
+
+=back
 
 Example:
 
@@ -200,25 +218,26 @@ Example:
 
 =head3 errors
 
-=back
+=over
 
 Get back a reference array filled with  L<WebService::GData::Error::Entry>.
-
 When getting an error from querying one of Google data services, you will get an xml response containing possible errors.
-
 In such a case,you should loop through the result of L<errors>.
-
 Errors always send back a reference array (even if there is no error).
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none>
 
 =back
 
-B<Returns> L<WebService::GData::Error::Entry>:ArrayRef
+B<Returns> 
+
+=over 4 
+
+=item L<WebService::GData::Error::Entry>:ArrayRef
 
 =back
 
@@ -235,20 +254,6 @@ Example:
     }
 	
 =back
-
-
-=head1  CONFIGURATION AND ENVIRONMENT
-
-none
-
-
-=head1  DEPENDENCIES
-
-none
-
-=head1  INCOMPATIBILITIES
-
-none
 
 =head1 BUGS AND LIMITATIONS
 

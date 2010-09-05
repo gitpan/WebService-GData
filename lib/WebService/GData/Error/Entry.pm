@@ -2,7 +2,7 @@ package WebService::GData::Error::Entry;
 use WebService::GData 'private';
 use base 'WebService::GData';
 
-our $VERSION  = 1.0;
+our $VERSION  = 1.01;
 
 WebService::GData::install_in_package([qw(internalreason domain code location)],
 	sub {
@@ -87,7 +87,6 @@ WebService::GData::Error::Entry - Wrap an xml error sent back by Google data API
 I<inherits from L<WebService::GData>>
 
 This package can parse error response from Google APIs service. You can also create your own basic xml error.
-
 All WebService::GData::* classes die a WebService::GData::Error object when something went wrong.
 
 XML error Example:
@@ -125,19 +124,26 @@ Example:
 =over
 
 Create a L<WebService::GData::Error::Entry> instance.
-
 If the content is an xml following the Google data API format, it will get parse.
 
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<content:Scalar>(optional)
 
 =back
 
-B<Returns> L<WebService::GData::Error::Entry>
+B<Returns> 
+
+=over 4 
+
+=item L<WebService::GData::Error::Entry>
+
+=back
+
+=back
 
 
 =head2 GET/SET METHODS
@@ -152,7 +158,7 @@ Get/set an error code.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none> - Work as a getter
 
@@ -160,7 +166,13 @@ B<Parameters>
 
 =back
 
-B<Returns> C<content:Scalar> (as a getter)
+B<Returns> 
+
+=over 4 
+
+=C<content:Scalar> (as a getter)
+
+=back
 
 =back
 
@@ -175,7 +187,7 @@ It requires an hash with type and content as keys.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none> - Work as a getter
 
@@ -183,7 +195,17 @@ B<Parameters>
 
 =back
 
-B<Returns> C<content:HashRef> (as a getter)
+B<Returns> 
+
+=over 4 
+
+=item C<content:HashRef> (as a getter)
+
+=back
+
+Example:
+
+    $error->location(type=>'invalid_character',content=>'The string contains an unsupported character.');
 
 =back
 
@@ -195,7 +217,7 @@ Get/set the type of error. Google data API has validation,quota,authentication,s
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none> - Work as a getter
 
@@ -203,7 +225,13 @@ B<Parameters>
 
 =back
 
-B<Returns> C<content:Scalar> (as a getter)
+B<Returns> 
+
+=over 4 
+
+=item C<content:Scalar> (as a getter)
+
+=back
 
 =back
 
@@ -216,13 +244,19 @@ Send back an xml representation of an error.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none>
 
 =back
 
-B<Returns> C<content:Scalar> -  xml representation of the error.
+B<Returns> 
+
+=over 4
+
+=item C<content:Scalar> -  xml representation of the error.
+
+=back
 
 =back
 
@@ -232,18 +266,6 @@ XML format overview and explanation of the different kind of errors you can enco
 
 L<http://code.google.com/intl/en/apis/youtube/2.0/developers_guide_protocol_error_responses.html>
 
-
-=head1  CONFIGURATION AND ENVIRONMENT
-
-none
-
-=head1  DEPENDENCIES
-
-none
-
-=head1  INCOMPATIBILITIES
-
-none
 
 =head1 BUGS AND LIMITATIONS
 

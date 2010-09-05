@@ -1,7 +1,7 @@
 package WebService::GData::Feed::Entry;
 use WebService::GData;
 use base 'WebService::GData::Feed';
-our $VERSION  = 0.01_01;
+our $VERSION  = 0.01_02;
 ##inherits and not relevant properties
 ##entry,totalResults,startIndex,itemsPerPage
 
@@ -45,31 +45,24 @@ __END__
 
 WebService::GData::Feed::Entry - Abstract class wrapping json atom feed entry tag for google data API v2.
 
-=head1 VERSION
-
-0.01
-
 =head1 SYNOPSIS
 
-	use WebService::GData::Feed::Entry;
+    use WebService::GData::Feed::Entry;
 
-    #create an object that only has read access
-   	my $feed = new WebService::GData::Feed::Entry($jsonfeed,$auth);
+    my $feed = new WebService::GData::Feed::Entry($jsonfeed->{entry});
 
     $feed->title;
-	$feed->author;
-	$feed->summary;
-	$feed->published;
+    $feed->author;
+    $feed->summary;
+    $feed->published;
 
 
 =head1 DESCRIPTION
 
-inherits from WebService::GData::Feed;
+I<inherits from L<WebService::GData::Feed>>
 
 This package wraps the entry tag from a query to a feed using the json format of the Google Data API v2 (no other format is supported!).
-
 It gives you access to some of the entry tag data via wrapper methods.
-
 Unless you implement a service, you should never instantiate this class directly.
 
 
@@ -136,21 +129,6 @@ Get the content source of the entry.
 Get the publication date of the entry.
 
 
-=head1  CONFIGURATION AND ENVIRONMENT
-
-none
-
-
-=head1  DEPENDENCIES
-
-L<JSON>
-
-L<LWP>
-
-=head1  INCOMPATIBILITIES
-
-none
-
 =head1 BUGS AND LIMITATIONS
 
 If you do me the favor to _use_ this module and find a bug, please email me
@@ -158,7 +136,7 @@ i will try to do my best to fix it (patches welcome)!
 
 =head1 AUTHOR
 
-shiriru E<lt>shiriru0111[arobas]hotmail.comE<gt>
+shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
 
 =head1 LICENSE AND COPYRIGHT
 

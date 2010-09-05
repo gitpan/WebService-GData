@@ -7,7 +7,7 @@ use WebService::GData::Constants qw(:all);
 
     #specify default parameters
 
-our $VERSION  = 0.01_03;
+our $VERSION  = 0.02;
 
 	sub __init {
 		my $this = shift;
@@ -165,28 +165,27 @@ WebService::GData::Query - implements the core query parameters available in the
 =head1 SYNOPSIS
 
     use WebService::GData::Query;
-	use WebService::GData::Constants qw(:format :query :general);
+    use WebService::GData::Constants qw(:format :query :general);
 
-    #create an object that only has read access
     my $query = new WebService::GData::Query();
 
-    $query->to_query_string();# by default:?alt=json&v=2&prettyprint=true&strict=true
+    $query->to_query_string();# by default:?alt=json&v=2&prettyprint=false&strict=true
 
-    #?alt=jsonc&v=2&prettyprint=true&strict=true&start-index=1&max-results=10
+    #?alt=jsonc&v=2&prettyprint=false&strict=true&start-index=1&max-results=10
     $query->alt('jsonc')->limit(10,1)->to_query_string();
 
-    print $query->get('alt');#json-c
+    print $query->get('alt');#jsonc
 
-	$query->v(1);#throw an error as only 2 is ok.
-	$query->prettyprint(1);#throw an error as only 'true' or 'false' is possible.
+    $query->v(1);#throw an error as only 2 is ok.
+    $query->prettyprint(1);#throw an error as only 'true' or 'false' is possible.
 
-	#use constants where you can 
+    #use constants where you can 
 
-	$query->prettyprint(TRUE);
+    $query->prettyprint(TRUE);
 
-	$query->alt('json-c');#this is wrong
+    $query->alt('json-c');#this is wrong
 
-	$query->alt(JSONC);#ok!
+    $query->alt(JSONC);#ok!
 
 
 =head1 DESCRIPTION
@@ -194,23 +193,16 @@ WebService::GData::Query - implements the core query parameters available in the
 I<inherits from L<WebService::GData>>.
 
 Google data API supports searching different services via a common set of parameters.
-
 Unfortunately, some services only handles a subset of this "core" parameters...
-
 You should read the service Query documentation to know exactly the available parameters.
-
 This package also implements some helpers functions to shorten up a little the parameter settings.
 
 In order to avoid to send uncorrect parameter values, the package checks for their validity
-
 and will throw a L<WebService::GData::Error> object containing 'invalid_parameter_type' as the C<code> and the name of the function as the C<content>.
-
-Checking the data before hands, will avoid unnecessary network transactions and
-
+Checking the data before sending a request will avoid unnecessary network transactions and
 reduce the risk of reaching quota limitations in use for the service you are querying.
 
 L<WebService::GData::Constants> contains predefined value that you can use to set the parameters.
-
 Using the constants can avoid typo errors or unnecessary code change when an update is available with a new value.
 
 
@@ -221,10 +213,9 @@ Using the constants can avoid typo errors or unnecessary code change when an upd
 =over
 
 Creates a basic query instance.
-
 The following parameters are set by default:
 
-=over
+=over 4
 
 =item C<alt         = WebService::GData::Constants::JSON>
 
@@ -239,23 +230,27 @@ The following parameters are set by default:
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none>
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
 
+=over 4
+
+=item C<WebService::GData::Query>
+
+=back
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->to_query_string();# by default:?alt=json&v=2&prettyprint=false&strict=true
+    $query->to_query_string();# by default:?alt=json&v=2&prettyprint=false&strict=true
 
 =back
 
@@ -269,31 +264,35 @@ Example:
 Returns the parameter specified.
 
 The function uses the underscore nomenclature where the parameters use the hyphen nomenclature.
-
 You should change all the underscore to hyphen when accessing the value.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<parameter_name:Scalar>
 
 =back
 
-I<Return> C<parameter_value::Scalar>
+I<Return> 
+
+=over 4
+
+=item C<parameter_value::Scalar>
+
+=back
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->get('alt');#json
+    $query->get('alt');#json
 
-	$query->get('published_min');#does not work...
+    $query->get('published_min');#does not work...
 
-	$query->get('published-min');#ok!
+    $query->get('published-min');#ok!
 
 =back
 
@@ -302,30 +301,34 @@ Example:
 =over
 
 Concatene each parameter/value pair into a  query string.
-
 This function is also called in a string overload context. "$instance" is the same as $instance->to_query_string();
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none>
 
 =back
 
-B<Returns> C<query_string:Scalar>
+B<Returns> 
+
+=over 4 
+
+=item C<query_string:Scalar>
+
+=back
 
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->to_query_string();#?alt=json&v=2&prettyprint=true&strict=true
-	"$query";                 #?alt=json&v=2&prettyprint=true&strict=true
-	print $query;             #?alt=json&v=2&prettyprint=true&strict=true
+    $query->to_query_string();#?alt=json&v=2&prettyprint=false&strict=true
+    "$query";                 #?alt=json&v=2&prettyprint=false&strict=true
+    print $query;             #?alt=json&v=2&prettyprint=false&strict=true
 
 =back
 
@@ -349,31 +352,39 @@ If set to true (default),  setting a parameter not supported by a service will f
 
 B<Parameters>
 
-=over
+=over 4
 
-=item C<true_or_false:Scalar>
-
-The value can be L<WebService::Gdata::Constants>::TRUE or L<WebService::Gdata::Constants>::FALSE
+=item C<true_or_false:Scalar> - The value can be L<WebService::Gdata::Constants>::TRUE or L<WebService::Gdata::Constants>::FALSE
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
 
-B<Throws>  C<WebService::GData::Error>
+=over 4 
 
+=item C<WebService::GData::Query>
+
+=back
+
+B<Throws> 
+
+=over 4
+
+=item C<WebService::GData::Error>
+
+=back
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->strict('true');
+    $query->strict('true');
 
-	$query->strict(TRUE);#better
+    $query->strict(TRUE);#better
 
-	$query->strict('hello');#die
+    $query->strict('hello');#die
 
 
 =back
@@ -384,30 +395,34 @@ Example:
 =over
 
 Allows you to query partial data. 
-
 This is a Google data experimental feature as of this version.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<partial_query:Scalar>
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->fields('id,entry(author)');#only get the id and the author in the entry tag
+    $query->fields('id,entry(author)');#only get the id and the author in the entry tag
 
-I<See Also>:
+B<See Also>
 
 The reference for the partial queries:
 
@@ -420,7 +435,6 @@ L<http://code.google.com/intl/en/apis/gdata/docs/2.0/reference.html#PartialRespo
 =over
 
 Set the google Data API version number. Default to WebService::GData::Constants::GDATA_MINIMUM_VERSION. 
-
 You shoud not set this unless you know what you do.
 
 =back
@@ -430,7 +444,6 @@ You shoud not set this unless you know what you do.
 =over
 
 Specify the response format used. Default to WebService::GData::Constants::JSON.
-
 You shoud not set this unless you know what you do.
 
 =back
@@ -444,31 +457,41 @@ If set to true (default false),the result from the service will contain indentat
 
 B<Parameters>
 
-=over
+=over 4
 
-=item C<true_or_false:Scalar> (Default: L<WebService::Gdata::Constants>::TRUE)
+=item C<true_or_false:Scalar> (Default: L<WebService::Gdata::Constants>::FALSE)
 
 The value can be L<WebService::Gdata::Constants>::TRUE or L<WebService::Gdata::Constants>::FALSE
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns>
 
-B<Throws>  C<WebService::GData::Error>
+=over 4
 
+=item C<WebService::GData::Query>
+
+=back
+
+B<Throws> 
+
+=over 4
+
+=item C<WebService::GData::Error>
+
+=back
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->prettyprint('true');
+    $query->prettyprint('true');
 
-	$query->prettyprint(TRUE);#better
+    $query->prettyprint(TRUE);#better
 
-	$query->prettyprint('hello');#die
+    $query->prettyprint('hello');#die
 
 =back
 
@@ -477,27 +500,31 @@ Example:
 =over
 
 Specify the author of the contents you want to retrieve.
-
 Each service derives the meaning for their own feed.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<author_name:Scalar> 
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->author('GoogleDeveloper');
+    $query->author('GoogleDeveloper');
 
 =back
 
@@ -506,12 +533,11 @@ Example:
 =over
 
 Retrieve the contents which update date is a minimum equal to the one specified (inclusive).
-
 Note that you should retrieve the value as 'updated-min' when used with L<WebService::GData::Query>::get().
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<date:Scalar>
 
@@ -519,8 +545,13 @@ Format:2005-08-09T10:57:00-08:00
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
 
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 =back
 
@@ -529,12 +560,11 @@ B<Returns> C<WebService::GData::Query>
 =over
 
 Retrieve the contents which update date is at maximum equal to the one specified (exclusive).
-
 Note that you should retrieve the value as 'updated-max' when used with L<WebService::GData::Query>::get().
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<date:Scalar>
 
@@ -542,7 +572,13 @@ Format:2005-08-09T10:57:00-08:00
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 =back
 
@@ -551,12 +587,11 @@ B<Returns> C<WebService::GData::Query>
 =over
 
 Retrieve the contents which publish date is a minimum equal to the one specified (inclusive).
-
 Note that you should retrieve the value as 'published-min' when used with L<WebService::GData::Query>::get().
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<date:Scalar>
 
@@ -564,7 +599,13 @@ Format:2005-08-09T10:57:00-08:00
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 =back
 
@@ -573,12 +614,11 @@ B<Returns> C<WebService::GData::Query>
 =over
 
 Retrieve the contents which publish date is a maximum equal to the one specified (exclusive).
-
 Note that you should retrieve the value as 'published-max' when used with L<WebService::GData::Query>::get().
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<date:Scalar>
 
@@ -586,7 +626,13 @@ Format:2005-08-09T10:57:00-08:00
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 =back
 
@@ -595,22 +641,24 @@ B<Returns> C<WebService::GData::Query>
 =over
 
 Retrieve the contents starting from a certain result. Start from 1.
-
 Setting 0 will revert to 1.
-
 Note that you should retrieve the value as 'start-index' when used with L<WebService::GData::Query>::get().
 
 B<Parameters>
 
-=over
+=over 4
 
-=item C<index_number:Int>
-
-Setting the number to 0 or anything but an integer will coerce it to 1.
+=item C<index_number:Int> - Setting the number to 0 or anything but an integer will coerce it to 1.
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 =back
 
@@ -624,15 +672,19 @@ Note that you should retrieve the value as 'max-results' when used with L<WebSer
 
 B<Parameters>
 
-=over
+=over 4
 
-=item C<index_number:Int>
-
-Setting the number to 0 or anything but an integer will coerce it to 1.
+=item C<index_number:Int> - Setting the number to 0 or anything but an integer will coerce it to 1.
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 =back
 
@@ -641,37 +693,36 @@ B<Returns> C<WebService::GData::Query>
 =over
 
 An extension that allows you to set start_index and max_results in one method call:
-
 get('limit') will return undef.
-
 Follow the same coercicion logic of start_index and max_results.
 
 B<Parameters>
 
-=over
+=over 4
 
-=item C<max_results:Int>
+=item C<max_results:Int> - The number of result you want to get back
 
-The number of result you want to get back
-
-=item C<start_index:Int>
-
-The offset from where to start
+=item C<start_index:Int> - The offset from where to start
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->limit(10,5);
-	#equivalent to
-	$query->max_results(10)->start_index(5);	
+    $query->limit(10,5);
+    #equivalent to
+    $query->max_results(10)->start_index(5);	
 
 =back
 
@@ -679,36 +730,42 @@ Example:
 
 =over
 
-insensitive freewords search where:
+Insensitive freewords search where:
 
-=over
+=over 4
 
-=item words in quotation means exact match:"word1 word2"
+=item * words in quotation means exact match:"word1 word2"
 
-=item words separated by a space means AND:word1 word2
+=item * words separated by a space means AND:word1 word2
 
-=item words prefixed with an hyphen means NOT(containing):-word1
+=item * words prefixed with an hyphen means NOT(containing):-word1
 
 =back
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<search:Scalar>
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    
+    my $query = new WebService::GData::Query();
 
-	$query->q('"exact phrase" snowbaord sports -ski');
+    $query->q('"exact phrase" snowbaord sports -ski');
 
 =back
 
@@ -721,32 +778,37 @@ Allow to narrow down the result to specifics categories.
 
 =over
 
-=item words separated by a comma(,) means AND:word1,word2
+=item * words separated by a comma(,) means AND:word1,word2
 
-=item words separated by a pipe(|) means OR:word1|word2
+=item * words separated by a pipe(|) means OR:word1|word2
 
-=item words prefixed by an hyphen(-) are disgarded:-word1
+=item * words prefixed by an hyphen(-) are disgarded:-word1
 
 =back
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<category:Scalar>
 
 =back
 
-B<Returns> C<WebService::GData::Query>
+B<Returns> 
+
+=over 4 
+
+=item C<WebService::GData::Query>
+
+=back
 
 Example:
 
-	use WebService::GData::Query;
+    use WebService::GData::Query;
 
-    #create an object that only has read access
-	my $query = new WebService::GData::Query();
+    my $query = new WebService::GData::Query();
 
-	$query->category('-Shows,Entertainment|Sports');
+    $query->category('-Shows,Entertainment|Sports');
 
 =back
 
@@ -756,18 +818,6 @@ Documentation of the parameters:
 
 L<http://code.google.com/intl/en/apis/gdata/docs/2.0/reference.html#Queries>
 
-=head1  CONFIGURATION AND ENVIRONMENT
-
-none
-
-
-=head1  DEPENDENCIES
-
-none
-
-=head1  INCOMPATIBILITIES
-
-none
 
 =head1 BUGS AND LIMITATIONS
 

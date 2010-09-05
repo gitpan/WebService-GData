@@ -1,7 +1,7 @@
 package WebService::GData::Constants;
 use strict;
 use warnings;
-our $VERSION  = 1.0;
+our $VERSION  = 1.01;
 
 use constant  {
 	#general...
@@ -80,46 +80,43 @@ __END__
 
 =head1 NAME
 
-WebService::GData::Constants - constants (namespaces,format,services...) used for Google data APIs v2.
+WebService::GData::Constants - constants (namespaces,format,services...) used for Google data APIs.
 
 
 =head1 SYNOPSIS
 
     #don't important anything
-	use WebService::GData::Constants; 
+    use WebService::GData::Constants; 
 
-	#import the namespace related constants
-	use WebService::GData::Constants qw(:namespace :service :format); #or :format or :general or :all
+    #import the namespace related constants
+    use WebService::GData::Constants qw(:namespace :service :format); #or :format or :general or :all
 
-	use WebService::GData::Base;
-	use WebService::GData::ClientLogin;
+    use WebService::GData::Base;
+    use WebService::GData::ClientLogin;
 
-	
-	my $auth = new WebService::GData::ClientLogin(service=> BOOK_SERVICE,....);
+    my $auth = new WebService::GData::ClientLogin(service=> BOOK_SERVICE,....);
 
     #create an object that only has read access
-   	my $base = new WebService::GData::Base();
+    my $base = new WebService::GData::Base();
 	   $base->query()->alt(JSON);
 
-		#if not imported
-	    $base->add_namespace(WebService::GData::Constants::MEDIA_NAMESPACE);
-		$base->add_namespace(WebService::GData::Constants::ATOM_NAMESPACE);
+    #if not imported
+	$base->add_namespace(WebService::GData::Constants::MEDIA_NAMESPACE);
+    $base->add_namespace(WebService::GData::Constants::ATOM_NAMESPACE);
 
-    	#if imported
-	    $base->add_namespace(MEDIA_NAMESPACE);
-		$base->add_namespace(ATOM_NAMESPACE);
+    #if imported
+	$base->add_namespace(MEDIA_NAMESPACE);
+    $base->add_namespace(ATOM_NAMESPACE);
 
 
 =head1 DESCRIPTION
 
 This package contains some constants for Google data API available protocol formats, namespaces and general matters (version,xml header).
-
 You can import all of them by using :all or import only a subset by using :format,:namespace or :general
 
 =head2 GENERAL CONSTANTS
 
 The general consants map the google data API version number and the xml header.
-
 You can choose to import general related constants by writing use WebService::GData::Constants qw(:general);
 
 =head3 GDATA_MINIMUM_VERSION
@@ -133,7 +130,6 @@ I<import with :general>
 =head2 FORMAT CONSTANTS
 
 The format consants map the available protocol format as of version 2 of the google data API.
-
 You can choose to import format related constants by writing use WebService::GData::Constants qw(:format);
 
 =head3 JSON
@@ -149,9 +145,7 @@ I<import with :format>
 =head2 NAMESPACE CONSTANTS
 
 The namespace consants map the available namespace used as of version 2 of the google data API.
-
 You can choose to import namespace related constants by writing use WebService::GData::Constants qw(:namespace);
-
 The namespace follow the following format: xmlns:namespace_name="uri"
 
 =head3 ATOM_NAMESPACE
@@ -173,13 +167,9 @@ I<import with :namespace>
 =head2 SERVICE CONSTANTS
 
 The service consants map the available services used for the ClientLogin authentication system.
-
 Some of the service name does not map very well the API name, ie Picasa API has a service name of 'lh2'.
-
 The constants offer naming closer to the original API (PICASA_SERVICE). Not shorter but may be easier to remember.
-
 In case the service name came to change, you won't need to change it in every peace of code either.
-
 You can choose to import service related constants by writing use WebService::GData::Constants qw(:service);
 
 
@@ -239,18 +229,6 @@ You can choose to import query related constants by writing use WebService::GDat
 I<import with :general>
 
 
-=head1  CONFIGURATION AND ENVIRONMENT
-
-none
-
-
-=head1  DEPENDENCIES
-
-none
-
-=head1  INCOMPATIBILITIES
-
-none
 
 =head1 BUGS AND LIMITATIONS
 
