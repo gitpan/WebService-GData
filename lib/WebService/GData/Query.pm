@@ -7,7 +7,7 @@ use WebService::GData::Constants qw(:all);
 
     #specify default parameters
 
-our $VERSION  = 0.01_02;
+our $VERSION  = 0.01_03;
 
 	sub __init {
 		my $this = shift;
@@ -191,7 +191,7 @@ WebService::GData::Query - implements the core query parameters available in the
 
 =head1 DESCRIPTION
 
-inherits from L<WebService::GData>.
+I<inherits from L<WebService::GData>>.
 
 Google data API supports searching different services via a common set of parameters.
 
@@ -226,18 +226,18 @@ The following parameters are set by default:
 
 =over
 
-=item C<alt= WebService::GData::Constants::JSON>
+=item C<alt         = WebService::GData::Constants::JSON>
 
-=item C<v= WebService::GData::Constants::GDATA_MINIMUM_VERSION>
+=item C<v           = WebService::GData::Constants::GDATA_MINIMUM_VERSION>
 
-=item C<prettyprint= WebService::GData::Constants::FALSE>
+=item C<prettyprint = WebService::GData::Constants::FALSE>
 
-=item C<strict= WebService::GData::Constants::TRUE>
+=item C<strict      = WebService::GData::Constants::TRUE>
 
 =back
 
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -245,9 +245,8 @@ I<Parameters>:
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
-=back
 
 Example:
 
@@ -273,7 +272,7 @@ The function uses the underscore nomenclature where the parameters use the hyphe
 
 You should change all the underscore to hyphen when accessing the value.
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -282,9 +281,6 @@ I<Parameters>:
 =back
 
 I<Return> C<parameter_value::Scalar>
-
-=back
-
 
 Example:
 
@@ -299,7 +295,6 @@ Example:
 
 	$query->get('published-min');#ok!
 
-
 =back
 
 =head3 to_query_string
@@ -310,7 +305,7 @@ Concatene each parameter/value pair into a  query string.
 
 This function is also called in a string overload context. "$instance" is the same as $instance->to_query_string();
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -318,7 +313,7 @@ I<Parameters>:
 
 =back
 
-I<Return>:C<query_string:Scalar>
+B<Returns> C<query_string:Scalar>
 
 
 Example:
@@ -352,7 +347,7 @@ The following setters are available:
 
 If set to true (default),  setting a parameter not supported by a service will fail the request.
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -362,9 +357,9 @@ The value can be L<WebService::Gdata::Constants>::TRUE or L<WebService::Gdata::C
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
-I<Throw>:C<WebService::GData::Error>
+B<Throws>  C<WebService::GData::Error>
 
 
 Example:
@@ -392,7 +387,7 @@ Allows you to query partial data.
 
 This is a Google data experimental feature as of this version.
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -400,7 +395,7 @@ I<Parameters>:
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 
 Example:
@@ -447,7 +442,7 @@ You shoud not set this unless you know what you do.
 
 If set to true (default false),the result from the service will contain indentation. 
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -457,9 +452,9 @@ The value can be L<WebService::Gdata::Constants>::TRUE or L<WebService::Gdata::C
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
-I<Throw>:C<WebService::GData::Error>
+B<Throws>  C<WebService::GData::Error>
 
 
 Example:
@@ -485,7 +480,7 @@ Specify the author of the contents you want to retrieve.
 
 Each service derives the meaning for their own feed.
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -493,9 +488,7 @@ I<Parameters>:
 
 =back
 
-I<Return>:C<WebService::GData::Query>
-
-
+B<Returns> C<WebService::GData::Query>
 
 Example:
 
@@ -516,7 +509,7 @@ Retrieve the contents which update date is a minimum equal to the one specified 
 
 Note that you should retrieve the value as 'updated-min' when used with L<WebService::GData::Query>::get().
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -526,7 +519,7 @@ Format:2005-08-09T10:57:00-08:00
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 
 =back
@@ -539,7 +532,7 @@ Retrieve the contents which update date is at maximum equal to the one specified
 
 Note that you should retrieve the value as 'updated-max' when used with L<WebService::GData::Query>::get().
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -549,7 +542,7 @@ Format:2005-08-09T10:57:00-08:00
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 =back
 
@@ -561,7 +554,7 @@ Retrieve the contents which publish date is a minimum equal to the one specified
 
 Note that you should retrieve the value as 'published-min' when used with L<WebService::GData::Query>::get().
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -571,7 +564,7 @@ Format:2005-08-09T10:57:00-08:00
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 =back
 
@@ -583,7 +576,7 @@ Retrieve the contents which publish date is a maximum equal to the one specified
 
 Note that you should retrieve the value as 'published-max' when used with L<WebService::GData::Query>::get().
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -593,7 +586,7 @@ Format:2005-08-09T10:57:00-08:00
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 =back
 
@@ -607,7 +600,7 @@ Setting 0 will revert to 1.
 
 Note that you should retrieve the value as 'start-index' when used with L<WebService::GData::Query>::get().
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -617,7 +610,7 @@ Setting the number to 0 or anything but an integer will coerce it to 1.
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 =back
 
@@ -629,7 +622,7 @@ Retrieve the contents up to a certain amount of entry (Most of the services set 
 
 Note that you should retrieve the value as 'max-results' when used with L<WebService::GData::Query>::get().
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -639,7 +632,7 @@ Setting the number to 0 or anything but an integer will coerce it to 1.
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 =back
 
@@ -653,7 +646,7 @@ get('limit') will return undef.
 
 Follow the same coercicion logic of start_index and max_results.
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -667,7 +660,7 @@ The offset from where to start
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 Example:
 
@@ -698,7 +691,7 @@ insensitive freewords search where:
 
 =back
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -706,7 +699,7 @@ I<Parameters>:
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 Example:
 
@@ -736,7 +729,7 @@ Allow to narrow down the result to specifics categories.
 
 =back
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -744,7 +737,7 @@ I<Parameters>:
 
 =back
 
-I<Return>:C<WebService::GData::Query>
+B<Returns> C<WebService::GData::Query>
 
 Example:
 

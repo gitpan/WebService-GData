@@ -1,7 +1,7 @@
 package WebService::GData::Constants;
 use strict;
 use warnings;
-our $VERSION  = 0.01_02;
+our $VERSION  = 1.0;
 
 use constant  {
 	#general...

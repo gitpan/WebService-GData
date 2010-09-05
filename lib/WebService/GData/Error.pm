@@ -1,10 +1,10 @@
 package WebService::GData::Error;
-use WebService::GData;
+use WebService::GData 'private';
 use base 'WebService::GData';
 
 use WebService::GData::Error::Entry;
 
-our $VERSION  = 0.01_03;
+our $VERSION  = 1.0;
 
 	#avoid stringification
 	sub __to_string {
@@ -31,19 +31,19 @@ our $VERSION  = 0.01_03;
 		return $this->{_errstr};
 	}
 
-	sub _parse {
+	sub errors {
+		my $this = shift;
+		return $this->{_errors};
+	}
+	
+	private _parse => sub {
 		my ($this) = @_;
 		my @errors = $this->{_errstr}=~m/<error>(.+?)<\/error>/gms;
 		foreach my $error (@errors) {
 		   my $entry  = new WebService::GData::Error::Entry($error);
 		   push @{$this->{_errors}},$entry;
 		}
-	}
-
-	sub errors {
-		my $this = shift;
-		return $this->{_errors};
-	}
+	};
 
 "The earth is blue like an orange.";
 
@@ -85,7 +85,7 @@ WebService::GData::Error - create an error and parse errors from Google data API
 
 =head1 DESCRIPTION
 
-I<inherits from WebService::GData>.
+I<inherits from L<WebService::GData>>.
 
 This package can parse error response from Google APIs service. You can also create your own basic error.
 
@@ -113,25 +113,22 @@ Example:
 
 =head3 new 
 
-Create a WebService::GData::Error instance.
+=over
 
-I<Parameters>:
+Create a WebService::GData::Error instance.
+Will parse the contents that you can access via the errors() method of the instance. 
+
+B<Parameters>
 
 =over
 
-=item C<code:*>
+=item C<code:*> - This could be an http status or a short string error_code.
 
-This could be an http status or a short string error_code.
-
-=item C<content:Scalar>
-
-The string can be a Google xml error response, in which case, 
-
-it will parse the contents that you can access via the errors() method of the instance. 
+=item C<content:Scalar> - The string can be a Google xml error response, in which case, 
 
 =back
 
-I<Return>: L<WebService::GData::Error>
+B<Returns>: L<WebService::GData::Error>
 
 Example:
 
@@ -139,23 +136,41 @@ Example:
 
     #create an error object that you can throw by dying...
     my $error = new WebService::GData::Error(401,'Unauthorized');
+	
+=back
 
 
 =head2 GET METHODS
 
 =head3 code
 
+=back
+
 Get back the error code.
 
-I<Return>:
+B<Parameters>
 
 =over
 
-=item C<code:Scalar>
+=item C<none>
 
 =back
 
+B<Returns> C<code:Scalar>
+
+Example:
+
+    use WebService::GData::Error;
+
+    #create an error object that you can throw by dying...
+    my $error = new WebService::GData::Error(401,'Unauthorized');
+       $error->code;#401
+	   
+=back
+
 =head3 content
+
+=over
 
 Get back the raw content of the error.
 
@@ -163,9 +178,29 @@ When getting an error from querying one of Google data services, you will get a 
 
 In such case,you should loop through the result by using the errors() instance which send back L<WebService::GData::Error::Entry>.
 
-I<Return>: C<content:Scalar>
+B<Parameters>
+
+=over
+
+=item C<none>
+
+=back
+
+B<Returns>: C<content:Scalar>
+
+Example:
+
+    use WebService::GData::Error;
+
+    #create an error object that you can throw by dying...
+    my $error = new WebService::GData::Error(401,'Unauthorized');
+       $error->content;#Unauthorized
+
+=back
 
 =head3 errors
+
+=back
 
 Get back a reference array filled with  L<WebService::GData::Error::Entry>.
 
@@ -175,7 +210,15 @@ In such a case,you should loop through the result of L<errors>.
 
 Errors always send back a reference array (even if there is no error).
 
-I<Return>: L<WebService::GData::Error::Entry>:ArrayRef
+B<Parameters>
+
+=over
+
+=item C<none>
+
+=back
+
+B<Returns> L<WebService::GData::Error::Entry>:ArrayRef
 
 =back
 
@@ -190,6 +233,8 @@ Example:
         print $error->location->{type};#this is just a hash
         print $error->location->{content};#this is just a hash
     }
+	
+=back
 
 
 =head1  CONFIGURATION AND ENVIRONMENT

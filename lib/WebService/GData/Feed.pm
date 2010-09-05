@@ -1,7 +1,9 @@
 package WebService::GData::Feed;
 use WebService::GData;
 use base 'WebService::GData';
+
 our $VERSION  = 0.01_01;
+
 	sub __init {
 		my ($this,$feed,$auth) = @_;
 		$this->{_feed}   = $feed->{feed} || $feed || {};

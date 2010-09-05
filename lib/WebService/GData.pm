@@ -3,13 +3,19 @@ use 5.008008;
 use strict;
 use warnings;
 use Data::Dumper;
+use Carp;
 use overload '""'=>"__to_string";
 
-our $VERSION  = 0.01_04;
+our $VERSION  = 0.01_05;
 
 	sub import {
    		strict->import;
    		warnings->import;
+		my $import = shift;
+		my $package= caller;
+		if($import){
+			install_in_package(['private'],sub {return \&private;},$package);
+		}
 	}
 
 	sub new {
@@ -44,6 +50,24 @@ our $VERSION  = 0.01_04;
 		}
 		
 	}
+	
+	sub private(%) {
+        my(%vars) = @_;
+		my($name,$sub)=each %vars;
+		my $package=caller;
+		install_in_package([$name],sub {
+			return sub {
+				my @args=@_;
+				my $p=caller;
+				croak {
+					code   => 'forbidden_access',
+					content=> 'private method called outside of its package'
+				} if($p ne $package);
+				return &$sub(@args);
+			}
+		},$package);
+	}
+
 
 
 "The earth is blue like an orange.";
@@ -55,7 +79,7 @@ __END__
 
 =head1 NAME
 
-WebService::GData - represent a base GData object.
+WebService::GData - Base object to inherit from.
 
 =head1 SYNOPSIS
 
@@ -64,8 +88,7 @@ WebService::GData - represent a base GData object.
     use base 'WebService::GData';
 
     #this is the base implementation of the __init method in WebService::GData
-    #it is call when new is used
-    #you should overwrite it if necessary.
+    #it is call when new() is used. only overwrite it if necessary.
     sub __init {
         my ($this,%params) = @_;
         while(my ($prop,$val)=each %params){
@@ -110,7 +133,7 @@ WebService::GData - represent a base GData object.
     use WebService::MyService; 
 
     #create an object
-       my $object = new WebService::MyService(name=>'test');
+    my $object = new WebService::MyService(name=>'test');
 
     $object->name;#test
 
@@ -120,23 +143,21 @@ WebService::GData - represent a base GData object.
 
 =head1 DESCRIPTION
 
-This package does not do much.It is a blueprint that you should inherit and extend. 
+This package is a blueprint that you should inherit and extend. It offers a basic hashed based object creation via the word new. 
 
-It offers a basic hashed based object creation via the word new. 
+All sub classes should be hash based. If you want to pock into the instance, it's easy but everything that is not documented 
 
-All sub classes should be hash based. If you want to pock into the instance, it's easy 
+should be considered private. 
 
-but everything that is not documented should be considered private. 
+If you play around with undocumented properties/methods and that it changes,upgrading to the new version with all 
 
-If you play around with undocumented properties/methods and that it changes,
-
-upgrading to the new version with all the extra new killer features will be very hard to do. 
+the extra new killer features will be very hard to do. 
 
 so...
 
 dont.
 
-Mostly, you will want to look at the following abstract classes from which services extend their feature:
+The following classes extends L<WebService::GData> to implement their feature:
 
 =over
 
@@ -176,12 +197,12 @@ Implements some of the YouTube API functionalities.
 
 =head3 new
 
+=over 
 
 Takes an hash which keys will be attached to the instance.
+You can also use L<install_in_package>() to create setters/getters for these parameters.
 
-You can also use install_in_package() to create setters/getters for these parameters.
-
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -189,14 +210,7 @@ I<Parameters>:
 
 =back
 
-I<Return>:
-
-=over
-
-=item C<object:RefHash>
-
-=back
-
+B<Returns> C<object:RefHash>
 
 Example:
     
@@ -206,57 +220,54 @@ Example:
     my $object = new WebService::GData(firstname=>'doe',lastname=>'john',age=>'123');
 
     $object->{firstname};#doe
+	
+=back
 
 =head2 METHODS
 
 =head3 __init
 
-This method is called by the constructor new().
+=over
 
-This function receives the parameters set in new() and by default assign the key/values pairs to the instance.
+This method is called by the constructor L<new>().
+This function receives the parameters set in L<new>() and assign the key/values pairs to the instance.
 
 You should overwrite it and add your own logic.
 
+=back
+
+=head2 OVERLOAD
+
 =head3 __to_string
 
-This method overloads the stringification quotes to display a dump of the object by using Data::Dumper. 
+=over
 
+Overload the stringification quotes and display a dump of the instance by using L<Data::Dumper>. 
 You should overwrite it should you need to create a specific output.
 
-=head2  SUB
+=back
+
+=head2  SUBS
 
 =head3 install_in_package
 
-Install in the package the methods/subs specified. 
-Mostly use to avoid writting boiler plate getter/setter methods.
+=over
 
-I<Parameters>:
+Install in the package the methods/subs specified. Mostly use to avoid writting boiler plate getter/setter methods.
+
+B<Parameters>
 
 =over
 
-=item C<subnames:ArrayRef>
+=item C<subnames:ArrayRef> - Should list the name of the methods you want to install in the package.
 
-The array reference should list the name of the methods you want to install in the package.
+=item C<callback:Sub> - The callback will receive the name of the function. This callback should itself send back a function.
 
-=item C<callback:Sub>
-
-The callback is a _sub_ that will receive the name of the function.
-
-This callback should itself send back a function.
-
-=item C<package_name:Scalar> (optional)
-
-You can add functions at distance by specifying an other module.
+=item C<package_name:Scalar> (optional) - Add functions at distance by specifying an other module.
 
 =back
 
-I<Return>:
-
-=over
-
-=item C<void>
-
-=back
+B<Returns> C<void>
 
 Example:
 
@@ -281,13 +292,61 @@ Example:
 
     $user->age;#100
     $user->firstname;#doe
+	
+=back
 
+=head3 private
 
+=over
+
+Create a method that is private to the package. Calling a private function from outside of the package will throw an error.
+
+You can import the private method:
+
+    use WebService::GData 'private';
+
+B<Parameters>
+
+=over
+
+=item C<function_name_with_sub:Hash> - Accept an hash which key is the function name and value a sub.
+
+=back
+
+B<Returns> C<void>
+
+B<Throws> C<error:Hash> - an hash containing the code: 'forbidden_access' and the content:'private method called outside of its package'.
+
+Example:
+
+    package Basic::User;
+    use WebService::GData 'private';
+    use base 'WebService::GData';
+    
+    private my_secret_method => sub {
+		
+	};  #note the comma
+
+    1;
+
+    #in user code:
+    my $user = new Basic::User();
+
+	$user->my_secret_method();#throw an error
+	
+	eval {
+		$user->my_secret_method();
+	};
+	if(my $error = $@){
+		#$error->{code};
+		#$error->{content};
+	}
+	
+=back
 
 =head1  CONFIGURATION AND ENVIRONMENT
 
 none
-
 
 =head1  DEPENDENCIES
 

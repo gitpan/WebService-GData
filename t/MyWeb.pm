@@ -1,5 +1,5 @@
 package MyWeb;
-use WebService::GData;
+use WebService::GData 'private';
 use base 'WebService::GData';
 
 	#extend __init method
@@ -9,6 +9,7 @@ use base 'WebService::GData';
 		$this->{extra}=1;
 	}
 
+	
 WebService::GData::install_in_package(
 	[qw(firstname lastname)],
 	sub {
@@ -23,4 +24,15 @@ WebService::GData::install_in_package(
 	}
 );
 
+private this_function_is_private => sub {
+	my ($arg1,$arg2)=@_;
+	return ref($arg1).$arg2 if($arg1 && $arg2);
+};
+#can call this function from within the package...
+this_function_is_private();
+
+sub call_private_function(){
+	my $this=shift;
+	return $this->this_function_is_private('::call_private_function');
+}
 1;

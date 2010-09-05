@@ -1,8 +1,8 @@
 package WebService::GData::Error::Entry;
-use WebService::GData;
+use WebService::GData 'private';
 use base 'WebService::GData';
 
-our $VERSION  = 0.01_03;
+our $VERSION  = 1.0;
 
 WebService::GData::install_in_package([qw(internalreason domain code location)],
 	sub {
@@ -21,7 +21,18 @@ WebService::GData::install_in_package([qw(internalreason domain code location)],
 		$this->_parse($xmlerror);
 	}
 
-	sub _parse {
+	sub serialize {
+		my $this = shift;
+		my $xml='<error>';
+		   $xml.='<internalreason>'.$this->internalreason.'</internalreason>' if($this->internalreason);
+		   $xml.='<code>'.$this->code.'</code>' if($this->code);
+		   $xml.='<domain>'.$this->domain.'</domain>' if($this->domain);	
+		   $xml.="<location type='".$this->location->{type}."'>".$this->location->{content}.'</location>' if($this->location);
+	       $xml.='</error>';
+		return $xml;
+	}
+	
+	private _parse => sub {
 		my ($this,$error) = @_;
 		if($error){
 			my ($domain)  = $error=~m/<domain>(.+?)<\/domain>/;
@@ -36,18 +47,7 @@ WebService::GData::install_in_package([qw(internalreason domain code location)],
 			$this -> domain($domain);
 			$this -> location($location);
 		}
-	}
-
-	sub serialize {
-		my $this = shift;
-		my $xml='<error>';
-		   $xml.='<internalreason>'.$this->internalreason.'</internalreason>' if($this->internalreason);
-		   $xml.='<code>'.$this->code.'</code>' if($this->code);
-		   $xml.='<domain>'.$this->domain.'</domain>' if($this->domain);	
-		   $xml.="<location type='".$this->location->{type}."'>".$this->location->{content}.'</location>' if($this->location);
-	       $xml.='</error>';
-		return $xml;
-	}
+	};
 
 "The earth is blue like an orange.";
 
@@ -122,12 +122,14 @@ Example:
 
 =head3 new 
 
+=over
+
 Create a L<WebService::GData::Error::Entry> instance.
 
 If the content is an xml following the Google data API format, it will get parse.
 
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
@@ -135,7 +137,7 @@ I<Parameters>:
 
 =back
 
-I<Return>: L<WebService::GData::Error::Entry>
+B<Returns> L<WebService::GData::Error::Entry>
 
 
 =head2 GET/SET METHODS
@@ -144,84 +146,85 @@ These methods return their content if no parameters is passed or set their conte
 
 =head3 code
 
+=over
+
 Get/set an error code.
 
-I<Parameters>:
+B<Parameters>
 
 =over
 
-=item C<none>
+=item C<none> - Work as a getter
 
-Work as a getter
-
-=item C<content:Scalar>
-
-Work as a setter
+=item C<content:Scalar> - Work as a setter
 
 =back
 
-I<Return>:C<content:Scalar> (as a getter)
+B<Returns> C<content:Scalar> (as a getter)
+
+=back
 
 
 =head3 location
+
+=over
 
 Get/set the error location as an xpath.
 
 It requires an hash with type and content as keys.
 
-I<Parameters>:
+B<Parameters>
+
+=over
+
+=item C<none> - Work as a getter
+
+=item C<content:HashRef> - Work as a setter. the hash must be in contain the following : {type=>'...',content=>'...'}.
+
+=back
+
+B<Returns> C<content:HashRef> (as a getter)
+
+=back
+
+=head3 domain
+
+=over
+
+Get/set the type of error. Google data API has validation,quota,authentication,service errors.
+
+B<Parameters>
+
+=over
+
+=item C<none> - Work as a getter
+
+=item C<content:Scalar> - Work as a setter. 
+
+=back
+
+B<Returns> C<content:Scalar> (as a getter)
+
+=back
+
+
+=head3 serialize
+
+=over
+
+Send back an xml representation of an error.
+
+B<Parameters>
 
 =over
 
 =item C<none>
 
-Work as a getter
-
-=item C<content:HashRef>
-
-Work as a setter. the hash must be in contain the following : {type=>'...',content=>'...'}.
-
 =back
 
-I<Return>:C<content:HashRef> (as a getter)
-
-=head3 domain
-
-Get/set the type of error. Google data API has validation,quota,authentication,service errors.
-
-I<Parameters>:
-
-=over
-
-=item none
-
-Work as a getter
-
-=item C<content:Scalar>
-
-Work as a setter. 
+B<Returns> C<content:Scalar> -  xml representation of the error.
 
 =back
-
-I<Return>: C<content:Scalar> (as a getter)
-
-
-=head3 serialize
-
-Send back an xml representation of an error.
-
-I<Parameters>:
-
-=over
-
-=item none
-
-=back
-
-I<Return>: C<content:Scalar>
-
-Where the content is an xml representation of the error.
-
 
 =head2 SEE ALSO
 

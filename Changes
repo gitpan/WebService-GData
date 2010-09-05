@@ -1,5 +1,12 @@
 Revision history for Perl extension WebService::GData.
 
+0.01_05  2010/09/05 16:17
+
+	- updated/fix the doc
+    - created new tests
+	- created new doc
+    - added some new feature to WebService::GData: private
+
 0.01_04  2010/09/02 19:10
 	- updated/fix the doc
     - created new tests

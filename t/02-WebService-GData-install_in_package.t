@@ -1,4 +1,4 @@
-use Test::More tests => 8;
+use Test::More tests => 11;
 use WebService::GData;
 use t::MyWeb;
 use Data::Dumper;
@@ -21,10 +21,18 @@ ok($web->firstname eq 'doe','$web->firstname is properly set.');
 
 ok($web->{extra} ==1,'__init extension works.');
 
-
-
 $web->firstname('marley');
 
 ok($web->firstname eq 'marley','$web->firstname is properly reset.');
 
 ok("$web" eq Dumper($web),'string overload is working fine.');
+
+eval {
+$web->this_function_is_private();
+};
+my $error = $@;
+
+ok(ref($error) eq 'HASH','this_function_is_private raised an error.');
+ok($error->{code} eq 'forbidden_access','the error code is correct.');
+
+ok($web->call_private_function() eq 'MyWeb::call_private_function','wrapped private function can be called from outside.');
