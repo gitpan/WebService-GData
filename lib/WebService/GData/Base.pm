@@ -11,7 +11,7 @@ use LWP;
 
 #the base class specifies the basic get/post/insert/update/delete methods
 
-our $VERSION  = 0.01_02;
+our $VERSION  = 0.01_05;
 
 	sub __init {
 		my ($this,%params) = @_;
@@ -207,70 +207,74 @@ WebService::GData::Base - core read/write methods for google data API v2.
     use WebService::GData::Base;
 
     #read only
+	
     my $base = new WebService::GData::Base();
 
     my $ret  = $base->get('http://gdata.youtube.com/feeds/api/standardfeeds/top_rated');
     my $feed = $ret->{feed};
 
     #give write access
+	
     $base->auth($auth);
 
     #now you can
     #get hidden/private contents
+	
     my $ret = $base->get('http://gdata.youtube.com/feeds/api/users/default/playlists');
 
     #new entry with application/x-www-form-urlencoded content-type
+	
     my $ret = $base->post('http://gdata.youtube.com/feeds/api/users/default/playlists',$content);
 
-	my $ret = $base->delete('http://gdata.youtube.com/feeds/api/users/playlist/'.$someid);
+    my $ret = $base->delete('http://gdata.youtube.com/feeds/api/users/playlist/'.$someid);
 
-	#content is decorated with the xml entry basic tags
-	#the content type is application/atom+xml; charset=UTF-8
-	my $ret = $base->insert($uri,$content,$callback);
+    #content is decorated with the xml entry basic tags
+    #the content type is application/atom+xml; charset=UTF-8
+	
+    my $ret = $base->insert($uri,$content,$callback);
 
-	#does a PUT. The content is decorated with the xml entry basic tags
-	#the content type is application/atom+xml; charset=UTF-8
-	my $ret = $base->update($uri,$content,$callback);
+    #does a PUT. The content is decorated with the xml entry basic tags
+    #the content type is application/atom+xml; charset=UTF-8
+	
+    my $ret = $base->update($uri,$content,$callback);
 
-	#modify the query string query string: ?alt=json-c&v=2&prettyprint=false&strict=true
-	$base->query->alt('jsonc')->prettyprint('false');
+    #modify the query string query string: ?alt=jsonc&v=2&prettyprint=false&strict=true
+	
+    $base->query->alt('jsonc')->prettyprint('false');
 
     #overwrite WebService::GData::Query with youtube query parameters
-	$base->query(new WebService::GData::YouTube::Query);
+	
+    $base->query(new WebService::GData::YouTube::Query);
 
-	#now the query will have the following query string: ?alt=json&v=2&prettyprint=false&strict=true&safeSearch=none
-	$base->query->safe_search('none');
+    #now the query will have the following query string: 
+    #?alt=json&v=2&prettyprint=false&strict=true&safeSearch=none
+	
+    $base->query->safe_search('none');
 
 
 
 
 =head1 DESCRIPTION
 
-inherits from L<WebService::GData>
+I<inherits from L<WebService::GData>>
 
 This package grants you access to the main read/write methods available for the google data APIs by wrapping LWP methods.
-
 You gain access to: get,post,insert,update,delete.
-
 These methods calls the authentification objects to add extra headers.
-
 This package should be inherited by services (youtube,analytics,calendar) to offer higher level of abstraction.
 
-Every request (get,post,insert,update,delete) will throw (well, die) a L<WebService::GData::Error> in case of failure.
-
+Every request (get,post,insert,update,delete) will throw a L<WebService::GData::Error> in case of failure.
 It is therefore recommanded to enclose your code in eval blocks to catch and handle the error as you see fit.
 
 The google data based APIs offer different format for the core protocol: atom based, rss based,json based, jsonc based.
-
 In order to offer good parsing performance, we use the json based response as a default to L<WebService::GData::Base>::get() the feeds.
-
 Unfortunately, if we can set to read the feeds in json,the write methods require atom based data.
-
 The server also sends back an atom response too. We have therefore a hugly mixed of atom/json logic for now.
 
 but...
 
-The JSONC format which is now being incorporated in google data based services will offer the same level of interaction as the atom based protocol.
+The JSONC format which is now being incorporated in google data based services will offer 
+the same level of interaction as the atom based protocol.
 
 
 =head2 CONSTRUCTOR
@@ -285,11 +289,17 @@ B<Parameters>
 
 =over 
 
-=item C<auth=>auth:AuthObject> (optional) - You can set an authorization object like L<WebService::GData::ClientLogin>
+=item C<auth:AuthObject> (optional) - You can set an authorization object like L<WebService::GData::ClientLogin>
 
 =back
 
-B<Returns> L<WebService::GData::Base>
+B<Returns> 
+
+=over 
+
+=item L<WebService::GData::Base>
+
+=back
 
 
 Example:
@@ -307,21 +317,26 @@ Example:
 =over
 
 Set/get an auth object that handles acess to protected contents.
-
 The auth object will be used by post/insert/update/delete methods by calling two methods: 
 
 =over
 
-=item C<set_authorization_headers(base:WebService::GData::Base,req:HTTP::Request)> - headers required by the authentication protocol.
+=item * C<set_authorization_headers(base:WebService::GData::Base,req:HTTP::Request)> 
 
-=item C<set_service_headers(base:WebService::GData::Base,req:HTTP::Request)> - Extra headers required by a particular service.
+- Headers required by the authentication protocol.
 
-=item C<source()> - The name of the application. Will be used for the user agent string.
+=item * C<set_service_headers(base:WebService::GData::Base,req:HTTP::Request)> 
+
+- Extra headers required by a particular service.
+
+=item * C<source()> 
+
+- The name of the application. Will be used for the user agent string.
+
+=back
 
 These methods will receive the instance calling them and the request instance.
-
 They shall add any extra headers required to implement their own authentication protocol (ie,ClientLogin,OAuth,SubAuth).
-
 If the object can not handle the above methods it will not be set.
 
 Example:
@@ -329,12 +344,15 @@ Example:
     use WebService::GData::Base;
 	
     #should be in a eval {... }; block to catch an error...
+	
     my $auth = new WebService::GData::ClientLogin(email=>...);
 
     my $base = new WebService::GData::Base(auth=>$auth);
+	
     #or
+	
     my $base   = new WebService::GData::Base();	
-	   $base  -> auth($auth);
+       $base  -> auth($auth);
 	   
 =back
 
@@ -349,11 +367,11 @@ The query object should only implement the following methods (do not need to inh
 
 =over 
 
-=item C<get('value-name')> - Gives access to a parameter value
+=item * C<get('value-name')> - Gives access to a parameter value
 
-=item C<to_query_string()> - return the query string.
+=item * C<to_query_string()> - return the query string.
 
-=item C<get('v')> - should return a version number >=L<WebService::GData::Constants>::GDATA_MINIMUM_VERSION
+=item * C<get('v')> - should return a version number >=L<WebService::GData::Constants>::GDATA_MINIMUM_VERSION
 
 =back
 
@@ -367,9 +385,21 @@ B<Parameters>
 
 =back
 
-B<Returns> C<void> in a setter context. C<query:Object> in a getter context.
+B<Returns> 
 
-The L<WebService::GData::Query> returns by default '?alt=json&prettyprint=false&strict=true&v=2' when C<to_query_string()> is called.
+=over 
+
+=item C<void> in a setter context. 
+
+=item C<query:Object> in a getter context.
+
+=back
+
+The L<WebService::GData::Query> returns by default:
+
+    '?alt=json&prettyprint=false&strict=true&v=2'
+	
+when C<to_query_string()> is called.
 
 When you call L<WebService::GData::Base>::get(), you should only set an url with no query string:
 
@@ -398,10 +428,9 @@ Example:
 =over
 
 Get the content of a feed in any format. If the format is json or jsonc, it will send back a perl object.
-
 If an auth object is specified, it will call the required methods to set the authentication headers.
-
 It will also set the 'GData-Version' header by calling $this->query->get('v');
+You should put the code in a eval { ... }; block to catch any error.
 
 B<Parameters>
 
@@ -413,11 +442,21 @@ Query string will be removed before sending the request.
 
 =back
 
-B<Returns> C<response:Object|Scalar> a perl object if it is a json or jsonc request else the raw content.
+B<Returns> 
 
-B<Throws> L<WebService::GData::Error> if it fails to reach the contents.
+=over 
 
-You should put the code in a eval { ... }; block to catch any error.
+=item C<response:Object|Scalar> - a perl object if it is a json or jsonc request else the raw content.
+
+=back
+
+B<Throws> 
+
+=over 
+
+=item L<WebService::GData::Error> if it fails to reach the contents.
+
+=back
 
 Example:
 
@@ -426,13 +465,16 @@ Example:
     my $base   = new WebService::GData::Base();
     
     $base->get('http://gdata.youtube.com/feeds/api/standardfeeds/top_rated');
+	
     #is in fact calling:
-    #http://gdata.youtube.com/feeds/api/standardfeeds/top_rated?alt=jsonc&prettyprint=false&strict=true&v=2
+    #http://gdata.youtube.com/feeds/api/standardfeeds/top_rated?alt=json&prettyprint=false&strict=true&v=2
 
-	#the query string will be erased...
+    #the query string will be erased...
+	
     $base->get('http://gdata.youtube.com/feeds/api/standardfeeds/top_rated?alt=atom');
-	#is in fact calling:
-	#http://gdata.youtube.com/feeds/api/standardfeeds/top_rated?alt=jsonc&prettyprint=false&strict=true&v=2
+	
+    #is in fact calling:
+    #http://gdata.youtube.com/feeds/api/standardfeeds/top_rated?alt=json&prettyprint=false&strict=true&v=2
 
 =back
 
@@ -443,10 +485,9 @@ Example:
 =over
 
 Post data to an url with application/x-www-form-urlencoded content type.
-
 An auth object must be specified. it will call the required methods to set the authentication headers.
-
 It will also set the 'GData-Version' header by calling $this->query->get('v');
+You should put the code in a eval { ... }; block to catch any error.
 
 B<Parameters>
 
@@ -458,11 +499,22 @@ B<Parameters>
 
 =back
 
-B<Returns> C<response:Scalar> - the response to the query in case of success.
+B<Returns> 
 
-B<Throws> L<WebService::GData::Error> if it fails to reach the contents.
+=over 
 
-You should put the code in a eval { ... }; block to catch any error.
+=item C<response:Scalar> - the response to the query in case of success.
+
+=back
+
+B<Throws> 
+
+=over 
+
+=item L<WebService::GData::Error> if it fails to reach the contents.
+
+=back
+
 
 Example:
 
@@ -481,10 +533,9 @@ Example:
 =over
 
 Insert data to an url with application/atom+xml; charset=UTF-8 content type (POST).
-
 An auth object must be specified. it will call the required methods to set the authentication headers.
-
 It will also set the 'GData-Version' header by calling $this->query->get('v');
+You should put the code in a eval { ... }; block to catch any error.
 
 B<Parameters>
 
@@ -494,17 +545,27 @@ B<Parameters>
 
 =item C<content:Scalar> - the content to post in xml format will be decorated with:
 
-<?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom" $xmlns>$content</entry>
+    <?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom" $xmlns>$content</entry>
 
 where $xmlns is the result of C<get_namespace>.
 
 =back
 
-B<Returns> C<response:Scalar> - the response to the query in case of success.
+B<Returns> 
 
-B<Throws> L<WebService::GData::Error> if it fails to reach the contents.
+=over
 
-You should put the code in a eval { ... }; block to catch any error.
+=item C<response:Scalar> - the response to the query in case of success.
+
+=back
+
+B<Throws> 
+
+=over 
+
+=item L<WebService::GData::Error> if it fails to reach the contents.
+
+=back
 
 Example:
 
@@ -523,10 +584,9 @@ Example:
 =over
 
 Update data to an url with application/atom+xml; charset=UTF-8 content type (PUT).
-
 An auth object must be specified. it will call the required methods to set the authentication headers.
-
 It will also set the 'GData-Version' header by calling $this->query->get('v');
+You should put the code in a eval { ... }; block to catch any error.
 
 B<Parameters>
 
@@ -536,27 +596,37 @@ B<Parameters>
 
 =item C<content:Scalar> - the content to put in xml format will be decorated with:
 
-<?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom" $xmlns>$content</entry>
+    <?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom" $xmlns>$content</entry>
 
 where $xmlns is the result of C<get_namespace>.
 
 =back
 
-B<Returns> C<response:Scalar> - the response to the query in case of success.
+B<Returns> 
 
-B<Throws> L<WebService::GData::Error> if it fails to reach the contents.
+=over 
 
-You should put the code in a eval { ... }; block to catch any error.
+=item C<response:Scalar> - the response to the query in case of success.
+
+=back
+
+B<Throws> 
+
+=over
+
+=item L<WebService::GData::Error> if it fails to reach the contents.
+
+=back
 
 Example:
 
     use WebService::GData::Base;
 	
-	#you must be authorized to do any write actions.
+    #you must be authorized to do any write actions.
     my $base   = new WebService::GData::Base(auth=>...);
     
-	#create a new entry with application/atom+xml; charset=UTF-8 content-type
-	my $ret = $base->upate($url,$content);
+    #create a new entry with application/atom+xml; charset=UTF-8 content-type
+    my $ret = $base->upate($url,$content);
 	
 =back
 
@@ -565,10 +635,9 @@ Example:
 =over
 
 Delete data from an url with application/atom+xml; charset=UTF-8 content type (DELETE).
-
 An auth object must be specified. it will call the required methods to set the authentication headers.
-
 It will also set the 'GData-Version' header by calling $this->query->get('v');
+You should put the code in a eval { ... }; block to catch any error.
 
 B<Parameters>
 
@@ -578,11 +647,22 @@ B<Parameters>
 
 =back
 
-B<Returns> C<response:Scalar> - the response to the query in case of success.
+B<Returns> 
 
-B<Throws> L<WebService::GData::Error> if it fails to reach the contents.
+=over
 
-You should put the code in a eval { ... }; block to catch any error.
+=item C<response:Scalar> - the response to the query in case of success.
+
+=back
+
+B<Throws> 
+
+=over
+
+=item L<WebService::GData::Error> if it fails to reach the contents.
+
+=back
+
 
 Example:
 
@@ -602,9 +682,7 @@ Example:
 =over
 
 When inserting/updating contents, you will use an atom entry tag.
-
 This entry tag may contain tags that are not in the atom original namespace schema.
-
 You will need therefore to specify the extra namespaces used so that it gets parsed properly.
 
 B<Parameters>
@@ -615,7 +693,13 @@ B<Parameters>
 
 =back
 
-B<Returns> C<void>
+B<Returns> 
+
+=over
+
+=item C<void>
+
+=back
 
 Example:
 
@@ -626,6 +710,7 @@ Example:
     
     $base->add_namespace("xmlns:media='http://search.yahoo.com/mrss/'");
     $base->add_namespace("xmlns:yt='http://gdata.youtube.com/schemas/2007'");
+	
     #the content will be decorated with the above namespaces...
     my $ret = $base->insert($url,$content);
 	
@@ -645,19 +730,27 @@ B<Parameters>
 
 =back
 
-B<Returns> C<namespaces:Scalar> all the namespaces set separated by a space.
+B<Returns> 
+
+=over 
+
+=item C<namespaces:Scalar> all the namespaces set separated by a space.
+
+=back
 
 Example:
 
     use WebService::GData::Base;
 	
     #you must be authorized to do any write actions.
+	
     my $base   = new WebService::GData::Base(auth=>...);
     
     $base->add_namespace("xmlns:media='http://search.yahoo.com/mrss/'");
     $base->add_namespace("xmlns:yt='http://gdata.youtube.com/schemas/2007'");
 	
     #the content will be decorated with the above namespaces...
+	
     my $namespaces = $base->get_namespace();
     #xmlns:media='http://search.yahoo.com/mrss/' xmlns:yt='http://gdata.youtube.com/schemas/2007'
 	
@@ -677,7 +770,13 @@ B<Parameters>
 
 =back
 
-B<Returns> C<void>
+B<Returns> 
+
+=over 
+
+=item C<void>
+
+=back
 
 Example:
 
@@ -735,20 +834,11 @@ Example:
     }	
 
 
-=head1  CONFIGURATION AND ENVIRONMENT
-
-none
-
-
 =head1  DEPENDENCIES
 
 L<JSON>
 
 L<LWP>
-
-=head1  INCOMPATIBILITIES
-
-none
 
 =head1 BUGS AND LIMITATIONS
 

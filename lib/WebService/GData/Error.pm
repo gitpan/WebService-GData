@@ -4,7 +4,7 @@ use base 'WebService::GData';
 
 use WebService::GData::Error::Entry;
 
-our $VERSION  = 1.01;
+our $VERSION  = 1.02;
 
 	#avoid stringification
 	sub __to_string {
@@ -124,7 +124,7 @@ B<Parameters>
 
 =item C<code:*> - This could be an http status or a short string error_code.
 
-=item C<content:Scalar> - The string can be a Google xml error response, in which case, 
+=item C<content:Scalar> - The string can be a Google xml error response, in which case, it will get parsed.
 
 =back
 
@@ -187,7 +187,6 @@ Example:
 Get back the raw content of the error.
 
 When getting an error from querying one of Google data services, you will get a raw xml response containing possible errors.
-
 In such case,you should loop through the result by using the errors() instance which send back L<WebService::GData::Error::Entry>.
 
 B<Parameters>

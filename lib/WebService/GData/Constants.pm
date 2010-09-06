@@ -1,7 +1,7 @@
 package WebService::GData::Constants;
 use strict;
 use warnings;
-our $VERSION  = 1.01;
+our $VERSION  = 1.02;
 
 use constant  {
 	#general...
@@ -43,6 +43,18 @@ use constant  {
 	JSONC               => 'jsonc',
 	ATOM		        => 'atom',
 	RSS		            => 'rss',
+	
+	#HTTP STATUS
+    OK                    =>200,
+    CREATED               =>201,
+    NOT_MODIFIED          =>304,
+    BAD_REQUEST           =>400,
+    UNAUTHORIZED          =>401,
+    FORBIDDEN             =>403,
+    NOT_FOUND             =>404,
+    CONFLICT              =>409,
+    GONE                  =>410,
+    INTERNAL_SERVER_ERROR =>500,
 
 	#NAMESPACES
 	ATOM_NAMESPACE		=> 'xmlns="http://www.w3.org/2005/Atom"',
@@ -58,6 +70,8 @@ my  @general   = qw(XML_HEADER GDATA_MINIMUM_VERSION);
 
 my  @query   = qw(TRUE FALSE);
 
+my @http_status= qw(OK CREATED NOT_MODIFIED BAD_REQUEST UNAUTHORIZED FORBIDDEN NOT_FOUND CONFLICT GONE INTERNAL_SERVER_ERROR);
+
 my  @format    = qw(JSON JSONC ATOM RSS);
 
 my  @namespace = qw(ATOM_NAMESPACE OPENSEARCH_NAMESPACE GDATA_NAMESPACE GEORSS_NAMESPACE GML_NAMESPACE MEDIA_NAMESPACE APP_NAMESPACE);
@@ -67,8 +81,13 @@ my  @service   = qw(YOUTUBE_SERVICE WEBMASTER_SERVICE SPREADSHEETS_SERVICE SIDEW
 					BLOGGER_SERVICE SITES_SERVICE BASE_SERVICE APPS_SERVICE ANALYTICS_SERVICE);
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK   = (@format,@namespace,@general,@service,@query);
-our %EXPORT_TAGS = (service=>[@service],format => [@format],namespace=>[@namespace],general=>[@general],all=>[@format,@namespace,@general,@service,@query]);
+our @EXPORT_OK   = (@format,@namespace,@general,@service,@query,@http_status);
+our %EXPORT_TAGS = (http_status=>[@http_status],
+					service=>[@service],
+					format => [@format],
+					namespace=>[@namespace],
+					general=>[@general],
+					all=>[@format,@namespace,@general,@service,@query,@http_status]);
 
 
 "The earth is blue like an orange.";
@@ -89,23 +108,25 @@ WebService::GData::Constants - constants (namespaces,format,services...) used fo
     use WebService::GData::Constants; 
 
     #import the namespace related constants
-    use WebService::GData::Constants qw(:namespace :service :format); #or :format or :general or :all
+    use WebService::GData::Constants qw(:namespace); #or :format or :general or :all
 
     use WebService::GData::Base;
     use WebService::GData::ClientLogin;
 
     my $auth = new WebService::GData::ClientLogin(service=> BOOK_SERVICE,....);
 
-    #create an object that only has read access
+
     my $base = new WebService::GData::Base();
 	   $base->query()->alt(JSON);
 
     #if not imported
-	$base->add_namespace(WebService::GData::Constants::MEDIA_NAMESPACE);
+	
+    $base->add_namespace(WebService::GData::Constants::MEDIA_NAMESPACE);
     $base->add_namespace(WebService::GData::Constants::ATOM_NAMESPACE);
 
     #if imported
-	$base->add_namespace(MEDIA_NAMESPACE);
+	
+    $base->add_namespace(MEDIA_NAMESPACE);
     $base->add_namespace(ATOM_NAMESPACE);
 
 
@@ -213,11 +234,11 @@ You can choose to import service related constants by writing use WebService::GD
 	
 =head3 YOUTUBE_SERVICE
 
+I<import with :service>
 
 =head2 QUERY CONSTANTS
 
 The query consants map the possible values for query parameters of version 2 of the google data API.
-
 You can choose to import query related constants by writing use WebService::GData::Constants qw(:query);
 
 
@@ -226,7 +247,33 @@ You can choose to import query related constants by writing use WebService::GDat
 =head3 FALSE
 
 
-I<import with :general>
+I<import with :query>
+
+=head2 HTTP STATUS CONSTANTS
+
+The http status consants map the possible values for a response code from version 2 of the google data API.
+You can choose to import http status related constants by writing use WebService::GData::Constants qw(:http_status);
+
+
+=head3 OK
+
+=head3 CREATED
+	
+=head3 NOT_MODIFIED
+	
+=head3 BAD_REQUEST
+	
+=head3 UNAUTHORIZED
+	
+=head3 FORBIDDEN
+	
+=head3 NOT_FOUND
+	
+=head3 CONFLICT
+	
+=head3 GONE
+	
+=head3 INTERNAL_SERVER_ERROR
 
 
 

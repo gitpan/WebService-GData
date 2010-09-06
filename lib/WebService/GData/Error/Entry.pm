@@ -2,7 +2,7 @@ package WebService::GData::Error::Entry;
 use WebService::GData 'private';
 use base 'WebService::GData';
 
-our $VERSION  = 1.01;
+our $VERSION  = 1.02;
 
 WebService::GData::install_in_package([qw(internalreason domain code location)],
 	sub {
@@ -170,7 +170,7 @@ B<Returns>
 
 =over 4 
 
-=C<content:Scalar> (as a getter)
+=item C<content:Scalar> (as a getter)
 
 =back
 
@@ -181,9 +181,7 @@ B<Returns>
 
 =over
 
-Get/set the error location as an xpath.
-
-It requires an hash with type and content as keys.
+Get/set the error location as an xpath.It requires a ref hash with type and content as keys.
 
 B<Parameters>
 
@@ -205,7 +203,7 @@ B<Returns>
 
 Example:
 
-    $error->location(type=>'invalid_character',content=>'The string contains an unsupported character.');
+    $error->location({type=>'invalid_character',content=>'The string contains an unsupported character.'});
 
 =back
 

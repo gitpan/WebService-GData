@@ -6,7 +6,7 @@ use Data::Dumper;
 use Carp;
 use overload '""'=>"__to_string";
 
-our $VERSION  = 0.01_06;
+our $VERSION  = 0.01_07;
 
 	sub import {
    		strict->import;
@@ -89,6 +89,7 @@ WebService::GData - Google data protocol v2 base object to inherit from.
 
     #this is the base implementation of the __init method in WebService::GData
     #it is call when new() is used. only overwrite it if necessary.
+
     sub __init {
         my ($this,%params) = @_;
         while(my ($prop,$val)=each %params){
@@ -132,12 +133,12 @@ WebService::GData - Google data protocol v2 base object to inherit from.
     
     use WebService::MyService; 
 
-    #create an object
     my $object = new WebService::MyService(name=>'test');
 
     $object->name;#test
 
     #overloaded string will dump the object with Data::Dumper;
+	
     print $object;#$VAR1 = bless( { 'name' => 'test' }, 'WebService::MyService' );
 
 
@@ -202,7 +203,7 @@ B<Parameters>
 
 =over 4
 
-=item C<parameters:RefHash>
+=item C<parameters:Hash>
 
 =back
 
@@ -210,13 +211,13 @@ B<Returns>
 
 =over 4
 
-=item C<object:RefHash>
+=item C<WebService::GData>
 
 =back
 
 Example:
 
-    #create an object
+
     my $object = new WebService::GData(firstname=>'doe',lastname=>'john',age=>'123');
 
     $object->{firstname};#doe
@@ -331,7 +332,7 @@ B<Throws>
 
 =over 4 
 
-=item C<error:Hash> - an hash containing the code: 'forbidden_access' and the content:'private method called outside of its package'.
+=item C<error:RefHash> - an hash containing the code: 'forbidden_access' and the content:'private method called outside of its package'.
 
 =back
 
@@ -348,6 +349,7 @@ Example:
     1;
 
     #in user code:
+	
     my $user = new Basic::User();
 
 	$user->my_secret_method();#throw an error

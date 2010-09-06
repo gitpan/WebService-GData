@@ -7,7 +7,7 @@ use WebService::GData::Constants qw(:all);
 
     #specify default parameters
 
-our $VERSION  = 0.02;
+our $VERSION  = 0.0205;
 
 	sub __init {
 		my $this = shift;
@@ -70,6 +70,11 @@ our $VERSION  = 0.02;
 
 
 	#move this else where...
+	
+	sub _is_date_format{
+		my $val=shift;
+		return $val if($val=~m/[0-9]{4}-[0-9]{2}-[0-9]{3}T[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{2}:00/);
+	}
 	sub _is_boolean {
 		my $val = shift;
 		return $val if($val eq FALSE || $val eq TRUE);
@@ -79,7 +84,27 @@ our $VERSION  = 0.02;
 		my $val = shift;
 		return $val if($val>=GDATA_MINIMUM_VERSION);
 	}
+	
+	
+	
+	sub _published_max_is_valid {
+		return _is_date_format(shift());
+	}
+	
+	sub _published_min_is_valid {
+		return _is_date_format(shift());
+	}
+	
+	sub _updated_max_is_valid {
+		return _is_date_format(shift());
+	}
+	
+	sub _updated_min_is_valid {
+		return _is_date_format(shift());
+	}
 
+	
+	
 	sub _prettyprint_is_valid {
 		return _is_boolean(shift());
 	}
@@ -539,9 +564,7 @@ B<Parameters>
 
 =over 4
 
-=item C<date:Scalar>
-
-Format:2005-08-09T10:57:00-08:00
+=item C<date:Scalar> - Format:2005-08-09T10:57:00-08:00
 
 =back
 
@@ -550,6 +573,14 @@ B<Returns>
 =over 4 
 
 =item C<WebService::GData::Query>
+
+=back
+
+B<Throws> 
+
+=over 4
+
+=item C<WebService::GData::Error>
 
 =back
 
@@ -566,9 +597,7 @@ B<Parameters>
 
 =over 4
 
-=item C<date:Scalar>
-
-Format:2005-08-09T10:57:00-08:00
+=item C<date:Scalar> - Format:2005-08-09T10:57:00-08:00
 
 =back
 
@@ -577,6 +606,14 @@ B<Returns>
 =over 4 
 
 =item C<WebService::GData::Query>
+
+=back
+
+B<Throws> 
+
+=over 4
+
+=item C<WebService::GData::Error>
 
 =back
 
@@ -593,9 +630,7 @@ B<Parameters>
 
 =over 4
 
-=item C<date:Scalar>
-
-Format:2005-08-09T10:57:00-08:00
+=item C<date:Scalar> - Format:2005-08-09T10:57:00-08:00
 
 =back
 
@@ -604,6 +639,14 @@ B<Returns>
 =over 4 
 
 =item C<WebService::GData::Query>
+
+=back
+
+B<Throws> 
+
+=over 4
+
+=item C<WebService::GData::Error>
 
 =back
 
@@ -620,9 +663,7 @@ B<Parameters>
 
 =over 4
 
-=item C<date:Scalar>
-
-Format:2005-08-09T10:57:00-08:00
+=item C<date:Scalar> - Format:2005-08-09T10:57:00-08:00
 
 =back
 
@@ -631,6 +672,14 @@ B<Returns>
 =over 4 
 
 =item C<WebService::GData::Query>
+
+=back
+
+B<Throws> 
+
+=over 4
+
+=item C<WebService::GData::Error>
 
 =back
 
