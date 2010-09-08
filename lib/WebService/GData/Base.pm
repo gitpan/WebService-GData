@@ -1,24 +1,25 @@
 package WebService::GData::Base;
-use WebService::GData;
+use WebService::GData 'private';
 use base 'WebService::GData';
 
 use WebService::GData::Query;
 use WebService::GData::Error;
-use WebService::GData::Constants;
+use WebService::GData::Constants qw(:all);
 
 use JSON;
 use LWP;
 
 #the base class specifies the basic get/post/insert/update/delete methods
 
-our $VERSION  = 0.01_05;
+our $VERSION  = 0.01_06;
 
 	sub __init {
 		my ($this,%params) = @_;
 
-		$this->{__NAMESPACES__}= [];
-
+		$this->{__NAMESPACES__}   = [ATOM_NAMESPACE];
+		$this->{__OVERRIDE__}     = FALSE;
 		$this->query(new WebService::GData::Query());
+
 
 		$this->{Auth}   = $params{auth} if(_is_auth_object_compliant($params{auth}));	
 	}
@@ -26,9 +27,9 @@ our $VERSION  = 0.01_05;
 	sub auth {
 		my ($this,$auth)=@_;
 
-		if(_is_auth_object_compliant($auth)) {
+		if($auth && _is_auth_object_compliant($auth)) {
 			$this->{Auth} = $auth;
-			#done a request with no authentification.
+			#done a _request with no authentification.
 			#update the ua agent string
 			$this->{ua}->agent(_create_ua_base_name().$auth->source()) if($this->{ua});
 		}
@@ -37,9 +38,22 @@ our $VERSION  = 0.01_05;
 
 	sub query {
 		my ($this,$query)=@_;
-		$this->{_basequery} = $query if(_is_query_object_compliant($query));
+		$this->{_basequery} = $query if($query && _is_query_object_compliant($query));
 		return $this->{_basequery};
 	}
+
+	sub override_method {
+		my ($this,$override) = @_;
+
+		return $this->{__OVERRIDE__} if(!$override);
+
+		if($override eq TRUE){
+			$this->{__OVERRIDE__}=TRUE;
+		}
+		if($override eq FALSE){
+			$this->{__OVERRIDE__}=FALSE;
+		}
+	}	
 
 	#hacky for now, until I switch to JSONC where this won't be necessary anymore
 	sub get_namespaces {
@@ -66,7 +80,7 @@ our $VERSION  = 0.01_05;
     	my $req = HTTP::Request->new(GET => $uri.$this->query->to_query_string);
   	       $req-> content_type('application/x-www-form-urlencoded');
 
-		$this->_prepare_request($req);
+		$this->_prepare__request($req);
 		
 		my $ret = $this->_request($req);
 		return $this->query->get('alt')=~m/json/ ? from_json($ret) : $ret;
@@ -77,7 +91,7 @@ our $VERSION  = 0.01_05;
 		my ($this,$uri,$content)    = @_;
     	my $req = HTTP::Request->new(POST => $uri);
   	       $req-> content_type('application/x-www-form-urlencoded');
-			$this->_prepare_request($req,length($content));
+			$this->_prepare__request($req,length($content));
            $req-> content($content);
 		return $this->_request($req);
 	}
@@ -94,10 +108,16 @@ our $VERSION  = 0.01_05;
 
 	sub delete {
 		my ($this,$uri,$length) = @_;
-
-		my	$req = HTTP::Request->new(DELETE => $uri);
+		my $req;
+		if($this->override_method eq TRUE){
+			$req = HTTP::Request->new(POST=> $uri);
+			$req->header('X-HTTP-Method-Override'=>'DELETE');
+		}
+		else {
+			$req = HTTP::Request->new(DELETE => $uri);
+		}
   		$req-> content_type('application/atom+xml; charset=UTF-8');
-		$this->_prepare_request($req);
+		$this->_prepare__request($req);
 
 		return $this->_request($req);
 	}
@@ -107,53 +127,59 @@ our $VERSION  = 0.01_05;
 
 #methods#
 
-	sub _create_ua_base_name {
+	private _create_ua_base_name => sub {
 		return __PACKAGE__."/".$VERSION;
-	}
+	};
 
-	sub _request {
+	private _request => sub {
 		my($this,$req)=@_;
 
 		if(!$this->{ua}) {
-			my $name = _create_ua_base_name;
+			my $name = _create_ua_base_name();
 			if($this->auth){
 				$name = $this->auth->source.$name;
 			}
         	$this->{ua} = _create_ua($name);
 		}
 
-        my $res = $this->{ua}->request($req);		
+        my $res = $this->{ua}->_request($req);		
     	if ($res->is_success) {
 			return $res->content();
 		}
 		else {
 			die new WebService::GData::Error($res->code,$res->content);
 		}
-	}
+	};
 
-	sub _save {
+	private _save => sub {
 		my ($this,$method,$uri,$content,$callback) = @_;
-
-		my $req = HTTP::Request->new("$method"=> $uri);
+		my $req;
+		if($this->override_method eq TRUE && $method eq 'PUT'){
+			$req = HTTP::Request->new(POST=> $uri);
+			$req->header('X-HTTP-Method-Override'=>'PUT');
+		}
+		else {
+			$req = HTTP::Request->new("$method"=> $uri);
+		}
   		$req-> content_type('application/atom+xml; charset=UTF-8');
 
-		my $atom       = WebService::GData::Constants::ATOM_NAMESPACE;
-		my $xml_header = WebService::GData::Constants::XML_HEADER;
+
+		my $xml_header = XML_HEADER;
 		my $xmlns      = $this->get_namespaces();
 
-		my $xmlcontent = qq[$xml_header<entry $atom $xmlns>$content</entry>];
+		my $xmlcontent = qq[$xml_header<entry $xmlns>$content</entry>];
 
 
-		$this -> _prepare_request($req,length($xmlcontent));
+		$this -> _prepare__request($req,length($xmlcontent));
     	$req  -> content($xmlcontent);
 		if($callback){
 			&$callback($req);
 		}
 
 		return $this->_request($req);
-	}
+	};
 
-	sub _prepare_request {
+	private _prepare__request => sub {
 		my ($this,$req,$length)=@_;
   		$req->header('GData-Version' => $this->query->get('v'));
   		$req->header('Content-Length'=> $length) if($length);
@@ -161,35 +187,37 @@ our $VERSION  = 0.01_05;
   		   	$this->auth->set_authorization_headers($this,$req);
   		   	$this->auth->set_service_headers($this,$req);
 		}		
-	}
-	
+	};
+
 #sub#
 
-	sub _create_ua {
+	private _create_ua => sub {
 		my $name = shift;
 		my $ua = LWP::UserAgent->new;
 		   $ua->agent($name);
 		return $ua;
-	}
+	};
 
 	#duck typing has I don't want to enfore inheritance
-	sub _is_auth_object_compliant {
+	private _is_auth_object_compliant => sub {
 		my $auth=shift;
 		return 1 if($auth && $auth->can('set_authorization_headers') && $auth->can('set_service_headers') && $auth->can('source'));
 		return undef;
-	}
+	};
 
-	sub _is_query_object_compliant {
+	private _is_query_object_compliant => sub {
 		my $query=shift;
-		return 1 if($query && $query->can('to_query_string') && $query->can('get') && int($query->get('v'))>=WebService::GData::Constants::GDATA_MINIMUM_VERSION);
+		return 1 if($query && $query->can('to_query_string') && $query->can('get') && int($query->get('v'))>=GDATA_MINIMUM_VERSION);
 		return undef;
-	}
+	};
 
-	sub _delete_query_string {
+
+
+	private _delete_query_string => sub {
 		my $uri = shift;
 		$uri=~s/\?.//;	
 		return $uri;
-	}
+	};
 
 "The earth is blue like an orange.";
 
@@ -263,7 +291,7 @@ You gain access to: get,post,insert,update,delete.
 These methods calls the authentification objects to add extra headers.
 This package should be inherited by services (youtube,analytics,calendar) to offer higher level of abstraction.
 
-Every request (get,post,insert,update,delete) will throw a L<WebService::GData::Error> in case of failure.
+Every _request (get,post,insert,update,delete) will throw a L<WebService::GData::Error> in case of failure.
 It is therefore recommanded to enclose your code in eval blocks to catch and handle the error as you see fit.
 
 The google data based APIs offer different format for the core protocol: atom based, rss based,json based, jsonc based.
@@ -335,7 +363,7 @@ The auth object will be used by post/insert/update/delete methods by calling two
 
 =back
 
-These methods will receive the instance calling them and the request instance.
+These methods will receive the instance calling them and the _request instance.
 They shall add any extra headers required to implement their own authentication protocol (ie,ClientLogin,OAuth,SubAuth).
 If the object can not handle the above methods it will not be set.
 
@@ -404,6 +432,7 @@ when C<to_query_string()> is called.
 When you call L<WebService::GData::Base>::get(), you should only set an url with no query string:
 
 Example:
+   
     use WebService::GData::Constants qw(:all);
     use WebService::GData::Base;
 	
@@ -420,6 +449,58 @@ Example:
 
     #or set a new query object:
     $base->query(new WebService::GData::YouTube::Query());
+
+=back
+
+=head3 override_method
+
+=over
+
+Set/get the override method. 
+
+Depending on your server configurations, you might not be able to set the method to PUT/DELETE/PATCH. This will forbid you to do any updates or deletes.
+In such a case, you should set override_method to TRUE so that it uses the POST method but override it by the proper value (ie,PUT/DELETE/PATCH) using X-HTTP-Method-Override.
+
+
+B<Parameters>
+
+=over
+
+=item C<none> - use as a getter
+
+=item C<true_or_false:Scalar> - use as a setter: L<WebService::GData::Constants>::TRUE or L<WebService::GData::Constants>::FALSE (default)
+
+=back
+
+B<Returns> 
+
+=over 
+
+=item C<void> in a setter context. 
+
+=item C<override_state:Scalar> in a getter context, either L<WebService::GData::Constants>::TRUE or L<WebService::GData::Constants>::FALSE.
+
+=back
+
+Example:
+
+    use WebService::GData::Constants qw(:all);
+    use WebService::GData::Base;
+	
+	
+	#using override_method makes sense only if you are logged in
+	#and want to do some write methods.
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+
+    my $base = new WebService::GData::Base(auth=>$auth);
+
+	$base->override_method(TRUE);
+	
+	$base->update($url,$content);
+	   
+=back
+
 	
 =head2 READ METHODS
 
@@ -438,7 +519,7 @@ B<Parameters>
 
 =item C<url:Scalar> - an url to fetch that do not contain any query string.
 
-Query string will be removed before sending the request.
+Query string will be removed before sending the _request.
 
 =back
 
@@ -446,7 +527,7 @@ B<Returns>
 
 =over 
 
-=item C<response:Object|Scalar> - a perl object if it is a json or jsonc request else the raw content.
+=item C<response:Object|Scalar> - a perl object if it is a json or jsonc _request else the raw content.
 
 =back
 
@@ -545,7 +626,7 @@ B<Parameters>
 
 =item C<content:Scalar> - the content to post in xml format will be decorated with:
 
-    <?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom" $xmlns>$content</entry>
+    <?xml version="1.0" encoding="UTF-8"?><entry $xmlns>$content</entry>
 
 where $xmlns is the result of C<get_namespace>.
 
@@ -596,7 +677,7 @@ B<Parameters>
 
 =item C<content:Scalar> - the content to put in xml format will be decorated with:
 
-    <?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom" $xmlns>$content</entry>
+    <?xml version="1.0" encoding="UTF-8"?><entry $xmlns>$content</entry>
 
 where $xmlns is the result of C<get_namespace>.
 
@@ -684,6 +765,8 @@ Example:
 When inserting/updating contents, you will use an atom entry tag.
 This entry tag may contain tags that are not in the atom original namespace schema.
 You will need therefore to specify the extra namespaces used so that it gets parsed properly.
+Note that the atom namespace is already set by default and that L<WebService::GData::Constants> already contains some predefined namespaces
+that you might want to use, less typing and if an update is necessary, it will be in this package, not in your source code.
 
 B<Parameters>
 
@@ -703,13 +786,15 @@ B<Returns>
 
 Example:
 
+    use WebService::GData::Base qw(:namespace);
     use WebService::GData::Base;
+
 	
     #you must be authorized to do any write actions.
     my $base   = new WebService::GData::Base(auth=>...);
     
-    $base->add_namespace("xmlns:media='http://search.yahoo.com/mrss/'");
-    $base->add_namespace("xmlns:yt='http://gdata.youtube.com/schemas/2007'");
+    $base->add_namespace(MEDIA_NAMESPACE);
+    $base->add_namespace(GDATA_NAMESPACE);
 	
     #the content will be decorated with the above namespaces...
     my $ret = $base->insert($url,$content);
@@ -720,7 +805,7 @@ Example:
 
 =over
 
-This method returns as a string the namespaces set so far.
+This method returns as a string separated by a space the namespaces set so far.
 
 B<Parameters>
 
@@ -734,25 +819,25 @@ B<Returns>
 
 =over 
 
-=item C<namespaces:Scalar> all the namespaces set separated by a space.
+=item C<namespaces:Scalar>  - all the namespaces set separated by a space. (Default to L<WebService::GData::Constants>::ATOM_NAMESPACE)
 
 =back
 
 Example:
 
+    use WebService::GData::Constants qw(:namespace);
     use WebService::GData::Base;
-	
-    #you must be authorized to do any write actions.
-	
-    my $base   = new WebService::GData::Base(auth=>...);
+		
+    my $base   = new WebService::GData::Base();
     
-    $base->add_namespace("xmlns:media='http://search.yahoo.com/mrss/'");
-    $base->add_namespace("xmlns:yt='http://gdata.youtube.com/schemas/2007'");
+    $base->add_namespace(MEDIA_NAMESPACE);
+    $base->add_namespace(GDATA_NAMESPACE);
 	
     #the content will be decorated with the above namespaces...
 	
     my $namespaces = $base->get_namespace();
-    #xmlns:media='http://search.yahoo.com/mrss/' xmlns:yt='http://gdata.youtube.com/schemas/2007'
+
+    #$namespaces = xmlns="http://www.w3.org/2005/Atom" xmlns:media='http://search.yahoo.com/mrss/' xmlns:gd="http://schemas.google.com/g/2005"
 	
 =back
 
@@ -760,7 +845,7 @@ Example:
 
 =over
 
-This method resets the namespaces set so far.
+This method resets all the namespaces set so far, including the default L<WebService::GData::Constants>::ATOM_NAMESPACE.
 
 B<Parameters>
 
@@ -780,20 +865,22 @@ B<Returns>
 
 Example:
 
+    use WebService::GData::Constants qw(:namespace);
     use WebService::GData::Base;
-	
-    #you must be authorized to do any write actions.
-    my $base   = new WebService::GData::Base(auth=>...);
+		
+    my $base   = new WebService::GData::Base();
     
-    $base->add_namespace("xmlns:media='http://search.yahoo.com/mrss/'");
-    $base->add_namespace("xmlns:yt='http://gdata.youtube.com/schemas/2007'");
+    $base->add_namespace(MEDIA_NAMESPACE);
+    $base->add_namespace(GDATA_NAMESPACE);
 	
-
+    #the content will be decorated with the above namespaces...
+	
     my $namespaces = $base->get_namespace();
-    #xmlns:media='http://search.yahoo.com/mrss/' xmlns:yt='http://gdata.youtube.com/schemas/2007'
+
+    #$namespaces = xmlns="http://www.w3.org/2005/Atom" xmlns:media='http://search.yahoo.com/mrss/' xmlns:gd="http://schemas.google.com/g/2005"
 	
     $base->clean_namespace();
-    my $namespaces = $base->get_namespace();#nothing
+    my $namespaces = $base->get_namespace();#""
 	
 =back
 
@@ -802,7 +889,7 @@ Example:
 
 Google data APIs relies on querying remote urls on particular services.
 
-Some of these services limits the number of request with quotas and may return an error code in such a case.
+Some of these services limits the number of _request with quotas and may return an error code in such a case.
 
 All queries that fail will throw (die) a L<WebService::GData::Error> object. 
 

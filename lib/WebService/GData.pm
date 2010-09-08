@@ -6,7 +6,7 @@ use Data::Dumper;
 use Carp;
 use overload '""'=>"__to_string";
 
-our $VERSION  = 0.01_07;
+our $VERSION  = 0.01_08;
 
 	sub import {
    		strict->import;

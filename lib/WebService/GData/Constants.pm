@@ -1,7 +1,7 @@
 package WebService::GData::Constants;
 use strict;
 use warnings;
-our $VERSION  = 1.02;
+our $VERSION  = 1.03;
 
 use constant  {
 	#general...
@@ -45,16 +45,16 @@ use constant  {
 	RSS		            => 'rss',
 	
 	#HTTP STATUS
-    OK                    =>200,
-    CREATED               =>201,
-    NOT_MODIFIED          =>304,
-    BAD_REQUEST           =>400,
-    UNAUTHORIZED          =>401,
-    FORBIDDEN             =>403,
-    NOT_FOUND             =>404,
-    CONFLICT              =>409,
-    GONE                  =>410,
-    INTERNAL_SERVER_ERROR =>500,
+    OK                    =>'200 OK',
+    CREATED               =>'201 CREATED',
+    NOT_MODIFIED          =>'304 NOT MODIFIED',
+    BAD_REQUEST           =>'400 BAD REQUEST',
+    UNAUTHORIZED          =>'401 UNAUTHORIZED',
+    FORBIDDEN             =>'403 FORBIDDEN',
+    NOT_FOUND             =>'404 NOT FOUND',
+    CONFLICT              =>'409 CONFLICT',
+    GONE                  =>'410 GONE',
+    INTERNAL_SERVER_ERROR =>'500 INTERNAL SERVER ERROR',
 
 	#NAMESPACES
 	ATOM_NAMESPACE		=> 'xmlns="http://www.w3.org/2005/Atom"',

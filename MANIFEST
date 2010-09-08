@@ -3,6 +3,7 @@ Makefile.PL
 MANIFEST
 README
 t/MyWeb.pm
+t/20-WebService-GData-Base-load.t
 t/19-WebService-GData-YouTube-Query-instance.t
 t/18-WebService-GData-YouTube-Query-load.t
 t/17-WebService-GData-Query-instance.t
