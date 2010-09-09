@@ -4,71 +4,74 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Carp;
-use overload '""'=>"__to_string";
+use overload '""' => "__to_string";
 
-our $VERSION  = 0.01_08;
+our $VERSION = 0.01_09;
 
-	sub import {
-   		strict->import;
-   		warnings->import;
-		my $import = shift;
-		my $package= caller;
-		if($import){
-			install_in_package(['private'],sub {return \&private;},$package);
-		}
+sub import {
+	strict->import;
+	warnings->import;
+	my $import  = shift;
+	my $package = caller;
+	if ($import) {
+		install_in_package( ['private'], sub { return \&private; }, $package );
+	}
+}
+
+sub new {
+	my $package = shift;
+	my $this    = {};
+	bless $this, $package;
+	$this->__init(@_);
+	return $this;
+}
+
+sub __init {
+	my ( $this, %params ) = @_;
+	while ( my ( $prop, $val ) = each %params ) {
+		$this->{$prop} = $val;
+	}
+}
+
+sub __to_string {
+	return Dumper(shift);
+}
+
+sub install_in_package {
+	my ( $subnames, $callback, $package ) = @_;
+
+	$package = $package || caller;
+	return if ( $package eq 'main' );    #never import into main
+	                                     #install
+	no strict 'refs';
+	no warnings 'redefine';
+	foreach my $sub (@$subnames) {
+		*{ $package . '::' . $sub } = &$callback($sub);
 	}
 
-	sub new {
-		my $package=shift;
-		my $this={};
-		bless $this, $package;
-		$this->__init(@_);
-		return $this;
-	}
+}
 
-	sub __init {
-		my ($this,%params) = @_;
-		while(my ($prop,$val)=each %params){
-			$this->{$prop}=$val;
-		}
-	}
-
-	sub __to_string {
-		return Dumper(shift);
-	}
-
-	sub install_in_package {
-		my($subnames,$callback,$package)=@_;
-
-	    $package = $package || caller;
-	    return if($package eq 'main'); #never import into main
-		#install
-		no strict 'refs';
-		no warnings 'redefine';
-		foreach my $sub (@$subnames) {
-			*{$package.'::'.$sub} = &$callback($sub);
-		}
-		
-	}
-	
-	sub private(%) {
-        my(%vars) = @_;
-		my($name,$sub)=each %vars;
-		my $package=caller;
-		install_in_package([$name],sub {
+sub private(%) {
+	my (%vars) = @_;
+	my ( $name, $sub ) = each %vars;
+	my $package = caller;
+	install_in_package(
+		[$name],
+		sub {
 			return sub {
-				my @args=@_;
-				my $p=caller;
+				my @args = @_;
+				my $p    = caller;
 				croak {
-					code   => 'forbidden_access',
-					content=> 'private method called outside of its package'
-				} if($p ne $package);
+					code    => 'forbidden_access',
+					content => 'private method called outside of its package'
+				  }
+				  if ( $p ne $package );
 				return &$sub(@args);
-			}
-		},$package);
-	}
-
-
+			  }
+		},
+		$package
+	);
+}
 
 "The earth is blue like an orange.";
 
@@ -344,7 +347,7 @@ Example:
     
     private my_secret_method => sub {
 		
-	};  #note the comma
+    };  #note the comma
 
     1;
 
@@ -352,15 +355,15 @@ Example:
 	
     my $user = new Basic::User();
 
-	$user->my_secret_method();#throw an error
+    $user->my_secret_method();#throw an error
 	
-	eval {
-		$user->my_secret_method();
-	};
-	if(my $error = $@){
-		#$error->{code};
-		#$error->{content};
-	}
+    eval {
+        $user->my_secret_method();
+    };
+    if(my $error = $@){
+        #$error->{code};
+        #$error->{content};
+    }
 	
 =back
 
