@@ -1,5 +1,12 @@
 Revision history for Perl extension WebService::GData.
 
+0.02_01  2010/09/09 22:11
+
+    - updated/fix the doc
+    - added new tests for WebService::GData::Base
+    - added get_uri and get_user_agent_name in WebService::GData::Base
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.01_09  2010/09/09 22:11
 
     - updated/fix the doc

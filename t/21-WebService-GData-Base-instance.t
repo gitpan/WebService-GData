@@ -1,4 +1,4 @@
-use Test::More tests => 14;
+use Test::More tests => 18;
 use WebService::GData::Base;
 use WebService::GData::Constants qw(:all);
 
@@ -53,15 +53,37 @@ ok(
     $base->get_namespaces eq ATOM_NAMESPACE,
     q[the default xml namespace is atom.]
 );
-$base->add_namespace(MEDIA_NAMESPACE);
+$base->add_namespaces(MEDIA_NAMESPACE,GEORSS_NAMESPACE);
 
-ok( $base->get_namespaces eq ATOM_NAMESPACE . ' ' . MEDIA_NAMESPACE,
-    q[the new xml namespace is set.] );
+ok( $base->get_namespaces eq ATOM_NAMESPACE . ' ' . MEDIA_NAMESPACE.' '.GEORSS_NAMESPACE,
+    q[the new xml namespaces are set.] );
     
 $base->clean_namespaces();
 
 ok(
     $base->get_namespaces eq '',
     q[the xml namespaces are unset once clean_namespaces is called.]
+);
+
+ok(
+    !$base->get_uri,
+    q[no uri by default.]
+);
+
+ok(
+    !$base->get_user_agent_name,
+    q[no user agent name by default.]
+);
+eval {
+    $base->post();
+};
+my $error = $@;
+ok(
+    $error->code eq 'invalid_uri',
+    q[not setting the uri throw an error.]
+);
+ok(
+    $error->content eq 'The uri is empty in post().',
+    q[the error contains the proper sub name]
 );
 

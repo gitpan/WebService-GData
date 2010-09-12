@@ -7,7 +7,7 @@ use LWP;
 
 #do a client login
 
-our $VERSION  = 0.01_01;
+our $VERSION  = 0.01_02;
 our $CLIENT_LOGIN_URI = WebService::GData::Constants::CLIENT_LOGIN_URL;
 our $CAPTCHA_URL	  = WebService::GData::Constants::CAPTCHA_URL;
 
@@ -410,7 +410,7 @@ i will try to do my best to fix it (patches welcome)!
 
 =head1 AUTHOR
 
-shiriru E<lt>shiriru0111[arobas]hotmail.comE<gt>
+shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
 
 =head1 LICENSE AND COPYRIGHT
 

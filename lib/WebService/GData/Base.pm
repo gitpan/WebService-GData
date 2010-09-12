@@ -11,7 +11,7 @@ use LWP;
 
 #the base class specifies the basic get/post/insert/update/delete methods
 
-our $VERSION = 0.01_07;
+our $VERSION = 0.01_08;
 
 sub __init {
     my ( $this, %params ) = @_;
@@ -19,10 +19,12 @@ sub __init {
     $this->{__NAMESPACES__} = [ATOM_NAMESPACE];
     $this->{__OVERRIDE__}   = FALSE;
     $this->{__AUTH__}       = undef;
+    $this->{__URI__}        = undef;
+    $this->{__UA__}         = undef;
     $this->query( new WebService::GData::Query() );
 
     $this->auth( $params{auth} )
-      if ( _is_auth_object_compliant( $params{auth} ) );
+      if ( defined $params{auth} );
 }
 
 sub auth {
@@ -31,10 +33,9 @@ sub auth {
     if ( _is_auth_object_compliant($auth) ) {
         $this->{__AUTH__} = $auth;
 
-        #done a request with no authentification.
         #update the ua agent string
-        $this->{ua}->agent( _create_ua_base_name() . $auth->source() )
-          if ( $this->{ua} );
+        $this->{__UA__}->agent( $auth->source() .' '. _ua_base_name() )
+          if ( $this->{__UA__} );
     }
     return $this->{__AUTH__};
 }
@@ -59,15 +60,26 @@ sub override_method {
     }
 }
 
-#hacky for now, until I switch to JSONC where this won't be necessary anymore
+sub get_user_agent_name {
+    my $this = shift;
+    return $this->{__UA__}->agent if ( $this->{__UA__} );
+}
+
+sub get_uri {
+    my $this = shift;
+    return $this->{__URI__};
+}
+
 sub get_namespaces {
     my $this = shift;
     return join( " ", @{ $this->{__NAMESPACES__} } );
 }
 
-sub add_namespace {
-    my ( $this, $namespace ) = @_;
-    push @{ $this->{__NAMESPACES__} }, $namespace;
+sub add_namespaces {
+    my ( $this, @namespaces ) = @_;
+    if ( @namespaces > 0 ) {
+        push @{ $this->{__NAMESPACES__} }, @namespaces;
+    }
 }
 
 sub clean_namespaces {
@@ -81,18 +93,25 @@ sub get {
     #the url from the feeds contain the version but not the one we pass directly
     $uri = _delete_query_string($uri);
 
+    _error_invali_uri('get') if ( !$uri || length($uri) == 0 );
+
+    $this->{__URI__} = $uri;
     my $req = HTTP::Request->new( GET => $uri . $this->query->to_query_string );
-    $req->content_type('application/x-www-form-urlencoded');
+    $req->content_type('application/atom+xml; charset=UTF-8');
 
     $this->_prepare_request($req);
 
     my $ret = $this->_request($req);
-    return $this->query->get('alt') =~ m/json/ ? from_json($ret) : $ret;
+    return $this->query->get('alt') =~ m/^jsonc*$/ ? from_json($ret) : $ret;
 
 }
 
 sub post {
     my ( $this, $uri, $content ) = @_;
+
+    _error_invali_uri('post') if ( !$uri || length($uri) == 0 );
+
+    $this->{__URI__} = $uri;
     my $req = HTTP::Request->new( POST => $uri );
     $req->content_type('application/x-www-form-urlencoded');
     $this->_prepare_request( $req, length($content) );
@@ -102,16 +121,26 @@ sub post {
 
 sub insert {
     my ( $this, $uri, $content, $callback ) = @_;
+
+    _error_invali_uri('insert') if ( !$uri || length($uri) == 0 );
+
     return $this->_save( 'POST', $uri, $content, $callback );
 }
 
 sub update {
     my ( $this, $uri, $content, $callback ) = @_;
+
+    _error_invali_uri('update') if ( !$uri || length($uri) == 0 );
+
     return $this->_save( 'PUT', $uri, $content, $callback );
 }
 
 sub delete {
-    my ( $this, $uri, $length ) = @_;
+    my ( $this, $uri ) = @_;
+
+    _error_invali_uri('delete') if ( !$uri || length($uri) == 0 );
+
+    $this->{__URI__} = $uri;
     my $req;
     if ( $this->override_method eq TRUE ) {
         $req = HTTP::Request->new( POST => $uri );
@@ -130,22 +159,18 @@ sub delete {
 
 #methods#
 
-private _create_ua_base_name => sub {
-    return __PACKAGE__ . "/" . $VERSION;
-};
-
 private _request => sub {
     my ( $this, $req ) = @_;
 
-    if ( !$this->{ua} ) {
-        my $name = _create_ua_base_name();
+    if ( !$this->{__UA__} ) {
+        my $name = _ua_base_name();
         if ( $this->auth ) {
-            $name = $this->auth->source . $name;
+            $name = $this->auth->source .' '. $name;
         }
-        $this->{ua} = _create_ua($name);
+        $this->{__UA__} = _create_ua($name);
     }
 
-    my $res = $this->{ua}->_request($req);
+    my $res = $this->{__UA__}->request($req);
     if ( $res->is_success ) {
         return $res->content();
     }
@@ -156,10 +181,11 @@ private _request => sub {
 
 private _save => sub {
     my ( $this, $method, $uri, $content, $callback ) = @_;
+    $this->{__URI__} = $uri;
     my $req;
-    if ( $this->override_method eq TRUE && $method eq 'PUT' ) {
+    if ( $this->override_method eq TRUE && $method =~ m/PUT|PATCH/ ) {
         $req = HTTP::Request->new( POST => $uri );
-        $req->header( 'X-HTTP-Method-Override' => 'PUT' );
+        $req->header( 'X-HTTP-Method-Override' => $method );
     }
     else {
         $req = HTTP::Request->new( "$method" => $uri );
@@ -191,6 +217,16 @@ private _prepare_request => sub {
 };
 
 #sub#
+
+private _error_invali_uri => sub {
+    my $method = shift;
+    die new WebService::GData::Error( 'invalid_uri',
+        'The uri is empty in ' . $method . '().' );
+};
+
+private _ua_base_name => sub {
+    return __PACKAGE__ . "/" . $VERSION;
+};
 
 private _create_ua => sub {
     my $name = shift;
@@ -230,7 +266,7 @@ private _is_query_object_compliant => sub {
 
 private _delete_query_string => sub {
     my $uri = shift;
-    $uri =~ s/\?.//;
+    $uri =~ s/\?.*//;
     return $uri;
 };
 
@@ -332,7 +368,7 @@ B<Parameters>
 
 =over 
 
-=item C<auth:__AUTH__Object> (optional) - You can set an authorization object like L<WebService::GData::ClientLogin>
+=item C<auth:AuthObject> (optional) - You can set an authorization object like L<WebService::GData::ClientLogin>
 
 =back
 
@@ -519,20 +555,101 @@ Example:
     use WebService::GData::Base;
 	
 	
-	#using override_method makes sense only if you are logged in
-	#and want to do some write methods.
+    #using override_method makes sense only if you are logged in
+    #and want to do some write methods.
 
     my $auth = new WebService::GData::ClientLogin(email=>...);
 
     my $base = new WebService::GData::Base(auth=>$auth);
 
-	$base->override_method(TRUE);
+    $base->override_method(TRUE);
 	
-	$base->update($url,$content);
+    $base->update($url,$content);
 	   
 =back
 
-=head3 add_namespace
+
+=head3 get_uri
+
+=over
+
+Get the last queried uri. 
+
+
+B<Parameters>
+
+=over
+
+=item C<none> - getter only
+
+=back
+
+B<Returns> 
+
+=over 
+
+=item C<uri:Scalar> in a getter context, either undef if no query has been made or the uri with no query string as a Scalar.
+
+=back
+
+Example:
+
+    use WebService::GData::Base;
+	
+    my $base = new WebService::GData::Base();
+
+    $base->get('http://www.example.com?v=2');
+	
+    $base->get_uri();#'http://www.example.com'
+	   
+=back
+
+
+=head3 get_user_agent_name
+
+=over
+
+Get the user agent name setted. 
+
+
+B<Parameters>
+
+=over
+
+=item C<none> - getter only
+
+=back
+
+B<Returns> 
+
+=over 
+
+=item C<uri:Scalar> in a getter context, either undef if no query has been made or the current package name/version. 
+if an auth object has been set, it will be auth->source current package name/version.
+
+=back
+
+Example:
+
+    use WebService::GData::Base;
+	
+    my $base = new WebService::GData::Base();
+
+    $base->get('http://www.example.com?v=2');
+	
+    $base->get_user_agent_name();#WebService::GData::Base/2
+	
+    $base->auth($auth);#where $auth->source eq 'MyApp-MyCompany-ID'
+
+    $base->get_user_agent_name();#MyApp-MyCompany-ID WebService::GData::Base/2
+	   
+=back
+
+
+
+
+
+=head3 add_namespaces
 
 =over
 
@@ -546,7 +663,7 @@ B<Parameters>
 
 =over
 
-=item C<namespace:Scalar> - the xml representation of a namespace,ie xmlns:media='http://search.yahoo.com/mrss/'
+=item C<namespace:ScalarList> - the xml representation of a namespace,ie xmlns:media='http://search.yahoo.com/mrss/'
 
 =back
 
@@ -567,15 +684,15 @@ Example:
     #you must be authorized to do any write actions.
     my $base   = new WebService::GData::Base(auth=>...);
     
-    $base->add_namespace(MEDIA_NAMESPACE);
-    $base->add_namespace(GDATA_NAMESPACE);
+    $base->add_namespaces(MEDIA_NAMESPACE,GDATA_NAMESPACE);
+
 	
     #the content will be decorated with the above namespaces...
     my $ret = $base->insert($url,$content);
 	
 =back
 
-=head3 get_namespace 
+=head3 get_namespaces 
 
 =over
 
@@ -604,12 +721,11 @@ Example:
 		
     my $base   = new WebService::GData::Base();
     
-    $base->add_namespace(MEDIA_NAMESPACE);
-    $base->add_namespace(GDATA_NAMESPACE);
+    $base->add_namespaces(MEDIA_NAMESPACE,GDATA_NAMESPACES);
 	
     #the content will be decorated with the above namespaces...
 	
-    my $namespaces = $base->get_namespace();
+    my $namespaces = $base->get_namespaces();
 
     #$namespaces = xmlns="http://www.w3.org/2005/Atom" xmlns:media='http://search.yahoo.com/mrss/'+
     # xmlns:gd="http://schemas.google.com/g/2005"
@@ -645,18 +761,17 @@ Example:
 		
     my $base   = new WebService::GData::Base();
     
-    $base->add_namespace(MEDIA_NAMESPACE);
-    $base->add_namespace(GDATA_NAMESPACE);
+    $base->add_namespaces(MEDIA_NAMESPACE,GDATA_NAMESPACE);
 	
     #the content will be decorated with the above namespaces...
 	
-    my $namespaces = $base->get_namespace();
+    my $namespaces = $base->get_namespaces();
 
     #$namespaces = xmlns="http://www.w3.org/2005/Atom" xmlns:media='http://search.yahoo.com/mrss/'+
     # xmlns:gd="http://schemas.google.com/g/2005"
 	
     $base->clean_namespaces();
-    my $namespaces = $base->get_namespace();#""
+    my $namespaces = $base->get_namespaces();#""
 	
 =back
 
@@ -710,7 +825,7 @@ Example:
     #is in fact calling:
     #http://gdata.youtube.com/feeds/api/standardfeeds/top_rated?alt=json&prettyprint=false&strict=true&v=2
 
-    #the query string will be erased...
+    #the query string will be erased and change to query->to_query_string()
 	
     $base->get('http://gdata.youtube.com/feeds/api/standardfeeds/top_rated?alt=atom');
 	
@@ -788,7 +903,7 @@ B<Parameters>
 
     <?xml version="1.0" encoding="UTF-8"?><entry $xmlns>$content</entry>
 
-where $xmlns is the result of C<get_namespace>.
+where $xmlns is the result of C<get_namespaces>.
 
 =back
 
@@ -837,7 +952,7 @@ B<Parameters>
 
     <?xml version="1.0" encoding="UTF-8"?><entry $xmlns>$content</entry>
 
-where $xmlns is the result of C<get_namespace>.
+where $xmlns is the result of C<get_namespaces>.
 
 =back
 
