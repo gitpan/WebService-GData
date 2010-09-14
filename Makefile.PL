@@ -7,11 +7,14 @@ WriteMakefile(
     VERSION_FROM      => 'lib/WebService/GData.pm', # finds $VERSION
     PREREQ_PM         => {
 		'LWP'=>0,
-		'JSON'=>2
+		'JSON'=>2,
+		#this is annoying...
+	    'Test::Mock::LWP' =>0.05,
+	     'Test::More'=>0,
 	}, # e.g., Module::Name => 1.1
 	BUILD_REQUIRES =>{
-	  'Test::Mock::LWP' =>0.05,
-	   'Test::More'=>0,
+	  #'Test::Mock::LWP' =>0.05,
+	  # 'Test::More'=>0,
 	},
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/WebService/GData.pm', # retrieve abstract from module

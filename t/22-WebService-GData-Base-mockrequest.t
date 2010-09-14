@@ -1,4 +1,4 @@
-use Test::More tests => 20;
+use Test::More tests=>20;
 use Test::Mock::LWP;
 
 my %RHeaders = ();

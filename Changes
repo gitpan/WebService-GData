@@ -1,6 +1,14 @@
 Revision history for Perl extension WebService::GData.
 
-0.02_01  2010/09/09 22:11
+0.02_02  2010/09/12 23:46
+
+    - updated/fix the doc for WebService::GData::ClientLogin
+    - added a loading test for the above package.
+    - revert back the dependencies to Test::Mock::LWP to being required for now...
+      will see if I can fix.
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
+0.02_01  2010/09/12 23:46
 
     - updated/fix the doc
     - added new tests for WebService::GData::Base

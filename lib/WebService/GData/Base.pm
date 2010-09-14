@@ -11,7 +11,7 @@ use LWP;
 
 #the base class specifies the basic get/post/insert/update/delete methods
 
-our $VERSION = 0.01_08;
+our $VERSION = 0.01_09;
 
 sub __init {
     my ( $this, %params ) = @_;
@@ -339,21 +339,21 @@ I<inherits from L<WebService::GData>>
 
 This package grants you access to the main read/write methods available for the google data APIs by wrapping LWP methods.
 You gain access to: get,post,insert,update,delete.
-These methods calls the authentification objects to add extra headers.
+Each of them call the authentification object to add extra headers.
 This package should be inherited by services (youtube,analytics,calendar) to offer higher level of abstraction.
 
 Every request (get,post,insert,update,delete) will throw a L<WebService::GData::Error> in case of failure.
 It is therefore recommanded to enclose your code in eval blocks to catch and handle the error as you see fit.
 
 The google data based APIs offer different format for the core protocol: atom based, rss based,json based, jsonc based.
-In order to offer good parsing performance, we use the json based response as a default to L<WebService::GData::Base>::get() the feeds.
-Unfortunately, if we can set to read the feeds in json,the write methods require atom based data.
+In order to offer good parsing performance, we use the json based response as a default to get() the feeds.
+Unfortunately, if we can read the feeds in json,the write methods require atom based data.
 The server also sends back an atom response too. We have therefore a hugly mixed of atom/json logic for now.
 
 but...
 
 The JSONC format which is now being incorporated in google data based services will offer 
-the same level of interaction as the atom based protocol.
+the same level of interaction as the atom based protocol and therefore hope to clean this up later!
 
 
 =head2 CONSTRUCTOR
