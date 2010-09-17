@@ -1,6 +1,11 @@
 Revision history for Perl extension WebService::GData.
 
-0.02_03  2010/09/12 23:46
+0.02_04  2010/09/17 11:42
+
+    - updated/fix WebService::GData::YouTube doc
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
+0.02_03  2010/09/17 11:00
 
     - updated/fix WebService::GData::YouTube where $auth was required where it should be optional
     - fix WebService::GData::YouTube the standard feed functions not in sync with doc
