@@ -12,10 +12,6 @@ WriteMakefile(
 	    'Test::Mock::LWP' =>0.05,
 	     'Test::More'=>0,
 	}, # e.g., Module::Name => 1.1
-	BUILD_REQUIRES =>{
-	  #'Test::Mock::LWP' =>0.05,
-	  # 'Test::More'=>0,
-	},
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/WebService/GData.pm', # retrieve abstract from module
        AUTHOR         => 'shirirules<shirirulestheworld@gmail.com>') : ()),

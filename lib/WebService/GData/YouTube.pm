@@ -9,17 +9,18 @@ use WebService::GData::YouTube::Feed::PlaylistLink;
 
 	our $PROJECTION     = 'api';
 	our $BASE_URI       = 'http://gdata.youtube.com/feeds/';
-	our $VERSION  = 0.01_04;
+	our $VERSION  = 0.01_05;
 
 	sub __init {
 		my ($this,$auth) = @_;
 
 		$this->{_baseuri}   = $BASE_URI.$PROJECTION.'/';
-		$this->{_dbh}       = new WebService::GData::Base(auth=>$auth);
+		$this->{_dbh}       = new WebService::GData::Base();
+		$this->{_dbh}->auth($auth) if($auth);
 
 		#overwrite default query engine to support youtube extra feature
 		my $query = new WebService::GData::YouTube::Query();
-		$query->key($auth->key) if($auth->key);
+		$query->key($auth->key) if($auth);
 		$this->query($query);
 	}
 
@@ -151,7 +152,7 @@ use WebService::GData::YouTube::Feed::PlaylistLink;
 	no strict 'refs';
 	foreach my $stdfeed (qw(top_rated top_favorites most_viewed most_popular most_recent most_discussed most_responded recently_featured watch_on_mobile)){
 
-		*{__PACKAGE__.'::get_'.$stdfeed} = sub {
+		*{__PACKAGE__.'::get_'.$stdfeed.'_videos'} = sub {
 			my ($this,$region,$category,$time) = @_;
 
 			my $uri = $this->{_baseuri}.'standardfeeds/';
