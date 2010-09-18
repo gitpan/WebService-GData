@@ -1,5 +1,12 @@
 Revision history for Perl extension WebService::GData.
 
+0.02_05  2010/09/18 12:03
+
+    - updated/fix WebService::GData::ClientLogin doc
+    - ClientLogin throws an error if the password/email is not set before querying the service.
+    - added tests for ClientLogin.
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.02_04  2010/09/17 11:42
 
     - updated/fix WebService::GData::YouTube doc

@@ -3,6 +3,7 @@ Makefile.PL
 MANIFEST
 README
 t/MyWeb.pm
+t/24-WebService-GData-ClientLogin-mockrequest.t
 t/23-WebService-GData-ClientLogin-load.t
 t/22-WebService-GData-Base-mockrequest.t
 t/21-WebService-GData-Base-instance.t

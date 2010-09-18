@@ -5,176 +5,180 @@ use base 'WebService::GData';
 use WebService::GData::Error;
 use WebService::GData::Constants qw(:all);
 
-    #specify default parameters
+#specify default parameters
 
-our $VERSION  = 0.0205;
+our $VERSION = 0.0205;
 
-	sub __init {
-		my $this = shift;
+sub __init {
+    my $this = shift;
 
-		$this->{_query}={
-			'v'         => GDATA_MINIMUM_VERSION,
-			alt         => JSON,
-			prettyprint => FALSE,
-			strict	    => TRUE,
-		};
-		return $this;
-	}
+    $this->{_query} = {
+        'v'         => GDATA_MINIMUM_VERSION,
+        alt         => JSON,
+        prettyprint => FALSE,
+        strict      => TRUE,
+    };
+    return $this;
+}
 
+sub disable {
+    my ( $parameters, $package, $is_strict ) = @_;
+    $package = $package || caller;
+    WebService::GData::install_in_package(
+        $parameters,
+        sub {
+            return sub {
 
-	sub disable {
-		my ($parameters,$package,$is_strict) = @_;
-		$package = $package || caller;
-		WebService::GData::install_in_package(
-			$parameters,
-			sub {
-				return sub {
-					#keep the chaining
-					return shift();
-				}
-			},
-			$package
-		);
+                #keep the chaining
+                return shift();
+              }
+        },
+        $package
+    );
 
-	}
+}
 
-	sub install_sub {
-		my $subname = shift;
-		my $field   = $subname;
-		   $field=~s/_/-/g;
-		return sub {
-			my ($this,$val)=@_;
+sub install_sub {
+    my $subname = shift;
+    my $field   = $subname;
+    $field =~ s/_/-/g;
+    return sub {
+        my ( $this, $val ) = @_;
 
-			if(my $code = $this->can('_'.$field.'_is_valid')){
+        if ( my $code = $this->can( '_' . $field . '_is_valid' ) ) {
 
-				my $res = &$code($val);
-				if($res){
-					return $this->_set_query($field,$val);
-				}
-				else {
-					die new WebService::GData::Error('invalid_parameter_type',$subname.'() did not get a proper value.');
-				}
-			}
-			return $this->_set_query($field,$val);
+            my $res = &$code($val);
+            if ($res) {
+                return $this->_set_query( $field, $val );
+            }
+            else {
+                die new WebService::GData::Error( 'invalid_parameter_type',
+                    $subname . '() did not get a proper value.' );
+            }
+        }
+        return $this->_set_query( $field, $val );
 
-		}
-	}
+      }
+}
 
-	sub install {
-		my $parameters = shift;
-		my $package    = caller;
-		WebService::GData::install_in_package($parameters,\&install_sub,$package);
-	}
+sub install {
+    my $parameters = shift;
+    my $package    = caller;
+    WebService::GData::install_in_package( $parameters, \&install_sub,
+        $package );
+}
 
-	install(['strict','fields','v','alt','prettyprint','author','updated_min','updated_max','published_min','published_max']);
+install(
+    [
+        'strict',        'fields', 'v',           'alt',
+        'prettyprint',   'author', 'updated_min', 'updated_max',
+        'published_min', 'published_max'
+    ]
+);
 
+#move this else where...
 
-	#move this else where...
-	
-	sub _is_date_format{
-		my $val=shift;
-		return $val if($val=~m/[0-9]{4}-[0-9]{2}-[0-9]{3}T[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{2}:00/);
-	}
-	sub _is_boolean {
-		my $val = shift;
-		return $val if($val eq FALSE || $val eq TRUE);
-	}
+sub _is_date_format {
+    my $val = shift;
+    return $val
+      if ( $val =~
+        m/[0-9]{4}-[0-9]{2}-[0-9]{3}T[0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{2}:00/ );
+}
 
-	sub _v_is_valid {
-		my $val = shift;
-		return $val if($val>=GDATA_MINIMUM_VERSION);
-	}
-	
-	
-	
-	sub _published_max_is_valid {
-		return _is_date_format(shift());
-	}
-	
-	sub _published_min_is_valid {
-		return _is_date_format(shift());
-	}
-	
-	sub _updated_max_is_valid {
-		return _is_date_format(shift());
-	}
-	
-	sub _updated_min_is_valid {
-		return _is_date_format(shift());
-	}
+sub _is_boolean {
+    my $val = shift;
+    return $val if ( $val eq FALSE || $val eq TRUE );
+}
 
-	
-	
-	sub _prettyprint_is_valid {
-		return _is_boolean(shift());
-	}
+sub _v_is_valid {
+    my $val = shift;
+    return $val if ( $val >= GDATA_MINIMUM_VERSION );
+}
 
-	sub _strict_is_valid {
-		return _is_boolean(shift());
-	}
+sub _published_max_is_valid {
+    return _is_date_format( shift() );
+}
 
+sub _published_min_is_valid {
+    return _is_date_format( shift() );
+}
 
-	sub start_index {
-		my ($this,$start)=@_;
-		return $this->_set_query('start-index',(int($start)<1)?1:$start);	
-	}
+sub _updated_max_is_valid {
+    return _is_date_format( shift() );
+}
 
-	sub max_results {
-		my ($this,$max)=@_;
-		return $this->_set_query('max-results',(int($max)<1)?1:$max);
-	}
+sub _updated_min_is_valid {
+    return _is_date_format( shift() );
+}
 
-	sub limit {
-		my ($this,$max,$offset) = @_;
-		$this->start_index($offset);
-		return $this->max_results($max);
-	}
+sub _prettyprint_is_valid {
+    return _is_boolean( shift() );
+}
 
-	sub q {
-		my ($this,$search) = @_;
-		$search=~s/\s+AND\s+/ /g;
-		return $this->_set_query('q',$search);
-	}
+sub _strict_is_valid {
+    return _is_boolean( shift() );
+}
 
+sub start_index {
+    my ( $this, $start ) = @_;
+    return $this->_set_query( 'start-index', ( int($start) < 1 ) ? 1 : $start );
+}
 
-	sub category {
-		my ($this,$category) = @_;
-		$category=~s/\s+OR\s+/|/g;
-		$category=~s/\s+AND\s+/,/g;
-		$category=~s/\s{1}/,/g;
-		return $this->_set_query('category',$category);
-	}
+sub max_results {
+    my ( $this, $max ) = @_;
+    return $this->_set_query( 'max-results', ( int($max) < 1 ) ? 1 : $max );
+}
 
-	sub _set_query {
-		my ($this,$key,$val)=@_;
-		$this->{_query}->{$key}=$val;
-		return $this;
-	}
+sub limit {
+    my ( $this, $max, $offset ) = @_;
+    $this->start_index($offset);
+    return $this->max_results($max);
+}
 
-	sub get {
-		my ($this,$key)=@_;
-		return $this->{_query}->{$key};
-	}
+sub q {
+    my ( $this, $search ) = @_;
+    $search =~ s/\s+AND\s+/ /g;
+    return $this->_set_query( 'q', $search );
+}
 
-	sub to_query_string {
-		my $this = shift;
-		my @query =();
-		while(my($field,$value)=each %{$this->{_query}}){
-			push @query,$field.'='._urlencode($value) if(defined $value);
-			push @query,$field if(!defined $value);
-		}
-		return '?'.join '&',@query;
-	}
+sub category {
+    my ( $this, $category ) = @_;
+    $category =~ s/\s+OR\s+/|/g;
+    $category =~ s/\s+AND\s+/,/g;
+    $category =~ s/\s{1}/,/g;
+    return $this->_set_query( 'category', $category );
+}
 
-	sub _urlencode {
-    	my ($string) = shift;
-    	$string =~ s/(\W)/"%" . unpack("H2", $1)/ge;
-    	return $string;
- 	}
+sub _set_query {
+    my ( $this, $key, $val ) = @_;
+    $this->{_query}->{$key} = $val;
+    return $this;
+}
 
-	sub __to_string {
-		return shift()->to_query_string();
-	}
+sub get {
+    my ( $this, $key ) = @_;
+    return $this->{_query}->{$key};
+}
+
+sub to_query_string {
+    my $this  = shift;
+    my @query = ();
+    while ( my ( $field, $value ) = each %{ $this->{_query} } ) {
+        push @query, $field . '=' . _urlencode($value) if ( defined $value );
+        push @query, $field if ( !defined $value );
+    }
+    return '?' . join '&', @query;
+}
+
+sub _urlencode {
+    my ($string) = shift;
+    $string =~ s/(\W)/"%" . unpack("H2", $1)/ge;
+    return $string;
+}
+
+sub __to_string {
+    return shift()->to_query_string();
+}
 
 "The earth is blue like an orange.";
 

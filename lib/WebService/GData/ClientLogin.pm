@@ -7,7 +7,7 @@ use LWP;
 
 #do a client login
 
-our $VERSION          = 0.01_03;
+our $VERSION          = 0.01_04;
 our $CLIENT_LOGIN_URI = WebService::GData::Constants::CLIENT_LOGIN_URL;
 our $CAPTCHA_URL      = WebService::GData::Constants::CAPTCHA_URL;
 
@@ -27,14 +27,24 @@ sub __init {
 
     $this->{email}    = $params{email};
     $this->{password} = $params{password};
-    $this->{service}  = $params{service}
+    
+    die new WebService::GData::Error( 
+        'invalid_parameters',
+        'Password and Email are required to log in.' 
+    ) if ( !$params{password} || !$params{email} );
+    
+    $this->{service} = $params{service}
       || WebService::GData::Constants::YOUTUBE_SERVICE;
+      
     $this->{type} = $params{type} || 'HOSTED_OR_GOOGLE';
+    
     $this->{source} =
       ( defined $params{source} )
       ? $params{source}
       : __PACKAGE__ . '-' . $VERSION;
+      
     $this->{captcha_token}  = $params{captcha_token};
+
     $this->{captcha_answer} = $params{captcha_answer};
 
     #youtube related?
@@ -146,9 +156,11 @@ WebService::GData::ClientLogin - implements ClientLogin authorization for google
 
     #create an object that only has read access
     my $base = new WebService::GData::Base();
+    
+    my $auth;
 
     eval {
-        my $auth = new WebService::GData::ClientLogin(
+        $auth = new WebService::GData::ClientLogin(
             email    => '...',
             password => '...',
             service  => '...', #default to youtube,
@@ -177,21 +189,25 @@ WebService::GData::ClientLogin - implements ClientLogin authorization for google
     my $ret = $base->post('http://gdata.youtube.com/feeds/api/users/default/playlists',$content);
 
     #if it fails a first time, you will need to add captcha related parameters:
-    
-        my $auth = new WebService::GData::ClientLogin(
+    my $auth;
+    eval {
+        $auth = new WebService::GData::ClientLogin(
             email          => '...',
             password       => '...',
             captcha_token  => '...',
             captcha_answer => '...'
         );
+    };
         
     #youtube specific developer key 
-	
-    my $auth = new WebService::GData::ClientLogin(
-         email    => '...',
-         password => '...',
-         key      => '...',
-    );
+    my $auth;
+    eval {	
+        $auth = new WebService::GData::ClientLogin(
+             email    => '...',
+             password => '...',
+              key      => '...',
+        );
+    };
 
 
 =head1 DESCRIPTION
@@ -254,6 +270,10 @@ You should provide a real source to avoid getting blocked because Google thought
 
 Specify the type of account: GOOGLE,HOSTED or HOSTED_OR_GOOGLE.
 
+=item B<key*>
+
+The key must be specified for YouTube service. See C<key()> for further information about the key.
+
 =item B<captcha_token*>
 
 Specify the captcha_token you received in response to a failure to log in. 
@@ -279,6 +299,11 @@ B<Throws>
 =over 
 
 =item L<WebService::GData::Error>
+
+If the email or password is not set it will throw an error with invalid_parameters code.
+Other errors might happen while trying to connect to the service. You should look at the error code and content.
+
+See also L<http://code.google.com/intl/en/apis/accounts/docs/AuthForInstalledApps.html#Errors> for error code list.
 
 =back
 
@@ -484,13 +509,16 @@ Example:
 
 =head3 key 
 
+=over
+
 The key is required by the youtube service to identify the application making the request.
 You must handle this in the developer dashboard:L<http://code.google.com/apis/youtube/dashboard/>.
+
 See also L<http://code.google.com/intl/en/apis/youtube/2.0/developers_guide_protocol.html#Developer_Key>.
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none> 
 
@@ -498,7 +526,7 @@ B<Parameters>
 
 B<Returns> 
 
-=over 
+=over 4
 
 =item C<key:Scalar>
 
@@ -650,7 +678,7 @@ This is handled by each service and should be transparent to the end user of the
 
 B<Parameters>
 
-=over
+=over 4
 
 =item C<none> 
 
@@ -658,7 +686,7 @@ B<Parameters>
 
 B<Returns> 
 
-=over 
+=over 4
 
 =item C<authorization_key:Scalar>
 
@@ -682,12 +710,10 @@ Example:
 =head1  HANDLING CAPTCHA
 
 Google data APIs relies on querying remote urls on particular services.
-
 All queries that fail will throw (die) a WebService::GData::Error object. 
+The CaptchaRequired code return by the service does not throw an error though as you can recover by a captcha.
 
-the CaptchaRequired code return by the service does not throw an error though as you can recover by a captcha.
-
-Here is an example of how to implement the logic for a captcha in a web context.
+Below is an example of how to implement the logic for a captcha in a web context.
 
 (WARNING:shall not be used in a web context though but easy to grasp!)
 
@@ -749,7 +775,7 @@ Example:
         );
     };
 
-	##error checking again:lather,rince,repeat...
+    ##error checking again:lather,rinse,repeat...
 
 
 
