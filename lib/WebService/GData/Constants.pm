@@ -1,7 +1,7 @@
 package WebService::GData::Constants;
 use strict;
 use warnings;
-our $VERSION  = 1.03;
+our $VERSION  = 1.04;
 
 use constant  {
 	#general...
@@ -15,6 +15,18 @@ use constant  {
 	#URLS
 	CLIENT_LOGIN_URL	=> 'https://www.google.com/accounts/ClientLogin',
 	CAPTCHA_URL			=> 'http://www.google.com/accounts/',
+	
+	#ClientLogin Errors
+	
+    BAD_AUTHENTICATION => 'BadAuthentication',	
+    NOT_VERIFIED       => 'NotVerified', 
+    TERMS_NOT_AGREED   => 'TermsNotAgreed', 
+    CAPTCHA_REQUIRED   => 'CaptchaRequired',
+    UNKNOWN            => 'Unknown', 	
+    ACCOUNT_DELETED    => 'AccountDeleted',
+    ACCOUNT_DISABLED   => 'AccountDisabled',	
+    SERVICE_DISABLED   => 'ServiceDisabled',
+    SERVICE_UNAVAILABLE=> 'ServiceUnavailable',
 
 	#SERVICES
 	ANALYTICS_SERVICE	=> 'analytics',
@@ -79,15 +91,19 @@ my  @namespace = qw(ATOM_NAMESPACE OPENSEARCH_NAMESPACE GDATA_NAMESPACE GEORSS_N
 my  @service   = qw(YOUTUBE_SERVICE WEBMASTER_SERVICE SPREADSHEETS_SERVICE SIDEWIKI_SERVICE PICASA_SERVICE MAPS_SERVICE HEALTH_SB_SERVICE HEALTH_SERVICE
 					GMAIL_SERVICE FINANCE_SERVICE DOCUMENTS_SERVICE CONTACTS_SERVICE CODE_SERVICE CALENDAR_SERVICE CALENDAR_SERVICE BOOK_SERVICE 
 					BLOGGER_SERVICE SITES_SERVICE BASE_SERVICE APPS_SERVICE ANALYTICS_SERVICE);
+			
+my  @errors   = qw(BAD_AUTHENTICATION NOT_VERIFIED TERMS_NOT_AGREED CAPTCHA_REQUIRED UNKNOWN ACCOUNT_DELETED ACCOUNT_DISABLED SERVICE_DISABLED
+					SERVICE_UNAVAILABLE);
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK   = (@format,@namespace,@general,@service,@query,@http_status);
+our @EXPORT_OK   = (@format,@namespace,@general,@service,@query,@http_status,@errors);
 our %EXPORT_TAGS = (http_status=>[@http_status],
 					service=>[@service],
 					format => [@format],
 					namespace=>[@namespace],
 					general=>[@general],
-					all=>[@format,@namespace,@general,@service,@query,@http_status]);
+					errors => [@errors],
+					all=>[@format,@namespace,@general,@service,@query,@http_status,@errors]);
 
 
 "The earth is blue like an orange.";
@@ -275,7 +291,35 @@ You can choose to import http status related constants by writing use WebService
 	
 =head3 INTERNAL_SERVER_ERROR
 
+I<import with :http_status>
 
+=head2 ERROR CODE CONSTANTS
+
+The error code consants map the possible values for an error response code from version 2 of the google data API.
+You can choose to import error code related constants by writing use WebService::GData::Constants qw(:errors);
+
+
+=head3 BAD_AUTHENTICATION
+	
+=head3 NOT_VERIFIED 
+
+=head3 TERMS_NOT_AGREED
+
+=head3 CAPTCHA_REQUIRED
+
+=head3 UNKNOWN	
+
+=head3 ACCOUNT_DELETED
+
+=head3 ACCOUNT_DISABLED
+
+=head3 SERVICE_DISABLED
+
+=head3 SERVICE_UNAVAILABLE
+
+I<import with :errors>
+
+See also L<http://code.google.com/intl/en/apis/accounts/docs/AuthForInstalledApps.html#Errors> for further informations about the errors meaning.
 
 =head1 BUGS AND LIMITATIONS
 

@@ -5,9 +5,8 @@ use WebService::GData::Error;
 use WebService::GData::Constants;
 use LWP;
 
-#do a client login
 
-our $VERSION          = 0.01_04;
+our $VERSION = 0.01_05;
 our $CLIENT_LOGIN_URI = WebService::GData::Constants::CLIENT_LOGIN_URL;
 our $CAPTCHA_URL      = WebService::GData::Constants::CAPTCHA_URL;
 
@@ -27,23 +26,22 @@ sub __init {
 
     $this->{email}    = $params{email};
     $this->{password} = $params{password};
-    
-    die new WebService::GData::Error( 
-        'invalid_parameters',
-        'Password and Email are required to log in.' 
-    ) if ( !$params{password} || !$params{email} );
-    
+
+    die new WebService::GData::Error( 'invalid_parameters',
+        'Password and Email are required to log in.' )
+      if ( !$params{password} || !$params{email} );
+
     $this->{service} = $params{service}
       || WebService::GData::Constants::YOUTUBE_SERVICE;
-      
+
     $this->{type} = $params{type} || 'HOSTED_OR_GOOGLE';
-    
+
     $this->{source} =
       ( defined $params{source} )
       ? $params{source}
       : __PACKAGE__ . '-' . $VERSION;
-      
-    $this->{captcha_token}  = $params{captcha_token};
+
+    $this->{captcha_token} = $params{captcha_token};
 
     $this->{captcha_answer} = $params{captcha_answer};
 
@@ -102,8 +100,20 @@ private _post => sub {
         return $res->content();
     }
     else {
-        die new WebService::GData::Error( $res->code, $res->content );
+        if (   $res->code == 500
+            && $res->content() =~ m/www.google.com:443 \(Invalid argument\)/ )
+        {
+            die new WebService::GData::Error( 'missing_ssl_module',
+                'Crypt::SSLeay must be installed in order to use ssl.' );
+        }
+        my $error = _parse_response( 'Error', $res->content );
+        die new WebService::GData::Error( $error, $res->content );
     }
+};
+
+private _parse_response => sub {
+    my ( $key, $content ) = @_;
+    return ( split( /$key\s*=(.+?)\s{1}/m, $content ) )[1];
 };
 
 private _clientLogin => sub {
@@ -121,13 +131,13 @@ private _clientLogin => sub {
     $content .= '&logincaptcha=' . $this->captcha_answer
       if ( $this->captcha_answer );
 
+    $this->{content} = $content;
+
     my $ret = $this->_post( $CLIENT_LOGIN_URI, $content );
 
-    $this->{Auth} = ( split( /Auth\s*=(.+?)\s{1}/, $ret ) )[1];
-
-    $this->{captcha_token} =
-      ( split( /CaptchaToken\s*=(.+?)\s{1}/m, $ret ) )[1];
-    $this->{captcha_url} = ( split( /CaptchaUrl\s*=(.+?)\s{1}/m, $ret ) )[1];
+    $this->{Auth}          = _parse_response( 'Auth',         $ret );
+    $this->{captcha_token} = _parse_response( 'CaptchaToken', $ret );
+    $this->{captcha_url}   = _parse_response( 'CaptchaUrl',   $ret );
     return $this;
 
 };
@@ -222,7 +232,11 @@ ClientLogin authorization key does expire but the expire time is set on a per se
 You should use this authorization system for installed applications.
 Web application should use the OAuth (to be implemented) or AuthSub (will be deprecated and will not be implemented) authorization systems.
 
-ClientLogin information can be found here:
+The connection is done via ssl, therefore you should install L<Crypt::SSLeay> before using this module or an error code: 'missing_ssl_module'
+will be thrown.
+
+
+More information about ClientLogin can be found here:
 
 L<http://code.google.com/intl/en/apis/accounts/docs/AuthForInstalledApps.html>
 
@@ -304,6 +318,8 @@ If the email or password is not set it will throw an error with invalid_paramete
 Other errors might happen while trying to connect to the service. You should look at the error code and content.
 
 See also L<http://code.google.com/intl/en/apis/accounts/docs/AuthForInstalledApps.html#Errors> for error code list.
+
+You can use L<WebService::GData::Constants> to check the error code.
 
 =back
 
@@ -707,10 +723,12 @@ Example:
 =back
 
 
-=head1  HANDLING CAPTCHA
+=head1  HANDLING ERROR/CAPTCHA
 
 Google data APIs relies on querying remote urls on particular services.
 All queries that fail will throw (die) a WebService::GData::Error object. 
+The error instance will contain the error code as a string in L<code()> and the full error string in C<content()>.
+
 The CaptchaRequired code return by the service does not throw an error though as you can recover by a captcha.
 
 Below is an example of how to implement the logic for a captcha in a web context.
@@ -719,7 +737,7 @@ Below is an example of how to implement the logic for a captcha in a web context
 
 
 Example:
-
+    use WebService::GData::Constants qw(:errors);
     use WebService::GData::ClientLogin;
 
     my $auth;	
@@ -735,6 +753,9 @@ Example:
     if(my $error = $@) {
         #something went wrong, display some info to the user
         #$error->code,$error->content
+        if($error->code eq BAD_AUTHENTICATION){
+            #display a message to the user...
+        }
     }
 
     #else it seems ok but...
@@ -782,6 +803,8 @@ Example:
 =head1  DEPENDENCIES
 
 L<LWP>
+
+L<Crypt::SSLeay>
 
 =head1 BUGS AND LIMITATIONS
 

@@ -1,4 +1,4 @@
-use Test::More tests => 24;
+use Test::More tests=>24;
 use Test::Mock::LWP;
 
 my %RHeaders = ();
@@ -50,21 +50,13 @@ use WebService::GData::Constants qw(:service);
 my $auth;
 eval { $auth = new WebService::GData::ClientLogin(); };
 my $error = $@;
+$auth = new WebService::GData::ClientLogin(email=> 'test@test.com',password=>'mypassword');
 
-ok( $error->isa(q[WebService::GData::Error]),
-    'an error is thrown if required parameters are not set.' );
+ok(ref($auth) eq 'WebService::GData::ClientLogin', 'An instance was created.' );
 
-ok(
-    $error->code eq 'invalid_parameters',
-'not setting the required parameters throws an invalid_parameters error code.'
-);
+ok( $error->isa(q[WebService::GData::Error]), 'an error is thrown if required parameters are not set.' );
 
-$auth = new WebService::GData::ClientLogin(
-    email    => 'test@test.com',
-    password => 'mypassword'
-);
-
-ok( $auth->isa(q[WebService::GData::ClientLogin]), 'An instance was created.' );
+ok($error->code eq 'invalid_parameters','not setting the required parameters throws an invalid_parameters error code.');
 
 ok( $auth->email eq 'test@test.com', 'The email was properly sent.' );
 
@@ -93,10 +85,11 @@ ok(
       'AIwbFARksypDdUSGGYRI_5v7Z9TaijoPQqpIfCEjTFPAiknOCI1VJtQ',
     'The authorization_key by default is not set.'
 );
-
+my $v = $WebService::GData::ClientLogin::VERSION;
+$v=~s/\./%2e/;
 ok(
     $Mock_request->content eq
-'Email=test%40test%2ecom&Passwd=mypassword&service=youtube&source=WebService%3a%3aGData%3a%3aClientLogin%2d0%2e0104&accountType=HOSTED_OR_GOOGLE',
+qq[Email=test%40test%2ecom&Passwd=mypassword&service=youtube&source=WebService%3a%3aGData%3a%3aClientLogin%2d$v&accountType=HOSTED_OR_GOOGLE],
     'The content is properly encoded.'
 );
 
@@ -112,10 +105,8 @@ $auth = new WebService::GData::ClientLogin(
 );
 
 ok(
-    $Mock_request->content eq
-'Email=test%40test%2ecom&Passwd=mypassword&service=cl&source=MyCompany%2dMyApp%2dv2&accountType=HOSTED&logintoken=abcd&logincaptcha=123',
-    'all the parameters are properly set.'
-);
+    $Mock_request->content eq 'Email=test%40test%2ecom&Passwd=mypassword&service=cl&source=MyCompany%2dMyApp%2dv2&accountType=HOSTED&logintoken=abcd&logincaptcha=123',
+    'all the parameters are properly set.');
 
 ok( $auth->service eq CALENDAR_SERVICE, 'The service is properly set.' );
 
@@ -138,3 +129,5 @@ ok($Mock_request->header('Authorization') eq 'GoogleLogin auth=' . $auth->author
 $auth->set_service_headers(undef,$Mock_request);
 
 ok($Mock_request->header('X-GData-Key') eq 'key=' . $auth->key, 'The request object service header has been properly set.' );
+
+done_testing();
