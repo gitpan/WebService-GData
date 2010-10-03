@@ -2,7 +2,11 @@ package WebService::GData::Feed;
 use WebService::GData 'private';
 use base 'WebService::GData';
 
-our $VERSION = 0.01_03;
+use WebService::GData::Feed::Author;
+use WebService::GData::Feed::Link;
+use WebService::GData::Feed::Category;
+
+our $VERSION = 0.01_04;
 
 sub __init {
     my ( $this, $feed, $auth ) = @_;
@@ -12,7 +16,24 @@ sub __init {
         $this->{_feed} = $feed->{feed} || $feed;
     }
     $this->{_auth} = $auth || undef;
+    
+    $this->__init_tag('author');
+    $this->__init_tag('link');
+    $this->__init_tag('category');
 }
+
+private __init_tag=> sub {
+    my ($this,$tag) = @_;
+    if(ref($this->{_feed}->{$tag}) eq 'ARRAY'){
+        my $tags = $this->{_feed}->{$tag};
+        my @intances = ();
+        my $class    = 'WebService::GData::Feed::'."\u$tag";
+        foreach my $tag (@$tags){
+            push @intances,$class->new($tag);
+        }
+        $this->{_feed}->{$tag}=\@intances;
+    } 
+};
 
 sub title {
     my $this = shift;
@@ -34,12 +55,12 @@ sub category {
 
 sub etag {
     my $this = shift;
-    return $this->{_feed}->{feed}->{'gd$etag'};
+    return $this->{_feed}->{'gd$etag'};
 }
 
 sub author {
     my $this = shift;
-    $this->{_feed}->{author};
+    return $this->{_feed}->{author};
 }
 
 ##OPEN SEARCH 1.1 RESPONSE ELEMENTS
@@ -74,7 +95,7 @@ sub get_link {
     return undef if(!$type);
     my $links = $this->links;
     foreach my $link (@$links) {
-        return $link->{href} if ( $link->{rel} =~ m/$type/ );
+        return $link->href if ( $link->rel =~ m/$type/ );
     }
 }
 
@@ -309,7 +330,7 @@ B<Returns>
 
 =over 4
 
-=item C<categories:ArrayRef> - an array ref containing hashes with scheme/term keys.
+=item C<categories:ArrayRef> - an array ref containing L<WebService::GData::Feed::Category>.
 
 =back
 
@@ -321,7 +342,7 @@ Example:
     
     my $categories = $feed->categories();
     foreach my $category (@$categories) {
-        #$category->{scheme},$category->{term}
+        #$category->scheme,$category->term,$category->label
     }
     
     #json feed category is as below:
@@ -330,6 +351,7 @@ Example:
        "scheme": "http://schemas.google.com/g/2005#kind",
        "term": "http://gdata.youtube.com/schemas/2007#video"
       }
+    ]
       
 
 =back
@@ -390,7 +412,7 @@ B<Returns>
 
 =over 4
 
-=item C<author:ArrayRef> - an array ref containing hashes with name/uri keys.
+=item C<author:ArrayRef> - an array ref containing L<WebService::GData::Feed::Author>.
 
 =back
 
@@ -403,7 +425,7 @@ Example:
    my $authors=  $feed->author();
    
    foreach my $author (@$authors){
-       #$author->{name}->{'$t'},$author->{uri}->{'$t'}
+       #$author->name,$author->uri
    }
    
    #raw json feed:
@@ -560,7 +582,7 @@ Example:
 
 =over
 
-Get the links of the feed in a array reference containing hash references with rel/type/href keys.	
+Get the links of the feed in a array reference.	
 
 B<Parameters>
 
@@ -574,7 +596,7 @@ B<Returns>
 
 =over 4
 
-=item C<links:ArrayRef> - an array ref containing hash references with rel/type/href keys.
+=item C<links:ArrayRef> - an array ref containing L<WebService::GData::Feed::Link> instances.
 =back
 
 Example:
@@ -585,7 +607,7 @@ Example:
     
     my $links = $feed->links();
     foreach my $link (@$links){
-        #link->{rel},$link->{type},$link->{href}
+        #link->rel,$link->type,$link->href
     }
     
     #raw json data:
@@ -599,27 +621,12 @@ Example:
        {
         "rel": "http://schemas.google.com/g/2005#feed",
         "type": "application/atom+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos?client\u003dytapi-google-jsdemo"
+        "href": "http://gdata.youtube.com/feeds/api/videos"
        },
        {
         "rel": "http://schemas.google.com/g/2005#batch",
         "type": "application/atom+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos/batch?client\u003dytapi-google-jsdemo"
-       },
-       {
-        "rel": "self",
-        "type": "application/atom+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos?alt\u003djson&start-index\u003d1&max-results\u003d2&client\u003dytapi-google-jsdemo"
-       },
-       {
-        "rel": "service",
-        "type": "application/atomsvc+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos?alt\u003datom-service"
-       },
-       {
-        "rel": "next",
-        "type": "application/atom+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos?alt\u003djson&start-index\u003d3&max-results\u003d2&client\u003dytapi-google-jsdemo"
+        "href": "http://gdata.youtube.com/feeds/api/videos/batch"
        }
       ]
     
@@ -718,17 +725,17 @@ this package only offers wrapper methods to what is relevant in the JSONC contex
        {
         "rel": "http://schemas.google.com/g/2005#feed",
         "type": "application/atom+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos?client\u003dytapi-google-jsdemo"
+        "href": "http://gdata.youtube.com/feeds/api/videos"
        },
        {
         "rel": "http://schemas.google.com/g/2005#batch",
         "type": "application/atom+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos/batch?client\u003dytapi-google-jsdemo"
+        "href": "http://gdata.youtube.com/feeds/api/videos/batch"
        },
        {
         "rel": "self",
         "type": "application/atom+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos?alt\u003djson&start-index\u003d1&max-results\u003d2&client\u003dytapi-google-jsdemo"
+        "href": "http://gdata.youtube.com/feeds/api/videos?alt=json&start-index=1&max-results=25"
        },
        {
         "rel": "service",
@@ -738,7 +745,7 @@ this package only offers wrapper methods to what is relevant in the JSONC contex
        {
         "rel": "next",
         "type": "application/atom+xml",
-        "href": "http://gdata.youtube.com/feeds/api/videos?alt\u003djson&start-index\u003d3&max-results\u003d2&client\u003dytapi-google-jsdemo"
+        "href": "http://gdata.youtube.com/feeds/api/videos?alt=json&start-index=3&max-results=25"
        }
       ],
       "author": [

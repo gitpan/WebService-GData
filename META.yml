@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               WebService-GData
-version:            0.0206
+version:            0.0207
 abstract:           Google data protocol v2 base object to inherit from.
 author:
     - shirirules<shirirulestheworld@gmail.com>

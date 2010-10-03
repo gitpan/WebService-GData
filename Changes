@@ -1,5 +1,13 @@
 Revision history for Perl extension WebService::GData.
 
+0.02_07  2010/10/03 0:27
+
+    - Modified WebService::GData::Feed so that complex data return an object
+    - Added 3 classes: WebService::GData::Feed::Author,WebService::GData::Feed::Link,WebService::GData::Feed::Category
+    - Updated the doc for WebService::GData::Feed
+    - Added tests for the above 3 classes and for WebService::GData::Feed.
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.02_06  2010/09/18 23:45
 
     - updated/fix WebService::GData::ClientLogin doc

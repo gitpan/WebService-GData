@@ -3,7 +3,14 @@ Makefile.PL
 MANIFEST
 README
 t/MyWeb.pm
-t/27-WebService-GData-Feed-load.t
+t/34-WebService-GData-Feed-instance.t
+t/33-WebService-GData-Feed-load.t
+t/32-WebService-GData-Feed-Category-instance.t
+t/31-WebService-GData-Feed-Category-load.t
+t/30-WebService-GData-Feed-Link-instance.t
+t/29-WebService-GData-Feed-Link-load.t
+t/28-WebService-GData-Feed-Author-instance.t
+t/27-WebService-GData-Feed-Author-load.t
 t/26-WebService-GData-ClientLogin-requestservice.t
 t/25-WebService-GData-ClientLogin-fail.t
 t/24-WebService-GData-ClientLogin-mockrequest.t
@@ -38,6 +45,9 @@ lib/WebService/GData/ClientLogin.pm
 lib/WebService/GData/Base.pm
 lib/WebService/GData/Feed.pm
 lib/WebService/GData/Feed/Entry.pm
+lib/WebService/GData/Feed/Author.pm
+lib/WebService/GData/Feed/Link.pm
+lib/WebService/GData/Feed/Category.pm
 lib/WebService/GData/Error.pm
 lib/WebService/GData/Error/Entry.pm
 lib/WebService/GData/Batch.pm
