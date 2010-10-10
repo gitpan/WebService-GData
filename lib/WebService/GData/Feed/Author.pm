@@ -50,7 +50,7 @@ WebService::GData::Feed::Author - Represent an xml author tag.
 
 =head1 DESCRIPTION
 
-I<inherits from L<WebService::GData::Feed>>
+I<inherits from L<WebService::GData>>
 
 This package wraps the author data found in a feed using the json format of the Google Data API v2 (no other format is supported!).
 

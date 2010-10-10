@@ -1,4 +1,4 @@
-use Test::More tests => 15;
+use Test::More tests => 16;
 use WebService::GData::Feed;
 
 my $feed = new WebService::GData::Feed( get_feed() );
@@ -6,6 +6,9 @@ my $feed = new WebService::GData::Feed( get_feed() );
 ok( $feed->title eq 'YouTube Videos', "Title properly set." );
 
 $feed->title("new title");
+
+ok( $feed->id eq "tag:youtube.com,2008:videos",
+    "id properly set." );
 
 ok( $feed->title eq 'new title', "Title properly set." );
 

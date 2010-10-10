@@ -1,38 +1,54 @@
 package WebService::GData::Feed::Entry;
 use WebService::GData;
 use base 'WebService::GData::Feed';
-our $VERSION  = 0.01_02;
-##inherits and not relevant properties
-##entry,totalResults,startIndex,itemsPerPage
+use WebService::GData::Feed::Entry::Content;
+
+our $VERSION = 0.01_03;
+
+
+##inherits and not relevant
+WebService::GData::disable(
+    [
+        qw(total_items total_results start_index items_per_page previous_link next_link entry)
+    ]
+);
+
+sub __init {
+    my $this = shift;
+    $this->SUPER::__init(@_);
+    $this->{_feed}->{content}= new WebService::GData::Feed::Entry::Content($this->{_feed}->{content});
+}
 
 ##inherits and relevant
 ##title,updated,category,link,author,new,etag
 
-	sub id {
-		my $this = shift;
-		$this->{_feed}->{id}->{'$t'};
-	}
 
-	sub summary {
-		my $this = shift;
-		$this->{_feed}->{summary}->{'$t'}=$_[0] if(@_==1);
-		$this->{_feed}->{summary}->{'$t'};
-	}
+sub published {
+    my $this = shift;
+    $this->{_feed}->{published}->{'$t'};
+}
 
-	sub content_type {
-		my $this = shift;
-		$this->{_feed}->{content}->{'type'};
-	}
+sub summary {
+    my $this = shift;
+    $this->{_feed}->{summary}={'$t'=>""} if(!$this->{_feed}->{summary});
+    $this->{_feed}->{summary}->{'$t'} = $_[0] if ( @_ == 1 );
+    $this->{_feed}->{summary}->{'$t'};
+}
 
-	sub content_source {
-		my $this = shift;
-		$this->{_feed}->{content}->{'src'};
-	}
+sub content {
+    my $this = shift;
+    $this->{_feed}->{content};
+}
 
-	sub published {
-		my $this = shift;
-		$this->{_feed}->{published}->{'$t'};
-	}
+sub content_type {
+    my $this = shift;
+    $this->{_feed}->{content}->type;
+}
+
+sub content_source {
+    my $this = shift;
+    $this->{_feed}->{content}->src;
+}
 
 "The earth is blue like an orange.";
 
@@ -49,7 +65,7 @@ WebService::GData::Feed::Entry - Abstract class wrapping json atom feed entry ta
 
     use WebService::GData::Feed::Entry;
 
-    my $feed = new WebService::GData::Feed::Entry($jsonfeed->{entry});
+    my $feed = new WebService::GData::Feed::Entry($jsonfeed->{entry}->[0]);
 
     $feed->title;
     $feed->author;
@@ -61,72 +77,168 @@ WebService::GData::Feed::Entry - Abstract class wrapping json atom feed entry ta
 
 I<inherits from L<WebService::GData::Feed>>
 
-This package wraps the entry tag from a query to a feed using the json format of the Google Data API v2 (no other format is supported!).
+This package wraps the entry tag from a query for a feed using the json format of the Google Data API v2 (no other format is supported!).
 It gives you access to some of the entry tag data via wrapper methods.
 Unless you implement a service, you should never instantiate this class directly.
 
 
-=head1 CONSTRUCTOR
+=head3 CONSTRUCTOR
 
-=head2 new
+=head3 new
 
 =over
 
-Accept the contenst of the entry tag from a feed that has been perlified (from_json($json_string)) and an auth object.
+Accept the content of the entry tag from a feed that has been perlified (from_json($json_string)) and an optional auth object.
 
 The auth object is not use in this class.
 
-=head1 INHERITED METHODS
+=head2 INHERITED METHODS
 
-As it inherits from  WebService::GData::Feed, you get access to the same methods that also exists within the entry tag namespace.
+This package inherits from  L<WebService::GData::Feed>,therefore, you get access to the same methods.
 
-This inherited method will send you back the entry data, not the feed data.
+These inherited methods will return the corresponding entry data, not the feed data.
 
-=head2 title
+=head3 id
 
-=head2 updated
+=head3 title
 
-=head2 category
+=head3 updated
 
-=head2 link
+=head3 category
 
-=head2 author
+=head3 link
 
-=head2 etag
+=head3 author
 
-=head1 CUSTOM METHODS
+=head3 etag
 
 
-=head2 id
+I<See L<WebService::GData::Feed> for further information about these methods.>
+
+=head2 GET METHODS
+
+=head3 content
+
+get the content of the entry.
+
+B<Parameters>
+
+=over 4
+
+=item C<none> 
+
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item C<WebService::GData::Feed::Entry::Content> 
+
+=back
+
+Example:
+
+    use WebService::GData::Feed::Entry;
+    
+    my $entry = new WebService::GData::Feed::Entry($entry);
+    
+    $entry->content->src();#http://www.youtube.com/v/qWAY3...
+    
+    $entry->content->type();#application/x-shockwave-flash
+
+=back
+
+
+
+=head3 content_type
 
 =over
 
-get the id of the entry.
+Get the content type of the entry. Shortcut for $entry->content->type.
 
-=head2 summary
-
-=over
-
-get/set the summary of the entry (description).
-
-
-=head2 content_type
+=head3 content_source
 
 =over
 
-Get the content type of the entry.
+Get the content source of the entry.Shortcut for $entry->content->src.
 
-=head2 content_source
-
-=over
-
-Get the content source of the entry.
-
-=head2 published
+=head3 published
 
 =over
 
 Get the publication date of the entry.
+
+B<Parameters>
+
+=over 4
+
+=item C<none> - getter
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item C<published:Scalar>
+
+=back
+
+Example:
+
+    use WebService::GData::Feed::Entry;
+    
+    my $feed = new WebService::GData::Feed::Entry($jsonentry);
+    
+    $feed->published();#"2010-09-20T13:49:20.028Z"
+   
+
+=back
+
+
+=head2 SET/GET METHODS
+
+All the following methods work as both setter and getters.
+
+=head3 summary
+
+=over
+
+set/get the summary (description) of the entry. Beware that not all services implement this tag.
+
+B<Parameters>
+
+=over 4
+
+=item C<none> - as a getter
+
+=item C<summary:Scalar> as a setter
+
+=back
+        
+B<Returns>
+
+=over 4
+
+=item C<none> - as a setter
+
+=item C<summary:Scalar> as a getter
+
+=back
+
+Example:
+
+    use WebService::GData::Feed::Entry;
+    
+    my $entry = new WebService::GData::Feed::Entry();
+    
+    $entry->summary("This video is about...");
+    
+    $entry->summary();#This video is about...
+
+=back
 
 
 =head1 BUGS AND LIMITATIONS

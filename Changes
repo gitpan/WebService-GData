@@ -1,5 +1,14 @@
 Revision history for Perl extension WebService::GData.
 
+0.02_08  2010/10/10 0:27
+
+    - Moved disable sub to WebService::GData and add doc about it.
+    - Fixed small typo in WebService::GData::Query doc
+    - Updated the doc for WebService::GData::Feed::Link which was a bad copy/paste from an other package.
+    - Added WebService::GData::Feed::Entry::Content
+    - Added new tests for the above package and for WebService::GData::Feed::Entry
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.02_07  2010/10/03 0:27
 
     - Modified WebService::GData::Feed so that complex data return an object

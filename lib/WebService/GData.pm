@@ -6,71 +6,88 @@ use Data::Dumper;
 use Carp;
 use overload '""' => "__to_string";
 
-our $VERSION = 0.02_07;
+our $VERSION = 0.02_08;
 
 sub import {
-	strict->import;
-	warnings->import;
-	my $import  = shift;
-	my $package = caller;
-	if ($import) {
-		install_in_package( ['private'], sub { return \&private; }, $package );
-	}
+    strict->import;
+    warnings->import;
+    my $import  = shift;
+    my $package = caller;
+    if ($import) {
+        install_in_package( ['private'], sub { return \&private; }, $package );
+    }
 }
 
 sub new {
-	my $package = shift;
-	my $this    = {};
-	bless $this, $package;
-	$this->__init(@_);
-	return $this;
+    my $package = shift;
+    my $this    = {};
+    bless $this, $package;
+    $this->__init(@_);
+    return $this;
 }
 
 sub __init {
-	my ( $this, %params ) = @_;
-	while ( my ( $prop, $val ) = each %params ) {
-		$this->{$prop} = $val;
-	}
+    my ( $this, %params ) = @_;
+    while ( my ( $prop, $val ) = each %params ) {
+        $this->{$prop} = $val;
+    }
 }
 
 sub __to_string {
-	return Dumper(shift);
+    return Dumper(shift);
 }
 
 sub install_in_package {
-	my ( $subnames, $callback, $package ) = @_;
+    my ( $subnames, $callback, $package ) = @_;
 
-	$package = $package || caller;
-	return if ( $package eq 'main' );    #never import into main
-	                                     #install
-	no strict 'refs';
-	no warnings 'redefine';
-	foreach my $sub (@$subnames) {
-		*{ $package . '::' . $sub } = &$callback($sub);
-	}
+    $package = $package || caller;
+    return if ( $package eq 'main' );    #never import into main
+    {                                    #install
+        no strict 'refs';
+        no warnings 'redefine';
+        foreach my $sub (@$subnames) {
+            *{ $package . '::' . $sub } = &$callback($sub);
+        }
+    }
 
 }
 
-sub private(%) {
-	my (%vars) = @_;
-	my ( $name, $sub ) = each %vars;
-	my $package = caller;
-	install_in_package(
-		[$name],
-		sub {
-			return sub {
-				my @args = @_;
-				my $p    = caller;
-				croak {
-					code    => 'forbidden_access',
-					content => 'private method called outside of its package'
-				  }
-				  if ( $p ne $package );
-				return &$sub(@args);
-			  }
-		},
-		$package
-	);
+sub private {
+    my ( $name, $sub ) = @_;
+    my $package = caller;
+    install_in_package(
+        [$name],
+        sub {
+            return sub {
+                my @args = @_;
+                my $p    = caller;
+                croak {
+                    code    => 'forbidden_access',
+                    content => 'private method called outside of its package'
+                  }
+                  if ( $p ne $package );
+                return &$sub(@args);
+              }
+        },
+        $package
+    );
+}
+
+sub disable {
+    my ( $parameters, $package ) = @_;
+    $package = $package || caller;
+    install_in_package(
+        $parameters,
+        sub {
+            return sub {
+
+                #keep the chaining
+                return shift();
+              }
+        },
+        $package
+    );
+
 }
 
 "The earth is blue like an orange.";
@@ -366,6 +383,53 @@ Example:
     }
 	
 =back
+
+=head3 disable
+
+=over
+
+Overwrite a method so that it does nothing...
+Some namespaces inherit from functionalities that are not required.
+The function will still be available but will just return the instance.
+
+B<Parameters>
+
+=over
+
+=item C<functions:ArrayRef> - array reference containing the functions to disable 
+
+=item C<package:Scalar*> - (optional) By default it uses the package in which it is called but you can specify a package.
+
+=back
+
+B<Returns> 
+
+=over 4 
+
+=item C<void>
+
+=back
+
+
+Example:
+
+    package Basic::User;
+    use WebService::GData;
+    use base 'WebService::GData::Feed';
+    
+    WebService::GData::disable("etag","title");
+
+    1;
+
+    #in user code:
+	
+    my $user = new Basic::User();
+
+    $user->etag("ddd")->title("dddd");#does nothing at all
+
+	
+=back
+
 
 =head1 BUGS AND LIMITATIONS
 

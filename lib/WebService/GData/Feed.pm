@@ -35,6 +35,11 @@ private __init_tag=> sub {
     } 
 };
 
+sub id {
+    my $this = shift;
+    $this->{_feed}->{id}->{'$t'};
+}
+
 sub title {
     my $this = shift;
     if ( @_ == 1 ) {
@@ -274,9 +279,41 @@ Example:
 
 All the following methods work as getters and do not accept parameters.
 
-=head3 updated
+=head3 id
 
 =over
+
+Get the id of the feed.
+
+B<Parameters>
+
+=over 4
+
+=item C<none> - getter
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item C<id:Scalar>
+
+=back
+
+Example:
+
+    use WebService::GData::Feed;
+    
+    my $feed = new WebService::GData::Feed($jsonfeed);
+    
+    $feed->id();#"tag:youtube.com,2008:video"
+   
+
+=back
+
+
+=head3 updated
 
 =over
 

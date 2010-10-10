@@ -6,7 +6,7 @@ use WebService::GData::Constants;
 use LWP;
 
 
-our $VERSION = 0.01_05;
+our $VERSION = 0.01_06;
 our $CLIENT_LOGIN_URI = WebService::GData::Constants::CLIENT_LOGIN_URL;
 our $CAPTCHA_URL      = WebService::GData::Constants::CAPTCHA_URL;
 
@@ -737,6 +737,7 @@ Below is an example of how to implement the logic for a captcha in a web context
 
 
 Example:
+
     use WebService::GData::Constants qw(:errors);
     use WebService::GData::ClientLogin;
 

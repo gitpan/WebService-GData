@@ -9,6 +9,8 @@ use WebService::GData::Constants qw(:all);
 
 our $VERSION = 0.0205;
 
+*disable = *WebService::GData::disable;
+
 sub __init {
     my $this = shift;
 
@@ -19,23 +21,6 @@ sub __init {
         strict      => TRUE,
     };
     return $this;
-}
-
-sub disable {
-    my ( $parameters, $package, $is_strict ) = @_;
-    $package = $package || caller;
-    WebService::GData::install_in_package(
-        $parameters,
-        sub {
-            return sub {
-
-                #keep the chaining
-                return shift();
-              }
-        },
-        $package
-    );
-
 }
 
 sub install_sub {

@@ -11,7 +11,7 @@ use LWP;
 
 #the base class specifies the basic get/post/insert/update/delete methods
 
-our $VERSION = 0.01_09;
+our $VERSION = 0.02_01;
 
 sub __init {
     my ( $this, %params ) = @_;
@@ -395,7 +395,7 @@ Example:
 
 =over
 
-Set/get an auth object that handles acess to protected contents.
+Set/get an auth object that handles access to protected contents.
 The auth object will be used by post/insert/update/delete methods by calling two methods: 
 
 =over

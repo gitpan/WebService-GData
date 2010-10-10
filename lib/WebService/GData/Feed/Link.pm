@@ -3,7 +3,7 @@ use WebService::GData;
 use base 'WebService::GData';
 use WebService::GData::Error;
 
-our $VERSION = 0.01_01;
+our $VERSION = 0.01_02;
 
 sub __init {
     my ( $this, $link ) = @_;
@@ -48,9 +48,15 @@ WebService::GData::Feed::Link - Represent an xml Link tag.
 
 =head1 DESCRIPTION
 
-I<inherits from L<WebService::GData::Feed>>
+I<inherits from L<WebService::GData>>
 
 This package wraps the link data found in a feed using the json format of the Google Data API v2 (no other format is supported!).
+
+=begin html
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+
+=end html
 
 
 =head1 CONSTRUCTOR
@@ -106,11 +112,11 @@ Example:
 =head1 GET/SET METHODS
 
 
-=head2 name
+=head2 rel
 
 =over
 
-get/set the name of the author.
+get/set the rel of the link.
 
 B<Parameters>
 
@@ -118,7 +124,7 @@ B<Parameters>
 
 =item C<none> - as a getter
 
-=item C<name:Scalar> as a setter
+=item C<rel:Scalar> as a setter
 
 =back
 
@@ -128,7 +134,7 @@ B<Returns>
 
 =item C<none> - as a setter
 
-=item C<name:Scalar> as a getter
+=item C<rel:Scalar> as a getter
 
 =back
 
@@ -136,20 +142,20 @@ Example:
 
     use WebService::GData::Feed::Author;
     
-    my $author = new WebService::GData::Feed::Author($jsonfeed->{author}->[0]);
+    my $link = new WebService::GData::Feed::Author($jsonfeed->{link}->[0]);
     
-    $feed->name("john");
+    $link->rel("alternate");
     
-    $feed->name();#john
+    $link->rel();#alternate
 
 =back
 
 
-=head2 uri
+=head2 type
 
 =over
 
-get/set the uri of the author.
+get/set the type of the link.
 
 B<Parameters>
 
@@ -157,7 +163,7 @@ B<Parameters>
 
 =item C<none> - as a getter
 
-=item C<uri:Scalar> as a setter
+=item C<type:Scalar> as a setter
 
 =back
 
@@ -167,7 +173,7 @@ B<Returns>
 
 =item C<none> - as a setter
 
-=item C<uri:Scalar> as a getter
+=item C<type:Scalar> as a getter
 
 =back
 
@@ -175,11 +181,49 @@ Example:
 
     use WebService::GData::Feed::Author;
     
-    my $author = new WebService::GData::Feed::Author($jsonfeed->{author}->[0]);
+    my $link = new WebService::GData::Feed::Author($jsonfeed->{link}->[0]);
     
-    $feed->uri("http://www.youtube.com/john");
+    $link->type("text/html");
     
-    $feed->uri();#"http://www.youtube.com/john"
+    $link->type();#text/html
+
+=back
+
+=head2 href
+
+=over
+
+get/set the href of the link.
+
+B<Parameters>
+
+=over 4
+
+=item C<none> - as a getter
+
+=item C<href:Scalar> as a setter
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item C<none> - as a setter
+
+=item C<href:Scalar> as a getter
+
+=back
+
+Example:
+
+    use WebService::GData::Feed::Author;
+    
+    my $link = new WebService::GData::Feed::Author($jsonfeed->{link}->[0]);
+    
+    $link->href("http://www.google.com/");
+    
+    $link->href();#http://www.google.com/
 
 =back
 

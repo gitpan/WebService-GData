@@ -47,7 +47,7 @@ WebService::GData::Feed::Category - Represent an xml category tag.
 
 =head1 DESCRIPTION
 
-I<inherits from L<WebService::GData::Feed>>
+I<inherits from L<WebService::GData>>
 
 This package wraps the category data found in a feed using the json format of the Google Data API v2 (no other format is supported!).
 

@@ -3,6 +3,10 @@ Makefile.PL
 MANIFEST
 README
 t/MyWeb.pm
+t/38-WebService-GData-Feed-Entry-instance.t
+t/37-WebService-GData-Feed-Entry-load.t
+t/36-WebService-GData-Feed-Entry-Content-instance.t
+t/35-WebService-GData-Feed-Entry-Content-load.t
 t/34-WebService-GData-Feed-instance.t
 t/33-WebService-GData-Feed-load.t
 t/32-WebService-GData-Feed-Category-instance.t
@@ -45,6 +49,7 @@ lib/WebService/GData/ClientLogin.pm
 lib/WebService/GData/Base.pm
 lib/WebService/GData/Feed.pm
 lib/WebService/GData/Feed/Entry.pm
+lib/WebService/GData/Feed/Entry/Content.pm
 lib/WebService/GData/Feed/Author.pm
 lib/WebService/GData/Feed/Link.pm
 lib/WebService/GData/Feed/Category.pm
