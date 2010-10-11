@@ -3,180 +3,197 @@ use WebService::GData;
 use base 'WebService::GData';
 
 use WebService::GData::Base;
+use WebService::GData::YouTube::Constants;
 use WebService::GData::YouTube::Query;
 use WebService::GData::YouTube::Feed;
 use WebService::GData::YouTube::Feed::PlaylistLink;
 
-	our $PROJECTION     = 'api';
-	our $BASE_URI       = 'http://gdata.youtube.com/feeds/';
-	our $VERSION  = 0.01_06;
+our $PROJECTION = WebService::GData::YouTube::Constants::PROJECTION;
+our $BASE_URI   = WebService::GData::YouTube::Constants::BASE_URI;
+our $VERSION    = 0.01_07;
 
-	sub __init {
-		my ($this,$auth) = @_;
+sub __init {
+    my ( $this, $auth ) = @_;
 
-		$this->{_baseuri}   = $BASE_URI.$PROJECTION.'/';
-		$this->{_dbh}       = new WebService::GData::Base();
-		$this->{_dbh}->auth($auth) if($auth);
+    $this->{_baseuri} = $BASE_URI . $PROJECTION . '/';
+    $this->{_request}    = new WebService::GData::Base();
+    $this->{_request}->auth($auth) if ($auth);
 
-		#overwrite default query engine to support youtube extra feature
-		my $query = new WebService::GData::YouTube::Query();
-		$query->key($auth->key) if($auth);
-		$this->query($query);
-	}
+    #overwrite default query engine to support youtube extra feature
+    my $query = new WebService::GData::YouTube::Query();
+    $query->key( $auth->key ) if ($auth);
+    $this->query($query);
+}
 
-	sub query {
-		my ($this,$query) = @_;
-		return $this->{_dbh}->query($query);
-	}
+sub query {
+    my ( $this, $query ) = @_;
+    return $this->{_request}->query($query);
+}
 
-	sub base_uri {
-		my $this = shift;
-		return $this->{_baseuri};
-	}
+sub base_uri {
+    my $this = shift;
+    return $this->{_baseuri};
+}
 
-	sub base_query {
-		my $this = shift;
-		return $this->query->to_query_string;
-	}
+sub base_query {
+    my $this = shift;
+    return $this->query->to_query_string;
+}
 
-	#playlist related
+#playlist related
 
-	sub get_user_playlist_by_id {
-		my ($this,$playlistid,$full) = @_;
+sub get_user_playlist_by_id {
+    my ( $this, $playlistid, $full ) = @_;
 
-		my $res = $this->{_dbh}->get($this->{_baseuri}.'playlists/'.$playlistid);
+    my $res =
+      $this->{_request}->get( $this->{_baseuri} . 'playlists/' . $playlistid );
 
-		my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
+    my $playlists =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-		return $playlists if($full);
+    return $playlists if ($full);
 
-	 	return $playlists->entry->[0];	
-	}
+    return $playlists->entry->[0];
+}
 
+sub get_user_playlists {
+    my ( $this, $channel, $full ) = @_;
 
-	sub get_user_playlists {
-		my ($this,$channel,$full) = @_;
+    #by default, the one connected is returned
+    my $uri = $this->{_baseuri} . 'users/default/playlists';
+    $uri = $this->{_baseuri} . 'users/' . $channel . '/playlists' if ($channel);
 
-		#by default, the one connected is returned
-		my $uri = $this->{_baseuri}.'users/default/playlists';
-		   $uri = $this->{_baseuri}.'users/'.$channel.'/playlists' if($channel);
+    my $res = $this->{_request}->get($uri);
 
-		my $res = $this->{_dbh}->get($uri);
+    my $playlists =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-		my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
+    return $playlists if ($full);
 
-		return $playlists if($full);
+    return $playlists->entry;
+}
 
-	 	return $playlists->entry;	
-	}
+#video related
 
-	#video related
+sub search_video {
+    my ( $this, $query ) = @_;
+    $this->query($query) if ($query);
+    my $res = $this->{_request}->get( $this->{_baseuri} . 'videos/' );
+    my $playlists =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
+    return $playlists->entry;
+}
 
+sub get_video_by_id {
+    my ( $this, $id ) = @_;
 
-	sub search_video {
-		my ($this,$query) = @_;
-		$this->query($query) if($query);
-		my $res = $this->{_dbh}->get($this->{_baseuri}.'videos/');
-		my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
-	 	return $playlists->entry;	
-	}
+    my $uri = $this->{_baseuri} . 'videos/' . $id;
 
-	sub get_video_by_id {
-		my ($this,$id) = @_;
+    my $res = $this->{_request}->get($uri);
 
-		my $uri = $this->{_baseuri}.'videos/'.$id;
+    my $playlists =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-		my $res = $this->{_dbh}->get($uri);
+    return $playlists->entry->[0];
+}
 
-		my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
+sub get_user_video_by_id {
+    my ( $this, $id, $channel ) = @_;
 
-	 	return $playlists->entry->[0];	
-	}
+    my $uri = $this->{_baseuri} . 'users/default/uploads/' . $id;
+    $uri = $this->{_baseuri} . 'users/' . $channel . '/uploads/' . $id
+      if ($channel);
 
-	sub get_user_video_by_id {
-		my ($this,$id,$channel) = @_;
+    my $res = $this->{_request}->get($uri);
 
-		my $uri = $this->{_baseuri}.'users/default/uploads/'.$id;
-		   $uri = $this->{_baseuri}.'users/'.$channel.'/uploads/'.$id if($channel);
+    my $playlists =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-		my $res = $this->{_dbh}->get($uri);
+    return $playlists->entry->[0];
+}
 
-		my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
+sub get_user_videos {
+    my ( $this, $channel ) = @_;
 
-	 	return $playlists->entry->[0];	
-	}
+    my $uri = $this->{_baseuri} . 'users/default/uploads';
+    $uri = $this->{_baseuri} . 'users/' . $channel . '/uploads' if ($channel);
 
- 	sub get_user_videos {
-		my ($this,$channel) = @_;
+    my $res = $this->{_request}->get($uri);
 
-		my $uri = $this->{_baseuri}.'users/default/uploads';
-		   $uri = $this->{_baseuri}.'users/'.$channel.'/uploads' if($channel);
+    my $playlists =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-		my $res = $this->{_dbh}->get($uri);
+    return $playlists->entry;
+}
 
-		my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
+sub get_user_favorite_videos {
+    my ( $this, $channel ) = @_;
 
-	 	return $playlists->entry;	
-	}
+    my $uri = $this->{_baseuri} . 'users/default/favorites/';
+    $uri = $this->{_baseuri} . 'users/' . $channel . '/favorites/'
+      if ($channel);
 
-	sub get_user_favorite_videos {
-		my ($this,$channel) = @_;
+    my $res = $this->{_request}->get($uri);
 
-		my $uri = $this->{_baseuri}.'users/default/favorites/';
-		   $uri = $this->{_baseuri}.'users/'.$channel.'/favorites/' if($channel);
+    my $playlists =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-		my $res = $this->{_dbh}->get($uri);
+    return $playlists->entry;
+}
 
-		my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
+sub move_video {
+    my ( $this, %params ) = @_;
 
-	 	return $playlists->entry;
-	}
+    my $playlistLink =
+      new WebService::GData::YouTube::Feed::PlaylistLink( {}, $this->{_request} );
 
-	sub move_video {
-		my ($this,%params)=@_;
+    #delete old one
+    $playlistLink->playlistId( $params{'from'} );
+    $playlistLink->deleteVideo( videoId => $params{'videoid'} );
 
-		   my $playlistLink = new WebService::GData::YouTube::Feed::PlaylistLink({},$this->{_dbh});
-			  #delete old one
-		      $playlistLink-> playlistId($params{'from'});
-		      $playlistLink-> deleteVideo(videoId=>$params{'videoid'});
-			  #put in new one
-		      $playlistLink-> playlistId($params{'to'});
-		      $playlistLink-> addVideo(videoId=>$params{'videoid'});
-	}
+    #put in new one
+    $playlistLink->playlistId( $params{'to'} );
+    $playlistLink->addVideo( videoId => $params{'videoid'} );
+}
 
+#standard feeds
+no strict 'refs';
+foreach my $stdfeed (
+    qw(top_rated top_favorites most_viewed most_popular most_recent most_discussed most_responded recently_featured watch_on_mobile)
+  )
+{
 
-	#standard feeds
-	no strict 'refs';
-	foreach my $stdfeed (qw(top_rated top_favorites most_viewed most_popular most_recent most_discussed most_responded recently_featured watch_on_mobile)){
+    *{ __PACKAGE__ . '::get_' . $stdfeed . '_videos' } = sub {
+        my ( $this, $region, $category, $time ) = @_;
 
-		*{__PACKAGE__.'::get_'.$stdfeed.'_videos'} = sub {
-			my ($this,$region,$category,$time) = @_;
+        my $uri = $this->{_baseuri} . 'standardfeeds/';
+        $uri .= $region . '/'   if ($region);
+        $uri .= $stdfeed;
+        $uri .= '_' . $category if ($category);
+        $this->query->time($time) if ($time);
+        my $res = $this->{_request}->get($uri);
 
-			my $uri = $this->{_baseuri}.'standardfeeds/';
-			   $uri.= $region.'/' if($region);
-			   $uri.= $stdfeed;
-			   $uri.= '_'.$category if($category);
-				$this->query->time($time) if($time);
-		   my $res = $this->{_dbh}->get($uri);
+        my $playlists =
+          new WebService::GData::YouTube::Feed( $res, $this->{_request} );
+        return $playlists->entry;
+      }
+}
 
-		    my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
-	 	    return $playlists->entry;			
-		}
-	}
+#to do: comments returns comments feeds! responses,related sends back video feed so are ok!
+foreach my $feed (qw(comments responses related)) {
 
-	#to do: comments returns comments feeds! responses,related sends back video feed so are ok!
-	foreach my $feed (qw(comments responses related)){
+    *{ __PACKAGE__ . '::get_' . $feed . '_for_video_id' } = sub {
+        my ( $this, $id ) = @_;
 
-		*{__PACKAGE__.'::get_'.$feed.'_for_video_id'} = sub {
-			my ($this,$id) = @_;
+        my $uri = $this->{_baseuri} . 'video/' . $id . '/' . $feed;
+        my $res = $this->{_request}->get($uri);
 
-			my $uri = $this->{_baseuri}.'video/'.$id.'/'.$feed;
-		    my $res = $this->{_dbh}->get($uri);
-
-		    my $playlists = new WebService::GData::YouTube::Feed($res,$this->{_dbh});
-	 	    return $playlists->entry;			
-		}
-	}
+        my $playlists =
+          new WebService::GData::YouTube::Feed( $res, $this->{_request} )
+          ;
+        return $playlists->entry;
+      }
+}
 
 "The earth is blue like an orange.";
 
@@ -242,7 +259,8 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
 
 =head1 DESCRIPTION
 
-!WARNINGS! Developer release. Things may change or not work but feel free to give me some feedbacks!
+!WARNINGS! Developer release. Starting refactoring.
+Even if the interface should not change too much, things may change or breack but feel free to give me some feedbacks!
 
 I<inherits from L<WebService::GData>>
 

@@ -1,5 +1,16 @@
 Revision history for Perl extension WebService::GData.
 
+0.02_09  2010/10/11 23:05
+
+    - Documented a bit more the WebService::GData::Feed entry sub.
+    - the above sub now loads a package only once 
+    - Added a new test for the above sub and the package itself
+    - updated the doc here and there
+    - documented the YouTube::Constants package and added a test
+    - Feed and Entry doc was specifying a auth object where it should have been a Base request object.
+    - will start rewriting the YouTube service which certainly does not work now.
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.02_08  2010/10/10 0:27
 
     - Moved disable sub to WebService::GData and add doc about it.

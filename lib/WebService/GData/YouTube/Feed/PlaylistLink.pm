@@ -49,11 +49,6 @@ our $VERSION  = 0.01_01;
 		return join ',',@keywords;
 	}
 
-	sub etag {
-		my $this = shift;
-		$this->{_feed}->{'gd$etag'};
-	}
-
 
 
 #####WRITE###########

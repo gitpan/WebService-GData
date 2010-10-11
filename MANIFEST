@@ -3,6 +3,13 @@ Makefile.PL
 MANIFEST
 README
 t/MyWeb.pm
+t/JSONResponse.pm
+t/44-WebService-GData-YouTube-Feed-Video-load.t
+t/43-WebService-GData-YouTube-load.t
+t/42-WebService-GData-YouTube-Constants-imported.t
+t/41-WebService-GData-YouTube-Constants-noimport.t
+t/40-WebService-GData-YouTube-Constants-load.t
+t/39-WebService-GData-Feed-instance.t
 t/38-WebService-GData-Feed-Entry-instance.t
 t/37-WebService-GData-Feed-Entry-load.t
 t/36-WebService-GData-Feed-Entry-Content-instance.t

@@ -1,7 +1,7 @@
 package WebService::GData::Constants;
 use strict;
 use warnings;
-our $VERSION  = 1.04;
+our $VERSION  = 1.05;
 
 use constant  {
 	#general...
@@ -153,7 +153,7 @@ You can import all of them by using :all or import only a subset by using :forma
 
 =head2 GENERAL CONSTANTS
 
-The general consants map the google data API version number and the xml header.
+The general constants map the google data API version number and the xml header.
 You can choose to import general related constants by writing use WebService::GData::Constants qw(:general);
 
 =head3 GDATA_MINIMUM_VERSION
@@ -166,7 +166,7 @@ I<import with :general>
 
 =head2 FORMAT CONSTANTS
 
-The format consants map the available protocol format as of version 2 of the google data API.
+The format constants map the available protocol format as of version 2 of the google data API.
 You can choose to import format related constants by writing use WebService::GData::Constants qw(:format);
 
 =head3 JSON
@@ -181,7 +181,7 @@ I<import with :format>
 
 =head2 NAMESPACE CONSTANTS
 
-The namespace consants map the available namespace used as of version 2 of the google data API.
+The namespace constants map the available namespace used as of version 2 of the google data API.
 You can choose to import namespace related constants by writing use WebService::GData::Constants qw(:namespace);
 The namespace follow the following format: xmlns:namespace_name="uri"
 
@@ -203,7 +203,7 @@ I<import with :namespace>
 
 =head2 SERVICE CONSTANTS
 
-The service consants map the available services used for the ClientLogin authentication system.
+The service constants map the available services used for the ClientLogin authentication system.
 Some of the service name does not map very well the API name, ie Picasa API has a service name of 'lh2'.
 The constants offer naming closer to the original API (PICASA_SERVICE). Not shorter but may be easier to remember.
 In case the service name came to change, you won't need to change it in every peace of code either.
@@ -254,7 +254,7 @@ I<import with :service>
 
 =head2 QUERY CONSTANTS
 
-The query consants map the possible values for query parameters of version 2 of the google data API.
+The query constants map the possible values for query parameters of version 2 of the google data API.
 You can choose to import query related constants by writing use WebService::GData::Constants qw(:query);
 
 
@@ -267,7 +267,7 @@ I<import with :query>
 
 =head2 HTTP STATUS CONSTANTS
 
-The http status consants map the possible values for a response code from version 2 of the google data API.
+The http status constants map the possible values for a response code from version 2 of the google data API.
 You can choose to import http status related constants by writing use WebService::GData::Constants qw(:http_status);
 
 
@@ -295,7 +295,7 @@ I<import with :http_status>
 
 =head2 ERROR CODE CONSTANTS
 
-The error code consants map the possible values for an error response code from version 2 of the google data API.
+The error code constants map the possible values for an error response code from version 2 of the google data API.
 You can choose to import error code related constants by writing use WebService::GData::Constants qw(:errors);
 
 

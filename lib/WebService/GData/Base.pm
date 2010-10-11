@@ -34,7 +34,7 @@ sub auth {
         $this->{__AUTH__} = $auth;
 
         #update the ua agent string
-        $this->{__UA__}->agent( $auth->source() .' '. _ua_base_name() )
+        $this->{__UA__}->agent( $auth->source() . ' ' . _ua_base_name() )
           if ( $this->{__UA__} );
     }
     return $this->{__AUTH__};
@@ -165,7 +165,7 @@ private _request => sub {
     if ( !$this->{__UA__} ) {
         my $name = _ua_base_name();
         if ( $this->auth ) {
-            $name = $this->auth->source .' '. $name;
+            $name = $this->auth->source . ' ' . $name;
         }
         $this->{__UA__} = _create_ua($name);
     }

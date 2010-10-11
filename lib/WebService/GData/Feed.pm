@@ -6,33 +6,33 @@ use WebService::GData::Feed::Author;
 use WebService::GData::Feed::Link;
 use WebService::GData::Feed::Category;
 
-our $VERSION = 0.01_04;
+our $VERSION = 0.01_05;
 
 sub __init {
-    my ( $this, $feed, $auth ) = @_;
+    my ( $this, $feed, $request ) = @_;
     $this->{_feed} = {};
-    
-    if(ref($feed) eq 'HASH'){
+
+    if ( ref($feed) eq 'HASH' ) {
         $this->{_feed} = $feed->{feed} || $feed;
     }
-    $this->{_auth} = $auth || undef;
-    
+    $this->{_request} = $request || undef;
+
     $this->__init_tag('author');
     $this->__init_tag('link');
     $this->__init_tag('category');
 }
 
-private __init_tag=> sub {
-    my ($this,$tag) = @_;
-    if(ref($this->{_feed}->{$tag}) eq 'ARRAY'){
-        my $tags = $this->{_feed}->{$tag};
+private __init_tag => sub {
+    my ( $this, $tag ) = @_;
+    if ( ref( $this->{_feed}->{$tag} ) eq 'ARRAY' ) {
+        my $tags     = $this->{_feed}->{$tag};
         my @intances = ();
-        my $class    = 'WebService::GData::Feed::'."\u$tag";
-        foreach my $tag (@$tags){
-            push @intances,$class->new($tag);
+        my $class    = 'WebService::GData::Feed::' . "\u$tag";
+        foreach my $tag (@$tags) {
+            push @intances, $class->new($tag);
         }
-        $this->{_feed}->{$tag}=\@intances;
-    } 
+        $this->{_feed}->{$tag} = \@intances;
+    }
 };
 
 sub id {
@@ -97,7 +97,7 @@ sub links {
 
 sub get_link {
     my ( $this, $type ) = @_;
-    return undef if(!$type);
+    return undef if ( !$type );
     my $links = $this->links;
     foreach my $link (@$links) {
         return $link->href if ( $link->rel =~ m/$type/ );
@@ -123,7 +123,7 @@ sub entry {
     $entries = [$entries] if ( ref($entries) ne 'ARRAY' );
 
     #default to the base Entry class
-    my $class = qq[WebService::GData::Feed::Entry];
+    my $class = q[WebService::GData::Feed::Entry];
 
     if ($wanted_class) {
         $class = $wanted_class;
@@ -141,12 +141,16 @@ sub entry {
             $class = 'WebService::GData::' . $match . '::Feed::' . $feedType;
         }
     }
+    {
+        no strict 'refs';
 
-    eval("use $class");
-
+        #all entries inherit from WebService::GData::Feed::Entry
+        eval("use $class")
+          if ( !@{ $class . '::ISA' } );
+    }
     my @ret = ();
     foreach my $entry (@$entries) {
-        push @ret, $class->new( $entry, $this->{_auth} );
+        push @ret, $class->new( $entry, $this->{_request} );
     }
     return \@ret;
 }
@@ -157,11 +161,11 @@ private _get_feed_type => sub {
     my $feedTypeString = '';
 
     if ( $this->{_feed}->{category} || $this->{_feed}->{entry}->{category} ) {
-        $feedTypeString = $this->{_feed}->{category}->[0]->{term}
-          || $this->{_feed}->{entry}->{category}->[0]->{term};
+        $feedTypeString = $this->{_feed}->{category}->[0]->term
+          || $this->{_feed}->{entry}->{category}->[0]->term;
     }
 
-    #the feed type is after the anchor http://gdata.youtube.com/schemas/2007#video
+  #the feed type is after the anchor http://gdata.youtube.com/schemas/2007#video
     my $feedType = ( split( '#', $feedTypeString ) )[1];
     $feedType = "\u$feedType";    #Uppercase to load the proper class
     return $feedType;
@@ -210,8 +214,8 @@ Unless you implement a service, you should not instantiate this class directly.
 
 Create a L<WebService::GData::Feed> instance.
 
-Accept a json feed entry that has been perlified (from_json($json_string)) and an optional auth object.
-The auth object is passed along each entry classes but the Feed class itself does not use it.
+Accept a json feed entry that has been perlified (from_json($json_string)) and an optional request object (L<WebService::GData::Base>).
+The request object is passed along each entry classes but the Feed class itself does not use it.
 
 B<Parameters>
 
@@ -219,7 +223,7 @@ B<Parameters>
 
 =item C<json_feed:Object> - a json feed perlified
 
-=item C<auth:Object> - an authorization object like L<WebService::GData::ClientLogin>
+=item C<request:Object> - a request object L<WebService::GData::Base>
 
 =back
 
@@ -377,7 +381,7 @@ Example:
     
     my $feed = new WebService::GData::Feed($jsonfeed);
     
-    my $categories = $feed->categories();
+    my $categories = $feed->category();
     foreach my $category (@$categories) {
         #$category->scheme,$category->term,$category->label
     }
@@ -726,7 +730,44 @@ This method return an array reference of Feed::* objects.
 
 It works as a factory by instantiating the proper Feed::* class.
 
-ie,if you read a Video feed from a youtube service, it will instantiate the WebService::GData::Youtube::Feed::Video class and feed it the result.
+For example,if you read a video feed from a youtube service, it will instantiate the WebService::GData::Youtube::Feed::Video class and feed it the result.
+
+It will look first at the category scheme set in the feed or at the entry category scheme that contains the base schema name of the feed.
+
+If it does not guess properly,you can always specify the name of the package to load as its first argument.
+
+
+B<Parameters>
+
+=over 4
+
+=item C<class_name::Scalar>* - (optional) Force a specific class to be loaded and do not let entry guess the feed type on its own.
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item C<entries:ArrayRef> - By default it uses L<WebService::GData::Entry::Feed> but will return instances of the found package or of the specified one
+
+=back
+
+Example:
+
+    use WebService::GData::Feed;
+    
+    my $feed = new WebService::GData::Feed($jsonfeed);
+    
+    my $entries = $feed->entry('WebService::GData::Feed::Entry');#force a particular class to be used
+    my $entries = $feed->entry();#let entry figure it out by looking at the feed meta information.
+    
+    foreach my $entry (@$entries) {
+        
+        #$entry->title,$entry->id... all entry sub classes should inherit from WebService::GData::Feed::Entry
+    }   
+
+=back
 
 =head2 JSON FEED EXAMPLE
 

@@ -3,7 +3,7 @@ use WebService::GData;
 use base 'WebService::GData::Feed';
 use WebService::GData::Feed::Entry::Content;
 
-our $VERSION = 0.01_03;
+our $VERSION = 0.01_04;
 
 
 ##inherits and not relevant
@@ -77,7 +77,8 @@ WebService::GData::Feed::Entry - Abstract class wrapping json atom feed entry ta
 
 I<inherits from L<WebService::GData::Feed>>
 
-This package wraps the entry tag from a query for a feed using the json format of the Google Data API v2 (no other format is supported!).
+This package wraps the entry tag from a query for a feed using the json format of the Google Data API v2 
+(no other format is supported!).
 It gives you access to some of the entry tag data via wrapper methods.
 Unless you implement a service, you should never instantiate this class directly.
 
@@ -88,14 +89,14 @@ Unless you implement a service, you should never instantiate this class directly
 
 =over
 
-Accept the content of the entry tag from a feed that has been perlified (from_json($json_string)) and an optional auth object.
+Accept the content of the entry tag from a feed that has been perlified (from_json($json_string)) 
+and an optional request object,L<WebService::GData::Base>.
 
-The auth object is not use in this class.
+The request object is not use in this class.
 
 =head2 INHERITED METHODS
 
 This package inherits from  L<WebService::GData::Feed>,therefore, you get access to the same methods.
-
 These inherited methods will return the corresponding entry data, not the feed data.
 
 =head3 id

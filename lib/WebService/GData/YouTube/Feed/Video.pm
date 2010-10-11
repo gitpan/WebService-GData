@@ -1,225 +1,229 @@
 package WebService::GData::YouTube::Feed::Video;
-use base WebService::GData::Feed::Entry;
-our $VERSION  = 0.01_02;
+
+use WebService::GData;
+use base 'WebService::GData::Feed::Entry';
+use WebService::GData::Constants qw(:all);
+use WebService::GData::YouTube::Constants qw(:all);
+use WebService::GData::Error;
+
+our $VERSION         = 0.01_03;
+
+our $UPLOAD_BASE_URI = UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
+
+our $BASE_URI        = BASE_URI . PROJECTION . '/users/default/uploads/';
+
 use constant {
-	DIRECT_UPLOAD  =>'DIRECT_UPLOAD',
-	BROWSER_UPLOAD =>'BROWSER_UPLOAD'
+    DIRECT_UPLOAD  => 'DIRECT_UPLOAD',
+    BROWSER_UPLOAD => 'BROWSER_UPLOAD'
 };
 
-	sub upload_mode {
-		my $this = shift;
-		if(@_==1){
-			$this->{_UPLOAD_MODE}=shift;
-			$this->{_UPLOAD_MODE}=undef if($this->{_UPLOAD_MODE} ne DIRECT_UPLOAD || $this->{_UPLOAD_MODE} ne BROWSER_UPLOAD);
-		}
-		$this->{_UPLOAD_MODE}=BROWSER_UPLOAD if(!$this->{_UPLOAD_MODE});
-		$this->{_UPLOAD_MODE};
-	}
+sub view_count {
+    my $this = shift;
+    $this->{_feed}->{'yt$statistics'}->{'viewCount'};
+}
 
-	sub view_count {
-		my $this = shift;
-		$this->{_feed}->{'yt$statistics'}->{'viewCount'};
-	}
+sub favorite_count {
+    my $this = shift;
+    $this->{_feed}->{'yt$statistics'}->{'favoriteCount'};
+}
 
-	sub favorite_count {
-		my $this = shift;
-		$this->{_feed}->{'yt$statistics'}->{'favoriteCount'};
-	}
+sub media_player {
+    my $this = shift;
+    $this->{_feed}->{'media$group'}->{'media$player'}->{url};
+}
 
-	sub media_player {
-		my $this = shift;
-		$this->{_feed}->{'media$group'}->{'media$player'}->{url};
-	}
+sub aspect_ratio {
+    my $this = shift;
+    $this->{_feed}->{'media$group'}->{'yt$aspectRatio'}->{'$t'};
+}
 
-	sub aspect_ratio {
-		my $this = shift;
-		$this->{_feed}->{'media$group'}->{'yt$aspectRatio'}->{'$t'};
-	}
+sub video_id {
+    my $this = shift;
+    $this->{_feed}->{'media$group'}->{'yt$videoid'}->{'$t'};
+}
 
-	sub video_id {
-		my $this = shift;
-		$this->{_feed}->{'media$group'}->{'yt$videoid'}->{'$t'};
-	}
+sub duration {
+    my $this = shift;
+    $this->{_feed}->{'media$group'}->{'yt$duration'}->{'seconds'};
+}
 
-	sub duration {
-		my $this = shift;
-		$this->{_feed}->{'media$group'}->{'yt$duration'}->{'seconds'};
-	}
+sub content {
+    my $this = shift;
+    $this->{_feed}->{'media$group'}->{'media$content'};
+}
 
-	sub content {
-		my $this = shift;
-		$this->{_feed}->{'media$group'}->{'media$content'};
-	}
+sub comments {
+    my $this = shift;
+    $this->{_feed}->{'gd$comments'}->{'gd$feedLink'}->{'href'};
+}
 
-	sub comments {
-		my $this = shift;
-		$this->{_feed}->{'gd$comments'}->{'gd$feedLink'}->{'href'};
-	}
+sub thumbnails {
+    my $this = shift;
+    $this->{_feed}->{'media$group'}->{'media$thumbnail'};
+}
 
-	sub thumbnails {
-		my $this = shift;
-		$this->{_feed}->{'media$group'}->{'media$thumbnail'};
-	}
+sub uploaded {
+    my $this = shift;
+    $this->{_feed}->{'media$group'}->{'yt$uploaded'}->{'$t'};
+}
 
-	sub uploaded {
-		my $this = shift;
-		$this->{_feed}->{'media$group'}->{'yt$uploaded'}->{'$t'};
-	}
-
-	sub etag {
-		my $this = shift;
-		$this->{_feed}->{'gd$etag'};
-	}
-
-	sub appcontrol_state {
-		my $this = shift;
-		return $this->{_feed}->{'app$control'}->{'yt$state'}->{reasonCode};
-	}
-
+sub appcontrol_state {
+    my $this = shift;
+    return $this->{_feed}->{'app$control'}->{'yt$state'}->{reasonCode};
+}
 
 #####WRITE FUNCTIONS########################
 
-	sub access_controll {
-		my $this = shift;
-		if(@_==1){
-			$this->{_feed}->{'yt$accessControl'}=[] if(!$this->{_feed}->{'yt$accessControl'});
-			push @{$this->{_feed}->{'yt$accessControl'}},{action=>$_[0],permission=>$_[1]};
-		}
-		$this->{_feed}->{'yt$accessControl'};
-	}
+sub access_control {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->{_feed}->{'yt$accessControl'} = []
+          if ( !$this->{_feed}->{'yt$accessControl'} );
+        push @{ $this->{_feed}->{'yt$accessControl'} },
+          { action => $_[0], permission => $_[1] };
+    }
+    $this->{_feed}->{'yt$accessControl'};
+}
 
-	sub _access_controll_serialize {
-		my $this = shift;
-		my $accessControll="";
-		my @accesses=@{$this->{_feed}->{'yt$accessControl'}};
-		foreach my $access (@accesses){
-			$accessControll.=qq[<yt:accessControl action="$access->{action}" permission="$access->{permission}"/>];
-		}
-		return $accessControll;
-	}
+sub _access_control_serialize {
+    my $this           = shift;
+    my $accessControll = "";
+    my @accesses       = @{ $this->{_feed}->{'yt$accessControl'} };
+    foreach my $access (@accesses) {
+        $accessControll .=
+qq[<yt:accessControl action="$access->{action}" permission="$access->{permission}"/>];
+    }
+    return $accessControll;
+}
 
-	sub category {
-		my $this = shift;
-		if(@_==1){
-			$this->{_feed}->{'media$group'}->{'media$category'}=[] if(!ref($this->{_feed}->{'media$group'}->{'media$category'}) eq 'ARRAY');
-			push @{$this->{_feed}->{'media$group'}->{'media$category'}},{'$t'=>$_[0],'label'=>$_[0],'scheme'=>'http://gdata.youtube.com/schemas/2007/categories.cat'};
-			$this->{_feed}->{'media$group'}->{'media$category'}->{'$t'}=$_[0];
-		}
-		$this->{_feed}->{'media$group'}->{'media$category'};
-	}
+sub category {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->{_feed}->{'media$group'}->{'media$category'} = []
+          if ( !ref( $this->{_feed}->{'media$group'}->{'media$category'} ) eq
+            'ARRAY' );
+        push @{ $this->{_feed}->{'media$group'}->{'media$category'} },
+          {
+            '$t'     => $_[0],
+            'label'  => $_[0],
+            'scheme' => 'http://gdata.youtube.com/schemas/2007/categories.cat'
+          };
+        $this->{_feed}->{'media$group'}->{'media$category'}->{'$t'} = $_[0];
+    }
+    $this->{_feed}->{'media$group'}->{'media$category'};
+}
 
-	sub _category_serialize {
-		my $this = shift;
-		my $categories = $this->category;
-		my $cats='';
-		foreach my $cat (@$categories){
-			$cats.= qq[<media:category scheme="$cat->{scheme}">$cat->{label}</media:category>];
-		}
-		return $cats;
-	}
+sub _category_serialize {
+    my $this       = shift;
+    my $categories = $this->category;
+    my $cats       = '';
+    foreach my $cat (@$categories) {
+        $cats .=
+qq[<media:category scheme="$cat->{scheme}">$cat->{label}</media:category>];
+    }
+    return $cats;
+}
 
+sub description {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        return $this->{_feed}->{'media$group'}->{'media$description'}->{'$t'} =
+          $_[0];
+    }
+    $this->{_feed}->{'media$group'}->{'media$description'}->{'$t'};
+}
 
+sub keywords {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->{_feed}->{'media$group'}->{'media$keywords'}->{'$t'} = $_[0];
+    }
+    $this->{_feed}->{'media$group'}->{'media$keywords'}->{'$t'};
+}
 
-	sub description {
-		my $this = shift;
-		if(@_==1){
-			return $this->{_feed}->{'media$group'}->{'media$description'}->{'$t'}=$_[0];
-		}
-		$this->{_feed}->{'media$group'}->{'media$description'}->{'$t'};
-	}
+sub is_listing_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[0]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[0]->{permission} eq 'allowed' ) ? 1 : 0;
+}
 
-	sub keywords {
-		my $this = shift;
-		if(@_==1){
-			$this->{_feed}->{'media$group'}->{'media$keywords'}->{'$t'}=$_[0];
-		}
-		$this->{_feed}->{'media$group'}->{'media$keywords'}->{'$t'};
-	}
+sub is_comment_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[1]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[1]->{permission} eq 'allowed' ) ? 1 : 0;
+}
 
-	sub is_listing_allowed {
-		my $this = shift;
-		if(@_==1){
-			$this->access_controll->[0]->{permission}=$_[0];
-		}
-		return ($this->access_controll->[0]->{permission} eq 'allowed')?1:0;
-	}
+sub is_comment_vote_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[2]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[2]->{permission} eq 'allowed' ) ? 1 : 0;
+}
 
-	sub is_comment_allowed {
-		my $this = shift;
-		if(@_==1){
-			$this->access_controll->[1]->{permission}=$_[0];
-		}
-		return ($this->access_controll->[1]->{permission} eq 'allowed')?1:0;
-	}
+sub is_video_response_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[3]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[3]->{permission} eq 'allowed' ) ? 1 : 0;
+}
 
-	sub is_comment_vote_allowed {
-		my $this = shift;
-		if(@_==1){
-			$this->access_controll->[2]->{permission}=$_[0];
-		}
-		return ($this->access_controll->[2]->{permission} eq 'allowed')?1:0;
-	}
+sub is_rating_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[4]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[4]->{permission} eq 'allowed' ) ? 1 : 0;
+}
 
-	sub is_video_response_allowed {
-		my $this = shift;
-		if(@_==1){
-			$this->access_controll->[3]->{permission}=$_[0];
-		}
-		return ($this->access_controll->[3]->{permission} eq 'allowed')?1:0;
-	}
+sub is_embedding_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[5]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[5]->{permission} eq 'allowed' ) ? 1 : 0;
+}
 
-	sub is_rating_allowed {
-		my $this = shift;
-		if(@_==1){
-			$this->access_controll->[4]->{permission}=$_[0];
-		}
-		return ($this->access_controll->[4]->{permission} eq 'allowed')?1:0;
-	}
+sub is_syndication_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[6]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[6]->{permission} eq 'allowed' ) ? 1 : 0;
+}
 
-	sub is_embedding_allowed {
-		my $this = shift;
-		if(@_==1){
-			$this->access_controll->[5]->{permission}=$_[0];
-		}
-		return ($this->access_controll->[5]->{permission} eq 'allowed')?1:0;
-	}
+sub is_private {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->{_feed}->{'media$group'}->{'yt$private'} = $_[0];
+    }
+    return ( $this->{_feed}->{'media$group'}->{'yt$private'} ) ? 1 : 0;
+}
 
-	sub is_syndication_allowed {
-		my $this = shift;
-		if(@_==1){
-			$this->access_controll->[6]->{permission}=$_[0];
-		}
-		return ($this->access_controll->[6]->{permission} eq 'allowed')?1:0;
-	}
+sub delete {
+    my $this = shift;
+    my $uri  = $BASE_URI . $this->video_id;
+    $this->{_request}->delete( $uri, 0 );
+}
 
+sub _serialize {
+    my ($this) = @_;
 
-	sub private {
-		my $this = shift;
-		if(@_==1){
-			$this->{_feed}->{'media$group'}->{'yt$private'}=$_[0];
-		}
-		return ($this->{_feed}->{'media$group'}->{'yt$private'})?1:0;
-	}
+    my $title       = $this->title;
+    my $description = $this->description;
+    my $keywords    = $this->keywords;
+    my $isPrivate   = $this->is_private == 1 ? '<yt:private/>' : '';
 
-	sub delete {
-		my $this = shift;
-		my	$uri = 'http://gdata.youtube.com/feeds/api/users/default/uploads/'.$this->video_id;
-		$this->{_auth}->delete($uri,0);
-	}
+    my $accessControl =
+      ( $this->access_control ) ? $this->_access_control_serialize() : "";
+    my $category = ( $this->category ) ? $this->_category_serialize() : "";
 
-
-	sub _serialize {
-		my ($this) = @_;
-
-		my $title       = $this->title;
-		my $description = $this->description;
-		my $keywords    = $this->keywords;
-		my $isPrivate   = $this->private==1?'<yt:private/>':'';
-
-		my $accessControll=($this->access_controll) ? $this->_access_controll_serialize():"";
-		my $category      =($this->category) ? $this->_category_serialize():"";
-
-		my $content = <<XML;
+    my $content = <<XML;
 <media:group>
  <media:title type="plain">$title</media:title>
  <media:description type="plain">$description</media:description>
@@ -227,86 +231,88 @@ use constant {
  <media:keywords>$keywords</media:keywords>
 $isPrivate
 </media:group>
-$accessControll
+$accessControl
 XML
 
-		return $content;
-	}
+    return $content;
+}
 
-	sub save {
-		my ($this) = @_;
+sub save {
+    my ($this) = @_;
 
-		my $content = $this->_serialize();
+    my $content = $this->_serialize();
 
-		if($this->video_id){
-			$this->{_auth}->clean_namespace();
-			$this->{_auth}->add_namespace('xmlns:media="http://search.yahoo.com/mrss/"');
-			$this->{_auth}->add_namespace('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
-			$this->{_auth}->update('http://gdata.youtube.com/feeds/api/users/default/uploads/'.$this->video_id,$content);
-		}
-		else {
-			if($this->upload_mode eq DIRECT_UPLOADING){
-   	   			$this->direct_uploading('http://uploads.gdata.youtube.com/feeds/api/users/default/uploads/',$content);
-			}
-			else {
-   	   			return $this->browser_uploading('http://uploads.gdata.youtube.com/feeds/api/users/default/uploads/',$content);
-			}
-		}
-	}
+    if ( $this->video_id ) {
+        $this->{_request}->clean_namespaces();
+        $this->{_request}->add_namespaces( ATOM_NAMESPACE, MEDIA_NAMESPACE,
+            YOUTUBE_NAMESPACE );
+        $this->{_request}->update( $BASE_URI . $this->video_id, $content );
+    }
+    else {
+        if ( $this->upload_mode eq DIRECT_UPLOAD ) {
+            $this->direct_uploading( $UPLOAD_BASE_URI, $content );
+        }
+        else {
+            return $this->browser_uploading( $UPLOAD_BASE_URI, $content );
+        }
+    }
+}
 
 #video upload
 
-	sub filename {
-		my $this = shift;
-		if(@_==1){
-			return $this->{_filename}=$_[0];
-		}
-		$this->{_filename};
-	}
+sub filename {
+    my $this = shift;
+    return $this->{_filename} = $_[0] if ( @_ == 1 );
+    $this->{_filename};
+}
 
-	sub _binary_data {
-		my $this = shift;
+sub _binary_data {
+    my $this = shift;
 
-		if(@_==1){
-			my $fh=$_[0];
-			binmode($fh);
-			my $data = '';
-			while (read $fh, my $buf, 4) {
-  				$data .= $buf;
-			}
-			close $fh;
-			return $this->{_binary_data}=$data;
-		}
-		$this->{_binary_data};
-	}
+    if ( @_ == 1 ) {
+        my $fh = $_[0];
+        binmode($fh);
+        my $data = '';
+        while ( read $fh, my $buf, 1024 ) {
+            $data .= $buf;
+        }
+        close $fh;
+        return $this->{_binary_data} = $data;
+    }
+    $this->{_binary_data};
+}
 
-	sub upload_mode {
-		my $this = shift;
-		if(@_==1){
-			$this->{_UPLOAD_MODE}=shift;
-			$this->{_UPLOAD_MODE}=undef if($this->{_UPLOAD_MODE} ne DIRECT_UPLOAD || $this->{_UPLOAD_MODE} ne BROWSER_UPLOAD);
-		}
-		$this->{_UPLOAD_MODE}=BROWSER_UPLOAD if(!$this->{_UPLOAD_MODE});
-		$this->{_UPLOAD_MODE};
-	}
+sub upload_mode {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->{_UPLOAD_MODE} = shift;
+        $this->{_UPLOAD_MODE} = undef
+          if ( $this->{_UPLOAD_MODE} ne DIRECT_UPLOAD
+            || $this->{_UPLOAD_MODE} ne BROWSER_UPLOAD );
+    }
+    $this->{_UPLOAD_MODE} = BROWSER_UPLOAD if ( !$this->{_UPLOAD_MODE} );
+    $this->{_UPLOAD_MODE};
+}
 
-	sub browser_uploading {
-		my ($this,$uri,$content) = @_;
-   	    my $res  = $this->{_auth}->insert('http://gdata.youtube.com/action/GetUploadToken',$content);
+sub browser_uploading {
+    my ( $this, $uri, $content ) = @_;
+    my $res =
+      $this->{_request}
+      ->insert( 'http://gdata.youtube.com/action/GetUploadToken', $content );
 
-		my $response = $res->content();
-		my ($url,$token) = $response=~m/<url>(.+?)<\/url><token>(.+?)<\/token>/;
-		return ($url,$token);
-	}
+    my $response = $res->content();
+    my ( $url, $token ) =
+      $response =~ m/<url>(.+?)<\/url><token>(.+?)<\/token>/;
+    return ( $url, $token );
+}
 
+#move this in Base?
+sub direct_uploading {
+    my ( $this, $uri, $content ) = @_;
 
-	#move this in Base?
-	sub direct_uploading {
-		my ($this,$uri,$content) = @_;
+    my $binary = $this->_binary_data;
 
-		my $binary = $this->_binary_data;
-
-		my $content2= <<XML;
+    my $content2 = <<XML;
 
 --f93dcbA3
 Content-Type: application/atom+xml; charset=UTF-8
@@ -317,9 +323,9 @@ Content-Type: application/atom+xml; charset=UTF-8
   xmlns:yt="http://gdata.youtube.com/schemas/2007">
 XML
 
-		$content2.=$content.'</entry>';
+    $content2 .= $content . '</entry>';
 
-			$content2.=<<XML;
+    $content2 .= <<XML;
 
 --f93dcbA3
 Content-Type: video/quicktime
@@ -330,30 +336,28 @@ $binary
 --f93dcbA3--
 XML
 
-		my $req  = HTTP::Request->new(POST => $uri);
+    my $req = HTTP::Request->new( POST => $uri );
 
-		if($this->{_auth}->{Auth}){
-  		   	$this->{_auth}->{Auth}->set_authorization_headers($this,$req);
-  		   	$this->{_auth}->{Auth}->set_service_headers($this,$req);
-		}
-  		$req->header('GData-Version' => $this->{_auth}->query->{v});
-		$req->header('Slug'=> $this->filename);
-  	    $req->content_type('multipart/related; boundary="f93dcbA3"');
-  		$req->header('Content-Length'=> length($content2));
-  		$req->header('Connection' => 'close');
-    	$req->content($content2);
+    if ( $this->{_request}->auth ) {
+        $this->{_request}->auth->set_authorization_headers( $this, $req );
+        $this->{_request}->auth->set_service_headers( $this, $req );
+    }
+    $req->header( 'GData-Version' => $this->{_request}->query->get('v') );
+    $req->header( 'Slug'          => $this->filename );
+    $req->content_type('multipart/related; boundary="f93dcbA3"');
+    $req->header( 'Content-Length' => length($content2) );
+    $req->header( 'Connection'     => 'close' );
+    $req->content($content2);
 
-    	my $res = $this->{_auth}->{ua}->request($req);
-    	if ($res->is_success) {
-			return $this;
-		}
-		else {
-			print $res->content;
-		}
+    my $res = $this->{_request}->{__UA__}->request($req);
+    if ( $res->is_success ) {
+        return $this;
+    }
+    else {
+        die new WebService::GData::Error( $res->code, $res->content );
+    }
 
-		return $this;	
-	}
-
+}
 
 "The earth is blue like an orange.";
 
@@ -511,7 +515,7 @@ These methods allow to grant access to certain activity to the users.
 You can decide to unlist the video from the search, make it private or forbid comments,etc.
 
 
-=head3 access_controll
+=head3 access_control
 
 =head3 is_listing_allowed
 
@@ -527,7 +531,7 @@ You can decide to unlist the video from the search, make it private or forbid co
 
 =head3 is_syndication_allowed
 
-=head3 private
+=head3 is_private
 
 =head2 QUERY METHODS
 
