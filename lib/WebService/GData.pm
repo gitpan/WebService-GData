@@ -4,9 +4,12 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Carp;
-use overload '""' => "__to_string";
+use overload '""' => "__to_string",'==' =>'equal';
 
-our $VERSION = 0.02_09;
+our $VERSION = 0.03_01;
+
+our $AUTOLOAD;
+
 
 sub import {
     strict->import;
@@ -35,6 +38,11 @@ sub __init {
 
 sub __to_string {
     return Dumper(shift);
+}
+
+sub equal {
+	my($left,$right)=@_;
+	return overload::StrVal($left) eq overload::StrVal($right);
 }
 
 sub install_in_package {
@@ -90,6 +98,35 @@ sub disable {
 
 }
 
+##must test for side effects.
+##Might get rid of the following...
+
+sub AUTOLOAD {
+  my $func = $AUTOLOAD;
+
+     $func =~ s/.*:://;
+  my $this = shift;
+  return if(!ref($this));
+  return if($func=~m/[A-Z]+/);
+
+  if(@_>=1){
+	return $this->__set($func,@_);
+  }
+  $this->__get($func);
+
+}
+
+sub __set {
+    my ($this,$func,@args) = @_;
+    $this->{$func}= @args==1 ? $args[0]:\@args;
+    return $this;
+}
+
+sub __get {
+    my ($this,$func) = @_;
+    return $this->{$func};
+}
+
 "The earth is blue like an orange.";
 
 __END__
@@ -117,6 +154,7 @@ WebService::GData - Google data protocol v2 base object to inherit from.
         }
         return $this;
     }
+
 
     WebService::GData::install_in_package([qw(firstname lastname age gender)],sub {
             my $func = shift;
@@ -160,7 +198,11 @@ WebService::GData - Google data protocol v2 base object to inherit from.
     #overloaded string will dump the object with Data::Dumper;
 	
     print $object;#$VAR1 = bless( { 'name' => 'test' }, 'WebService::MyService' );
-
+    
+    #__set and __get are used to create automaticly getters and setters
+    $object->age(24);
+    $object->age();#24 
+    $object->{age};#24
 
 =head1 DESCRIPTION
 
@@ -264,6 +306,43 @@ You should overwrite it and add your own logic.
 
 Overload the stringification quotes and display a dump of the instance by using L<Data::Dumper>. 
 You should overwrite it should you need to create a specific output.
+
+=back
+
+=head3 equal
+
+=over
+
+Overload the comparison "==" by checking that boch objects are hosted in the same memory slot.
+
+=back
+
+=head2 AUTOLOAD
+
+Calls to undefined methods on instance are catched and dispatch to __get if the call does not contain any parameter or __set if 
+parameters exist. static methods are not supported.
+You can overwrite these two methods in your package to meet your naming needs.
+For example, when you call $instance->dont_exist, you look into $instance->{__DONT_EXIST} instead of the default $instance->{dont_exist}.
+
+
+=head3 __get
+
+=over
+
+This method cathes all calls to undefined methods to which no parameters are passed.
+If you call C<$instance->unknown_method>, the C<__get> method will return C<$instance->{unknown_method}> by default.
+The C<__get> method gets the instance and the name of the function has parameters.
+
+=back
+
+=head3 __set
+
+=over
+
+This method cathes all calls to undefined methods to which parameters are passed.
+If you call C<$instance->unknown_method($val,$val2)>, the C<__set> method will set the parameters to C<$instance->{unknown_method}> by default.
+When several parameters are passed, they are saved as an array reference.
+The C<__get> method gets the instance and the name of the function has parameters.
 
 =back
 
@@ -417,7 +496,7 @@ Example:
     use WebService::GData;
     use base 'WebService::GData::Feed';
     
-    WebService::GData::disable("etag","title");
+    WebService::GData::disable([qw(etag title)]);
 
     1;
 

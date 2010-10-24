@@ -2,11 +2,12 @@ package WebService::GData::Feed;
 use WebService::GData 'private';
 use base 'WebService::GData';
 
-use WebService::GData::Feed::Author;
-use WebService::GData::Feed::Link;
-use WebService::GData::Feed::Category;
+use WebService::GData::Node::AuthorEntity;
+use WebService::GData::Node::Link();
+use WebService::GData::Node::Category();
+use WebService::GData::Node::Title();
 
-our $VERSION = 0.01_05;
+our $VERSION = 0.01_06;
 
 sub __init {
     my ( $this, $feed, $request ) = @_;
@@ -16,22 +17,33 @@ sub __init {
         $this->{_feed} = $feed->{feed} || $feed;
     }
     $this->{_request} = $request || undef;
+ 
+    $this->__set_tag('WebService::GData::Node::','AuthorEntity','author');
+    $this->__init_tags('WebService::GData::Node::',(qw(link category title)));
 
-    $this->__init_tag('author');
-    $this->__init_tag('link');
-    $this->__init_tag('category');
 }
 
-private __init_tag => sub {
-    my ( $this, $tag ) = @_;
-    if ( ref( $this->{_feed}->{$tag} ) eq 'ARRAY' ) {
-        my $tags     = $this->{_feed}->{$tag};
-        my @intances = ();
-        my $class    = 'WebService::GData::Feed::' . "\u$tag";
+private __set_tag => sub {
+   my ($this,$package,$class,$node)=@_;
+   if ( ref( $this->{_feed}->{$node} ) eq 'ARRAY' ) {
+        my $tags     = $this->{_feed}->{$node};
+        my @instances = ();
+        my $class    = $package . "\u$class";
         foreach my $tag (@$tags) {
-            push @intances, $class->new($tag);
+            push @instances, $class->new($tag);
         }
-        $this->{_feed}->{$tag} = \@intances;
+        $this->{_feed}->{$node} = \@instances;
+    }
+    else {
+         my $class = $package . "\u$class"; 
+         $this->{_feed}->{$node}=  $class->new($this->{_feed}->{$node});          
+    }   
+};
+
+private __init_tags => sub {
+    my ( $this, $package,@nodes ) = @_;
+    foreach my $node (@nodes) {  
+        $this->__set_tag($package,"\u$node",$node);
     }
 };
 
@@ -43,9 +55,9 @@ sub id {
 sub title {
     my $this = shift;
     if ( @_ == 1 ) {
-        $this->{_feed}->{title}->{'$t'} = $_[0];
+        $this->{_feed}->{title}->text($_[0]);
     }
-    $this->{_feed}->{title}->{'$t'};
+    $this->{_feed}->{title}->text;
 }
 
 sub updated {
@@ -165,7 +177,7 @@ private _get_feed_type => sub {
           || $this->{_feed}->{entry}->{category}->[0]->term;
     }
 
-  #the feed type is after the anchor http://gdata.youtube.com/schemas/2007#video
+    #the feed type is after the anchor http://gdata.youtube.com/schemas/2007#video
     my $feedType = ( split( '#', $feedTypeString ) )[1];
     $feedType = "\u$feedType";    #Uppercase to load the proper class
     return $feedType;
@@ -371,7 +383,7 @@ B<Returns>
 
 =over 4
 
-=item C<categories:ArrayRef> - an array ref containing L<WebService::GData::Feed::Category>.
+=item C<categories:ArrayRef> - an array ref containing L<WebService::GData::Node::Category>.
 
 =back
 
@@ -453,7 +465,7 @@ B<Returns>
 
 =over 4
 
-=item C<author:ArrayRef> - an array ref containing L<WebService::GData::Feed::Author>.
+=item C<author:ArrayRef> - an array ref containing L<WebService::GData::Node::AuthorEntity>.
 
 =back
 
@@ -637,7 +649,7 @@ B<Returns>
 
 =over 4
 
-=item C<links:ArrayRef> - an array ref containing L<WebService::GData::Feed::Link> instances.
+=item C<links:ArrayRef> - an array ref containing L<WebService::GData::Node::Link> instances.
 =back
 
 Example:

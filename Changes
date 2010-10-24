@@ -1,5 +1,15 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_01  2010/10/24 22:45
+
+    - Added __set and __get autoload methods in WebService::GData
+    - Created the abstract Node package and implemented so nodes. 
+    - Added the youtube nodes
+    - Added new tests for nodes
+    - Erased all the tags in Feed:: and moved them in Nodes:: as Entity representation.
+    - YouTube service may not work right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.02_09  2010/10/11 23:05
 
     - Documented a bit more the WebService::GData::Feed entry sub.

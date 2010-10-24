@@ -5,8 +5,10 @@ use base 'WebService::GData::Feed::Entry';
 use WebService::GData::Constants qw(:all);
 use WebService::GData::YouTube::Constants qw(:all);
 use WebService::GData::Error;
+use WebService::GData::Node::PointEntity;
 
-our $VERSION         = 0.01_03;
+
+our $VERSION         = 0.01_04;
 
 our $UPLOAD_BASE_URI = UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
 
@@ -16,6 +18,29 @@ use constant {
     DIRECT_UPLOAD  => 'DIRECT_UPLOAD',
     BROWSER_UPLOAD => 'BROWSER_UPLOAD'
 };
+
+sub _pos {
+    my ($this) = @_;
+    $this->{_feed}->{'georss$where'}; 
+}
+
+
+sub pos {
+    my ($this,$pos) = @_;
+    my $where = $this->{_feed}->{'georss$where'};
+    if(ref($where) eq 'HASH'){
+        $this->{_feed}->{'georss$where'}= new WebService::GData::Node::PointEntity($where->{'gml$Point'}->{'gml$pos'});
+    }
+    if($pos && !$where){
+        $this->{_feed}->{'georss$where'}= $where = new WebService::GData::Node::PointEntity();   
+    }
+    if($pos && $where){
+        $this->{_feed}->{'georss$where'}->pos($pos);
+        return $this;
+    }
+    return $this->{_feed}->{'georss$where'}->pos;
+    
+}
 
 sub view_count {
     my $this = shift;

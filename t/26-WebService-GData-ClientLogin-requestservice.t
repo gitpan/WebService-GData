@@ -14,7 +14,7 @@ my $ua = LWP::UserAgent->new();
    $ua->timeout(10);
 my $r = $ua->get($url);
 skipit('You may not be connected to the internet...')   unless $r->code == 200;
-diag('It looks like you are connect to the internet.');
+diag('You are connected to the internet.');
 
 use WebService::GData::ClientLogin;
 use WebService::GData::Constants qw(:errors);

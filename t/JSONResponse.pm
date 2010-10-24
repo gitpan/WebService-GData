@@ -301,6 +301,13 @@ our $CONTENTS=<<'JSON';
       "countHint": 157
      }
     },
+    "georss$where": {
+     "gml$Point": {
+      "gml$pos": {
+       "$t": "25.482952117919922 32.34375"
+      }
+     }
+    },
     "media$group": {
      "media$category": [
       {

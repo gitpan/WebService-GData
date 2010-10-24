@@ -1,7 +1,8 @@
 package WebService::GData::Feed::Entry;
 use WebService::GData;
 use base 'WebService::GData::Feed';
-use WebService::GData::Feed::Entry::Content;
+use WebService::GData::Node::Content;
+use WebService::GData::Node::Summary;
 
 our $VERSION = 0.01_04;
 
@@ -16,7 +17,8 @@ WebService::GData::disable(
 sub __init {
     my $this = shift;
     $this->SUPER::__init(@_);
-    $this->{_feed}->{content}= new WebService::GData::Feed::Entry::Content($this->{_feed}->{content});
+    $this->{_feed}->{content}= new WebService::GData::Node::Content($this->{_feed}->{content}||{});
+    $this->{_feed}->{summary}= new WebService::GData::Node::Summary($this->{_feed}->{summary}||{});
 }
 
 ##inherits and relevant
@@ -30,9 +32,9 @@ sub published {
 
 sub summary {
     my $this = shift;
-    $this->{_feed}->{summary}={'$t'=>""} if(!$this->{_feed}->{summary});
-    $this->{_feed}->{summary}->{'$t'} = $_[0] if ( @_ == 1 );
-    $this->{_feed}->{summary}->{'$t'};
+
+    $this->{_feed}->{summary}->text($_[0]) if ( @_ == 1 );
+    $this->{_feed}->{summary}->text;
 }
 
 sub content {

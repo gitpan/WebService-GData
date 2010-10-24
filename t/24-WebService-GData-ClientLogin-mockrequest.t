@@ -130,4 +130,3 @@ $auth->set_service_headers(undef,$Mock_request);
 
 ok($Mock_request->header('X-GData-Key') eq 'key=' . $auth->key, 'The request object service header has been properly set.' );
 
-done_testing();
