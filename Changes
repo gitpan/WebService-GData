@@ -1,9 +1,20 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_02  2010/10/30 14:08
+
+    - Created a Collection class and related tests
+    - WebService::GData::Node can understand camelCase and hyphen based functions
+    - Added YouTube browser upload mechanism documentation
+    - rewrite of some parts of the WebService::GData::YouTube::Feed::Video
+    - renamed WebService::GData::YouTube::Node:: to WebService::GData::YouTube::YT:: to follow the core convention
+    - added a helper video method in WebService::GData::YouTube to create a WebService::GData::YouTube::Feed::Video
+    - YouTube service may not work entirely right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.03_01  2010/10/24 22:45
 
     - Added __set and __get autoload methods in WebService::GData
-    - Created the abstract Node package and implemented so nodes. 
+    - Created the abstract Node package and implemented some nodes. 
     - Added the youtube nodes
     - Added new tests for nodes
     - Erased all the tags in Feed:: and moved them in Nodes:: as Entity representation.

@@ -1,8 +1,8 @@
 package WebService::GData::Feed::Entry;
 use WebService::GData;
 use base 'WebService::GData::Feed';
-use WebService::GData::Node::Content;
-use WebService::GData::Node::Summary;
+use WebService::GData::Node::Content();
+use WebService::GData::Node::Summary();
 
 our $VERSION = 0.01_04;
 
@@ -17,8 +17,8 @@ WebService::GData::disable(
 sub __init {
     my $this = shift;
     $this->SUPER::__init(@_);
-    $this->{_feed}->{content}= new WebService::GData::Node::Content($this->{_feed}->{content}||{});
-    $this->{_feed}->{summary}= new WebService::GData::Node::Summary($this->{_feed}->{summary}||{});
+    $this->{_feed}->{content}= new WebService::GData::Node::Content($this->{_feed}->{content});
+    $this->{_feed}->{summary}= new WebService::GData::Node::Summary($this->{_feed}->{summary});
 }
 
 ##inherits and relevant
@@ -61,7 +61,7 @@ __END__
 
 =head1 NAME
 
-WebService::GData::Feed::Entry - Abstract class wrapping json atom feed entry tag for google data API v2.
+WebService::GData::Feed::Entry - Base class wrapping json atom feed entry tags for google data API v2.
 
 =head1 SYNOPSIS
 
@@ -73,6 +73,7 @@ WebService::GData::Feed::Entry - Abstract class wrapping json atom feed entry ta
     $feed->author;
     $feed->summary;
     $feed->published;
+    $feed->content
 
 
 =head1 DESCRIPTION
@@ -137,7 +138,7 @@ B<Returns>
 
 =over 4
 
-=item C<WebService::GData::Feed::Entry::Content> 
+=item C<WebService::GData::Node::Content> 
 
 =back
 

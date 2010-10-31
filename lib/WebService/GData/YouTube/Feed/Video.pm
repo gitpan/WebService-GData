@@ -5,10 +5,14 @@ use base 'WebService::GData::Feed::Entry';
 use WebService::GData::Constants qw(:all);
 use WebService::GData::YouTube::Constants qw(:all);
 use WebService::GData::Error;
-use WebService::GData::Node::PointEntity;
+use WebService::GData::Node::PointEntity();
+use WebService::GData::YouTube::YT::GroupEntity();
+use WebService::GData::YouTube::YT::AccessControl();
+use WebService::GData::Node::Media::Category();
 
+use WebService::GData::Collection;
 
-our $VERSION         = 0.01_04;
+our $VERSION         = 0.01_05;
 
 our $UPLOAD_BASE_URI = UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
 
@@ -19,27 +23,51 @@ use constant {
     BROWSER_UPLOAD => 'BROWSER_UPLOAD'
 };
 
-sub _pos {
-    my ($this) = @_;
-    $this->{_feed}->{'georss$where'}; 
+sub __init {
+    my ($this,$feed,$req) = @_;
+    
+    if(ref($feed) eq 'HASH'){
+        $this->SUPER::__init($feed,$req);
+        $this->_media(new WebService::GData::YouTube::YT::GroupEntity($feed->{'media$group'}||{}));
+    }
+    else {
+        $this->SUPER::__init({},$feed);  
+        $this->_media(new WebService::GData::YouTube::YT::GroupEntity({}));       
+    }   
+ 
 }
 
 
-sub pos {
+sub next_url {
+    my $this = shift;
+    if(@_==1){
+    $this->{next_url}= _urlencode(shift());
+    }
+    return  $this->{next_url};
+}
+
+sub location {
     my ($this,$pos) = @_;
-    my $where = $this->{_feed}->{'georss$where'};
+    my $where = $this->_location;
     if(ref($where) eq 'HASH'){
-        $this->{_feed}->{'georss$where'}= new WebService::GData::Node::PointEntity($where->{'gml$Point'}->{'gml$pos'});
+        $this->_location(new WebService::GData::Node::PointEntity($where->{'gml$Point'}->{'gml$pos'}));
     }
     if($pos && !$where){
-        $this->{_feed}->{'georss$where'}= $where = new WebService::GData::Node::PointEntity();   
+        $this->_location( $where = new WebService::GData::Node::PointEntity());   
     }
     if($pos && $where){
-        $this->{_feed}->{'georss$where'}->pos($pos);
+        $this->_location->pos($pos);
         return $this;
     }
-    return $this->{_feed}->{'georss$where'}->pos;
+    return $this->_location->pos;
     
+}
+sub _location {
+    my ($this,$instance) = @_;
+    if($instance){
+          $this->{_feed}->{'georss$where'}=$instance;        
+    }
+    $this->{_feed}->{'georss$where'}; 
 }
 
 sub view_count {
@@ -52,44 +80,105 @@ sub favorite_count {
     $this->{_feed}->{'yt$statistics'}->{'favoriteCount'};
 }
 
+sub _media {
+    my ($this,$instance) = @_;
+    if($instance){
+        $this->{_feed}->{'media$group'}=$instance;
+    }
+    $this->{_feed}->{'media$group'};    
+}
+
 sub media_player {
     my $this = shift;
-    $this->{_feed}->{'media$group'}->{'media$player'}->{url};
+    $this->_media->player->url;
 }
 
 sub aspect_ratio {
     my $this = shift;
-    $this->{_feed}->{'media$group'}->{'yt$aspectRatio'}->{'$t'};
+   $this->_media->aspectratio->text;
 }
 
 sub video_id {
     my $this = shift;
-    $this->{_feed}->{'media$group'}->{'yt$videoid'}->{'$t'};
+    $this->_media->videoid->text;
 }
 
 sub duration {
     my $this = shift;
-    $this->{_feed}->{'media$group'}->{'yt$duration'}->{'seconds'};
+    $this->_media->duration->seconds;
 }
 
 sub content {
     my $this = shift;
-    $this->{_feed}->{'media$group'}->{'media$content'};
-}
-
-sub comments {
-    my $this = shift;
-    $this->{_feed}->{'gd$comments'}->{'gd$feedLink'}->{'href'};
+    $this->_media->content;
 }
 
 sub thumbnails {
     my $this = shift;
-    $this->{_feed}->{'media$group'}->{'media$thumbnail'};
+    $this->_media->thumbnail;
 }
 
 sub uploaded {
     my $this = shift;
-    $this->{_feed}->{'media$group'}->{'yt$uploaded'}->{'$t'};
+    $this->_media->uploaded->text;
+}
+
+sub category {
+    my $this = shift;
+    
+    if ( @_ == 1 ) {
+        if(!$this->_media->category->isa('WebService::GData::Collection')){
+            $this->_media->swap($this->_media->category,new WebService::GData::Collection());
+        }
+        push @{$this->_media->category},
+             new WebService::GData::Node::Media::Category({
+                '$t'     => $_[0],
+                'label'  => $_[0],
+                'scheme' => 'http://gdata.youtube.com/schemas/2007/categories.cat'
+             });
+    }
+    $this->_media->category;
+}
+
+sub description {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->_media->description->text($_[0]);
+        $this->_media->description->type("plain");
+    }
+    $this->_media->description->text||'';
+}
+
+sub title {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->_media->title->text($_[0]);
+        $this->_media->title->type("plain");
+    }
+    $this->_media->title->text||'';
+}
+
+sub keywords {
+    my $this = shift;
+    if ( @_ >1 ) {
+        return $this->_media->keywords->text( join(',',@_) );
+    }
+    $this->_media->keywords->text||'';
+}
+
+sub is_private {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->_media->{'_private'} = new WebService::GData::YouTube::YT::Private();
+        $this->_media->_entity->child($this->_media->{'_private'});
+    }
+    return ( $this->_media->private ) ? 1 : 0;
+}
+
+
+sub comments {
+    my $this = shift;
+    $this->{_feed}->{'gd$comments'}->{'gd$feedLink'}->{'href'};
 }
 
 sub appcontrol_state {
@@ -99,71 +188,35 @@ sub appcontrol_state {
 
 #####WRITE FUNCTIONS########################
 
+sub _access_control {
+    my ($this,$instance)= @_;
+    if($instance){
+        $this->{_feed}->{'media$accessControl'}=$instance;
+    }
+    $this->{_feed}->{'media$accessControl'}; 
+}
+
 sub access_control {
     my $this = shift;
-    if ( @_ == 1 ) {
-        $this->{_feed}->{'yt$accessControl'} = []
-          if ( !$this->{_feed}->{'yt$accessControl'} );
-        push @{ $this->{_feed}->{'yt$accessControl'} },
-          { action => $_[0], permission => $_[1] };
+    if ( @_ > 1 ) {
+        $this->_access_control(new WebService::GData::Collection())
+          if ( !$this->_access_control );
+        push @{ $this->_access_control },
+          new WebService::GData::YouTube::YT::AccessControl({ action => $_[0], permission => $_[1] });
     }
-    $this->{_feed}->{'yt$accessControl'};
+    $this->_access_control;
 }
 
-sub _access_control_serialize {
-    my $this           = shift;
-    my $accessControll = "";
-    my @accesses       = @{ $this->{_feed}->{'yt$accessControl'} };
-    foreach my $access (@accesses) {
-        $accessControll .=
-qq[<yt:accessControl action="$access->{action}" permission="$access->{permission}"/>];
-    }
-    return $accessControll;
-}
 
-sub category {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->{_feed}->{'media$group'}->{'media$category'} = []
-          if ( !ref( $this->{_feed}->{'media$group'}->{'media$category'} ) eq
-            'ARRAY' );
-        push @{ $this->{_feed}->{'media$group'}->{'media$category'} },
-          {
-            '$t'     => $_[0],
-            'label'  => $_[0],
-            'scheme' => 'http://gdata.youtube.com/schemas/2007/categories.cat'
-          };
-        $this->{_feed}->{'media$group'}->{'media$category'}->{'$t'} = $_[0];
-    }
-    $this->{_feed}->{'media$group'}->{'media$category'};
-}
+sub _serialize {
+    my ($this) = @_;
 
-sub _category_serialize {
-    my $this       = shift;
-    my $categories = $this->category;
-    my $cats       = '';
-    foreach my $cat (@$categories) {
-        $cats .=
-qq[<media:category scheme="$cat->{scheme}">$cat->{label}</media:category>];
-    }
-    return $cats;
-}
+    my $media  = $this->_media->serialize;
+    my $pos    = $this->_location       ? $this->_location->serialize       :"";
+    my $access = $this->_access_control ? $this->_access_control->serialize :"";
 
-sub description {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        return $this->{_feed}->{'media$group'}->{'media$description'}->{'$t'} =
-          $_[0];
-    }
-    $this->{_feed}->{'media$group'}->{'media$description'}->{'$t'};
-}
+    return $media.$pos.$access;
 
-sub keywords {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->{_feed}->{'media$group'}->{'media$keywords'}->{'$t'} = $_[0];
-    }
-    $this->{_feed}->{'media$group'}->{'media$keywords'}->{'$t'};
 }
 
 sub is_listing_allowed {
@@ -222,55 +275,23 @@ sub is_syndication_allowed {
     return ( $this->access_control->[6]->{permission} eq 'allowed' ) ? 1 : 0;
 }
 
-sub is_private {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->{_feed}->{'media$group'}->{'yt$private'} = $_[0];
-    }
-    return ( $this->{_feed}->{'media$group'}->{'yt$private'} ) ? 1 : 0;
-}
-
 sub delete {
     my $this = shift;
     my $uri  = $BASE_URI . $this->video_id;
     $this->{_request}->delete( $uri, 0 );
 }
 
-sub _serialize {
-    my ($this) = @_;
-
-    my $title       = $this->title;
-    my $description = $this->description;
-    my $keywords    = $this->keywords;
-    my $isPrivate   = $this->is_private == 1 ? '<yt:private/>' : '';
-
-    my $accessControl =
-      ( $this->access_control ) ? $this->_access_control_serialize() : "";
-    my $category = ( $this->category ) ? $this->_category_serialize() : "";
-
-    my $content = <<XML;
-<media:group>
- <media:title type="plain">$title</media:title>
- <media:description type="plain">$description</media:description>
- $category
- <media:keywords>$keywords</media:keywords>
-$isPrivate
-</media:group>
-$accessControl
-XML
-
-    return $content;
-}
-
 sub save {
     my ($this) = @_;
 
     my $content = $this->_serialize();
-
-    if ( $this->video_id ) {
-        $this->{_request}->clean_namespaces();
-        $this->{_request}->add_namespaces( ATOM_NAMESPACE, MEDIA_NAMESPACE,
+     $this->{_request}->clean_namespaces();
+     $this->{_request}->add_namespaces( ATOM_NAMESPACE, MEDIA_NAMESPACE,
             YOUTUBE_NAMESPACE );
+    if($this->_location){
+        $this->{_request}->add_namespaces(GEORSS_NAMESPACE,GML_NAMESPACE);
+    }
+    if ( $this->video_id ) {
         $this->{_request}->update( $BASE_URI . $this->video_id, $content );
     }
     else {
@@ -291,6 +312,7 @@ sub filename {
     $this->{_filename};
 }
 
+#TODO: stream
 sub _binary_data {
     my $this = shift;
 
@@ -321,14 +343,13 @@ sub upload_mode {
 
 sub browser_uploading {
     my ( $this, $uri, $content ) = @_;
-    my $res =
-      $this->{_request}
-      ->insert( 'http://gdata.youtube.com/action/GetUploadToken', $content );
+    my $response = $this->{_request}->insert( 'http://gdata.youtube.com/action/GetUploadToken', $content );
 
-    my $response = $res->content();
-    my ( $url, $token ) =
-      $response =~ m/<url>(.+?)<\/url><token>(.+?)<\/token>/;
-    return ( $url, $token );
+    my ( $url, $token ) = $response =~ m/<url>(.+?)<\/url><token>(.+?)<\/token>/;
+    if($this->next_url){
+        $url.='?'.$this->next_url;
+    }
+    return ( $url, $token ,$response);
 }
 
 #move this in Base?
@@ -384,6 +405,11 @@ XML
 
 }
 
+private _urlencode => sub {
+    my ($string) = shift;
+    $string =~ s/(\W)/"%" . unpack("H2", $1)/ge;
+    return $string;
+};
 "The earth is blue like an orange.";
 
 __END__
@@ -451,12 +477,21 @@ WebService::GData::YouTube::Feed::Video - a Video YouTube contents(read/write) f
 
 =head1 DESCRIPTION
 
-inherits from WebService::GData::Feed::Entry;
+!WARNING! Documentation in progress.
+
+I<inherits from L<WebService::GData::Feed::Entry>>.
 
 This package represents a Youtube Video. If you are logged in you can edit existing video metadata,create new metadata, upload videos.
 
-Most of the time you will not instantiate this class directly but use some of the helpers in the WebService::GData::YouTube class.
+Most of the time you will not instantiate this class directly but use some of the helpers in the L<WebService::GData::YouTube> class.
 
+See also:
+
+=over 
+
+=item * L<WebService::GData::YouTube::Doc::BrowserbasedUpload> - overview of the browser based upload mechanism
+
+=back
 
 =head2 CONSTRUCTOR
 
@@ -469,11 +504,15 @@ Create a L<WebService::GData::YouTube::Feed::Video> instance.
 
 =back
 
-I<Parameters>:
+B<Parameters>:
 
 =over
 
-=item C<jsonc_video_entry_feed:Object>
+=item C<jsonc_video_entry_feed:Object> (Optional)
+
+=item C<authorization:Object> (Optional)
+
+or 
 
 =item C<authorization:Object> (Optional)
 
@@ -485,9 +524,8 @@ it will allow you to access private contents and insert/edit/delete/upload video
 
 =head2 GET METHODS
 
-All the following methods are information that a video contains.
+All the following read only methods give access to the information contained in a video feed.
 
-You can not update them and are read only.
 
 =head3 view_count
 
@@ -516,7 +554,7 @@ You can not update them and are read only.
 
 All these methods represents information about the video but as these information can be updated,
 
-you have read/write access to them.
+you have read/write access on them.
 
 It is therefore necessary to be logged in programmaticly to be able to use them.
 
@@ -528,14 +566,10 @@ It is therefore necessary to be logged in programmaticly to be able to use them.
 
 =head3 keywords
 
-=head3 filename
-
-=head3 upload_mode
-
 
 =head2 ACCESS CONTROL SET/GET METHODS
 
-These methods allow to grant access to certain activity to the users.
+These methods allow to grant access to certain activity.
 
 You can decide to unlist the video from the search, make it private or forbid comments,etc.
 

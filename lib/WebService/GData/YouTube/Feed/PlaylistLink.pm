@@ -3,6 +3,18 @@ use base 'WebService::GData::Feed::Entry';
 our $VERSION  = 0.01_01;
 #####READ##############
 
+sub __init {
+    my ($this,$feed,$req) = @_;
+    
+    if(ref($feed) eq 'HASH'){
+        $this->SUPER::__init($feed,$req);
+    }
+    else {
+
+        $this->SUPER::__init({},$feed);        
+    }   
+}
+
 	sub count_hint {
 		my $this = shift;
 		$this->{_feed}->{'yt$countHint'}->{'$t'};
@@ -58,7 +70,7 @@ our $VERSION  = 0.01_01;
 
 		my $res = $this->{_dbh}->get($this->{_feed}->{'content'}->{src} || 'http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId);
 
-		$this->{videosInPlaylist} = new WebService::GData::YouTube::Feed($res,$this->{_dbh})->entry;
+		$this->{videosInPlaylist} = new WebService::GData::YouTube::Feed($res,$this->{_request})->entry;
 		return $this->{videosInPlaylist};
 	}
 
@@ -70,15 +82,15 @@ our $VERSION  = 0.01_01;
 
 	sub add_video {
 		my ($this,%params) = @_;
-		$this->{_dbh}->clean_namespace();
-		$this->{_dbh}->add_namespace('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
-   	   	$this->{_dbh}->insert('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId,"<id>$params{videoId}</id>");
+		$this->{_request}->clean_namespaces();
+		$this->{_request}->add_namespaces('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
+   	   	$this->{_request}->insert('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId,"<id>$params{videoId}</id>");
 	}
 
 	sub delete {
 		my $this = shift;
 		my	$uri = 'http://gdata.youtube.com/feeds/api/users/'.$this->{_dbh}->{channel}.'/playlists/'.$this->playlistId;
-		$this->{_dbh}->delete($uri,0);
+		$this->{_request}->delete($uri,0);
 	}
 
 	sub delete_video {
@@ -87,7 +99,7 @@ our $VERSION  = 0.01_01;
 		if($params{videoId}) {
 			$params{playListVideoId}=$this->_find_playlist_video_id($params{videoId});
 		}
-		$this ->{_dbh}->delete('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId.'/'.$params{playListVideoId},0);
+		$this ->{_request}->delete('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId.'/'.$params{playListVideoId},0);
 
 	}
 
@@ -97,9 +109,9 @@ our $VERSION  = 0.01_01;
 		if($params{videoId}) {
 			$params{playListVideoId}=$this->_find_playlist_video_id($params{videoId});
 		}
-		$this->{_dbh}->clean_namespace();
-		$this->{_dbh}->add_namespace('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
-		$this->{_dbh}->update('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId.'/'.$params{playListVideoId},"<yt:position>$params{position}</yt:position>");
+		$this->{_request}->clean_namespaces();
+		$this->{_request}->add_namespaces('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
+		$this->{_request}->update('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId.'/'.$params{playListVideoId},"<yt:position>$params{position}</yt:position>");
 
 	}
 
@@ -117,14 +129,14 @@ our $VERSION  = 0.01_01;
 $isPrivate
 $keywords
 XML
-		$this->{_dbh}->clean_namespace();
-		$this->{_dbh}->add_namespace('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
+		$this->{_request}->clean_namespaces();
+		$this->{_request}->add_namespaces('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
 
 		if($this->playlistId){
-			$this->{_dbh}->update('http://gdata.youtube.com/feeds/api/users/'.$this->{_dbh}->{channel}.'/playlists/'.$this->playlistId,$content);
+			$this->{_request}->update('http://gdata.youtube.com/feeds/api/users/'.$this->{_dbh}->{channel}.'/playlists/'.$this->playlistId,$content);
 		}
 		else {
-   	   		$this->{_dbh}->insert('http://gdata.youtube.com/feeds/api/users/default/playlists',$content);
+   	   		$this->{_request}->insert('http://gdata.youtube.com/feeds/api/users/default/playlists',$content);
 		}
 
 	}

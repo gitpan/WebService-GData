@@ -9,7 +9,7 @@ our $VERSION = 0.01_01;
 
 sub __init {
 	my ($this,$params) = @_;
-    $this->SUPER::__init($params);	
+
 	$this->_entity(new WebService::GData::Node::Author());
 	$this->{_name}   = new WebService::GData::Node::Name($params->{name});
 	$this->{_uri}    = new WebService::GData::Node::Uri ($params->{uri});

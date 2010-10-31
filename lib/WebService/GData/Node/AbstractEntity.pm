@@ -1,18 +1,21 @@
 package WebService::GData::Node::AbstractEntity;
 use base 'WebService::GData';
-use WebService::GData::Error;
 
-our $VERSION = 0.01_01;
+our $VERSION = 0.01_02;
 
-sub __init {
-	my ($this,$params) = @_;
-    die new WebService::GData::Error('invalid_parameter_type',ref($this)." parameter must be a hash reference but got:" . ref($params))
-      unless ( ref($params) eq 'HASH' );
-}
+sub __init {}
 
 sub serialize {
 	my $this = shift;
 	$this->_entity->serialize;
+}
+
+sub swap {
+    my($this,$remove,$new)=@_;
+    my $nodename = ref($remove);
+    $this->_entity->swap($remove,$new);
+    $nodename=~s/.*:://;
+    $this->{"_\l$nodename"}=$new;
 }
 
 sub _entity {
@@ -30,7 +33,7 @@ sub __set {
     #all the wrapper methods store the original Node objects
     #by prefixing the tag name with _
     $func='_'.$func;
-    if($this->{$func} && $this->{$func}->isa(q[WebService::GData::Node])){
+    if($this->{$func}){
        if(ref($this->{$func})){
            $this->{$func}->{text}=$val;
        } 
@@ -56,8 +59,13 @@ sub __get {
     my $public =$func;    
     $func='_'.$func;
 
-    if($this->{$func} && $this->{$func}->isa(q[WebService::GData::Node])){
-        return ref($this->{$func}) ?$this->{$func}->{text}:$this->{$func};
+    if($this->{$func}){
+        if(ref($this->{$func})){
+            if(@{$this->{$func}->attributes}==0){
+                 return $this->{$func}->{text} ? $this->{$func}->{text}:$this->{$func}; 
+            }
+            return $this->{$func};
+        }
     }
 
      $this->_entity->{$public};
@@ -90,7 +98,6 @@ WebService::GData::Node::AbstractEntity - Abstract proxy class representing seve
 
    sub __init {
 	    my ($this,$params) = @_;
-        $this->SUPER::__init($params);	#checks that the parameter is a hash ref
         
         #the entity is the root node used
         
@@ -145,7 +152,7 @@ The main container node should be store via the _entity method.
 All other children should be stored in the instance by prefixing the tag name with an underscore.
 All access to attributes or text node representation will be redispatched via __set and __get methods by following the above convention.
 
-See also L<WebService::GData::Feed::Node>. 
+See also L<WebService::GData::Node>. 
 
 =head2 IMPLEMENTED ENTITIY
 
@@ -154,7 +161,7 @@ Below is a list of implemented entities.
 
     AuthorEntity                #map author > name,uri
     PointEntity                 #map georss:where > gml:Point > gml:pos 
-
+    Media::GroupEntity          #map all the nodes used in the media:group tag 
 
 =head2  CAVEATS
 

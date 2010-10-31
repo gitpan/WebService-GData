@@ -2,7 +2,7 @@ package WebService::GData::Node;
 use WebService::GData;
 use base 'WebService::GData';
 
-our $VERSION = 0.01_01;
+our $VERSION = 0.01_02;
 
 my $attributes = [];
 
@@ -52,10 +52,16 @@ sub __init {
             $args[0]->{'text'} = $args[0]->{'$t'};
             delete $args[0]->{'$t'};
         }
-        @args = %{ $args[0] };
+        my %args = %{ $args[0] };
+        while(my($attr,$val)=each %args){
+            delete $args{$attr};
+            $attr=~s/\$/:/;
+            $args{$attr}=$val;
+        }
+        @args = %args;
     }
 
-    $this->SUPER::__init(@args);
+    $this->SUPER::__init(@args) if(@args%2==0);
     $this->{_children} = [];
 }
 
@@ -76,11 +82,22 @@ sub child {
     if ( @_ == 1 ) {
         my $child = shift;
         return $this
-          if ( $this == $child || !$child->isa(__PACKAGE__) );    #TODO:warn
+          if ( $this == $child );    #TODO:warn
         push @{ $this->{_children} }, $child;
         return $this;
     }
     return $this->{_children};
+}
+
+sub swap {
+    my($this,$remove,$new)=@_;
+    my $i=0;
+    foreach my $child (@{$this->{_children}}){
+        if($child== $remove){
+            $this->{_children}->[$i]=$new; 
+        }
+        $i++;
+    }
 }
 
 sub serialize {
@@ -96,7 +113,7 @@ sub serialize {
             my $val = $this->{$attr};
             push @attrs, qq[$attr="$val"] if ($val);
         }
-        $out .= ' ' . join( ' ', @attrs );
+        $out .= ' ' . join( ' ', @attrs ) if(@attrs>0);
     }
     if ( $this->is_parent ) {
         $out .= '>';
@@ -117,13 +134,33 @@ sub __set {
     my ($this,$func,@args) = @_;
     if(my ($ns,$tag)=$func=~/^(.+?)_(.+)$/){
         my @attrs =  @{ $this->attributes };
-        my $attr = $ns.':'.$tag;
+        my $attr = $ns.':'.camelcase($tag);
         if(grep /$attr/,@attrs){
            $func=$attr;          
         }
     }
-    $this->{$func}= @args==1 ? $args[0]:\@args;
+    $this->{camelcase($func)}= @args==1 ? $args[0]:\@args;
     return $this;
+}
+
+sub __get {
+    my ($this,$func)=@_;
+    if(my ($ns,$tag)=$func=~/^(.+?)_(.+)$/){
+        my @attrs =  @{ $this->attributes };
+        my $attr = $ns.':'.camelcase($tag);
+        if(grep /$attr/,@attrs){
+           $func=$attr;          
+        }
+    }
+    $this->{camelcase($func)};
+     
+}
+
+
+sub camelcase {
+    my $str = shift;
+    $str=~s/_([a-z])/\U$1/g;
+    return $str;
 }
 
 
@@ -175,7 +212,12 @@ WebService::GData::Node - Abstract class representing an xml node/tag
 		
     my $author   = new WebService::GData::Node::Author();
     my $name     = new WebService::GData::Node::Name(text=>'john doe');
-    my $category = new WebService::GData::Node::Category(scheme=>'author',term=>'Author');
+    my $category = new WebService::GData::Node::Category(scheme=>'author','yt:term'=>'Author');
+    
+    #or coming from a json feed:
+    my $category = new WebService::GData::Node::Category({scheme=>'author','yt$term'=>'Author'});
+    
+    
     
     $author->child($name)->child($category);
     
@@ -256,6 +298,31 @@ Example:
 This class overwrite the default __to_string method to call C<serialize> and output the xml data.
 Therefore if you use a Node object in a string context, you will get back its xml representation.
 
+=head2 AUTOLOAD
+
+=head3 __set/__get
+
+=over
+
+The attributes setter/getters and the text method are generated on the fly.
+
+=item * you can use either hyphen base notation or camelCase notation.
+
+=item * Attributes containing namespaces can be accessed by replacing ':' with
+'_'. yt:format attribute can be set/get via the yt_format method. You should use the qualified attribute when setting it via the constructor.
+Therefore, new Node(yt_format=>1) will not work but new Node('yt:format'=>1) and new Node({'yt$format'=>1}) will work.
+
+Example:
+
+    use WebService::GData::Node::FeedLink;
+    
+    my $feedlink = new WebService::GData::Node::FeedLink($link);
+    
+    $feedlink->countHint;
+    
+    #or
+    $feedlink->count_hint;
+
 =head2 METHODS
 
 =head3 child
@@ -263,7 +330,7 @@ Therefore if you use a Node object in a string context, you will get back its xm
 =over
 
 Set an other node child of the instance. It returns the instance so you can chain the calls.
-The child must be sub class of this class and you can not set the instance as a child of itself.
+You can not set the instance as a child of itself.
 The child method checks against the memory slot of the object and will return the instance without setting the object 
 if it appears to be the same.
 
@@ -298,6 +365,44 @@ Example:
     $author->child($author);
 
 
+=back
+
+=head3 swap
+
+=over
+
+This method will put a new instance instead of an existing child.
+
+B<Parameters>
+
+=over
+
+=item C<oldchild::WebService::GData::Node|WebService::GData::Collection> - the node to remove in the children collection
+
+=item C<newchild::WebService::GData::Node|WebService::GData::Collection> - the node to put instead
+
+=back
+
+B<Returns> 
+
+=over 
+
+=item Cnone>
+
+=back
+
+Example:
+
+    my $author   = new WebService::GData::Node::Author();
+    my $name     = new WebService::GData::Node::Name(text=>'john doe');
+    my $category = new WebService::GData::Node::Category(scheme=>'author',term=>'Author');
+    
+    $author->child($name)->child($category);
+    
+    my $newname = new WebService::GData::Node::Name(text=>'billy doe');
+    $author->swap($name,$newname);
+    
+	   
 =back
 
 =head3 serialize
@@ -385,9 +490,7 @@ B<Parameters>
 
 B<Returns> install the methods in the package.
 
-Methods to get/set the attributes are autogenerated on the fly. Attributes containing namespaces can be accessed by replacing ':' with
-'_'. yt:format attribute can be set/get via the yt_format method. You should use the qualified attribute when setting it via the constructor.
-Therefore, new Node(yt_format=>1) will not work but new Node('yt:format'=>1) will.
+
 =over 
 
 =item C<none>

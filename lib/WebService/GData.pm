@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Carp;
-use overload '""' => "__to_string",'==' =>'equal';
+use overload '""' => "__to_string",'==' =>'equal',fallback=>1;
 
-our $VERSION = 0.03_01;
+our $VERSION = 0.03_02;
 
 our $AUTOLOAD;
 
@@ -31,6 +31,7 @@ sub new {
 
 sub __init {
     my ( $this, %params ) = @_;
+
     while ( my ( $prop, $val ) = each %params ) {
         $this->{$prop} = $val;
     }
@@ -136,7 +137,7 @@ __END__
 
 =head1 NAME
 
-WebService::GData - Google data protocol v2 base object to inherit from.
+WebService::GData - Google data protocol v2 base object to inherit.
 
 =head1 SYNOPSIS
 

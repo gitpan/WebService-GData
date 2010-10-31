@@ -1,4 +1,4 @@
-use Test::More tests => 16;
+use Test::More tests => 15;
 use WebService::GData::Feed;
 
 my $feed = new WebService::GData::Feed( get_feed() );
@@ -35,9 +35,6 @@ ok(
 );
 
 ok( !$feed->previous_link, "previous link properly set." );
-
-ok( $feed->get_link('alternate') eq 'http://www.youtube.com',
-    "get_link properly set." );
 
 ok( $feed->author->[0]->name eq 'YouTube', "author properly set." );
 

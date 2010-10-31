@@ -171,6 +171,7 @@ private _request => sub {
     }
 
     my $res = $this->{__UA__}->request($req);
+
     if ( $res->is_success ) {
         return $res->content();
     }

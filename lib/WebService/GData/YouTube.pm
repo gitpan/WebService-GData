@@ -7,7 +7,7 @@ use WebService::GData::YouTube::Constants;
 use WebService::GData::YouTube::Query;
 use WebService::GData::YouTube::Feed;
 use WebService::GData::YouTube::Feed::PlaylistLink;
-
+use WebService::GData::YouTube::Feed::Video;
 our $PROJECTION = WebService::GData::YouTube::Constants::PROJECTION;
 our $BASE_URI   = WebService::GData::YouTube::Constants::BASE_URI;
 our $VERSION    = 0.01_07;
@@ -74,6 +74,11 @@ sub get_user_playlists {
 }
 
 #video related
+
+sub video {
+    my $this = shift;
+    return new WebService::GData::YouTube::Feed::Video($this->{_request});
+}
 
 sub search_video {
     my ( $this, $query ) = @_;
@@ -260,7 +265,7 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
 =head1 DESCRIPTION
 
 !WARNINGS! Developer release. Starting refactoring.
-Even if the interface should not change too much, things may change or breack but feel free to give me some feedbacks!
+Even if the interface should not change too much, things may change or break but feel free to give me some feedbacks!
 
 I<inherits from L<WebService::GData>>
 
@@ -286,6 +291,16 @@ the position of the video within the playlist.
 
 This object represents all the playlists metadata of a user.
 It is not possible to get the metadata of one playlist. You need to query them all and search for the one you're interested in.
+
+See also:
+
+=over 
+
+=item * L<WebService::GData::YouTube::Doc::BrowserbasedUpload> - overview of the browser based upload mechanism
+
+=back
+
+
 
 =back
 

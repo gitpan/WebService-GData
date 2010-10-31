@@ -1,4 +1,4 @@
-use Test::More tests => 22;
+use Test::More tests => 21;
 use WebService::GData::Feed::Entry;
 
 my $entry = new WebService::GData::Feed::Entry( get_entry() );
@@ -19,12 +19,6 @@ ok( $entry->published eq "2009-10-08T04:39:24.000Z",
 ok( @{ $entry->links } == 5, "links properly set." );
 
 ok( $entry->links->[0]->rel eq 'alternate', "first link properly set." );
-
-ok(
-    $entry->get_link('alternate') eq
-      "http://www.youtube.com/watch?v\u003dqWAY3YvHqLE",
-    "get_link properly set."
-);
 
 ok( $entry->category->[0]->scheme eq "http://schemas.google.com/g/2005#kind",
     "category properly set." );

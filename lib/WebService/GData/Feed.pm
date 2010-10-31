@@ -6,11 +6,13 @@ use WebService::GData::Node::AuthorEntity;
 use WebService::GData::Node::Link();
 use WebService::GData::Node::Category();
 use WebService::GData::Node::Title();
+use WebService::GData::Collection;
 
-our $VERSION = 0.01_06;
+our $VERSION = 0.01_07;
 
 sub __init {
     my ( $this, $feed, $request ) = @_;
+
     $this->{_feed} = {};
 
     if ( ref($feed) eq 'HASH' ) {
@@ -19,12 +21,14 @@ sub __init {
     $this->{_request} = $request || undef;
  
     $this->__set_tag('WebService::GData::Node::','AuthorEntity','author');
+
     $this->__init_tags('WebService::GData::Node::',(qw(link category title)));
 
 }
 
 private __set_tag => sub {
    my ($this,$package,$class,$node)=@_;
+
    if ( ref( $this->{_feed}->{$node} ) eq 'ARRAY' ) {
         my $tags     = $this->{_feed}->{$node};
         my @instances = ();
@@ -32,11 +36,14 @@ private __set_tag => sub {
         foreach my $tag (@$tags) {
             push @instances, $class->new($tag);
         }
-        $this->{_feed}->{$node} = \@instances;
+        $this->{_feed}->{$node} = new WebService::GData::Collection(\@instances);
     }
     else {
          my $class = $package . "\u$class"; 
-         $this->{_feed}->{$node}=  $class->new($this->{_feed}->{$node});          
+
+         $this->{_feed}->{$node}=  $class->new($this->{_feed}->{$node});      
+  
+        
     }   
 };
 
@@ -108,12 +115,9 @@ sub links {
 }
 
 sub get_link {
-    my ( $this, $type ) = @_;
-    return undef if ( !$type );
-    my $links = $this->links;
-    foreach my $link (@$links) {
-        return $link->href if ( $link->rel =~ m/$type/ );
-    }
+    my ($this,$search) = @_;
+    my $link = $this->links->rel($search)->[0];
+    return $link->href if($link);
 }
 
 sub previous_link {
@@ -367,7 +371,7 @@ Example:
 
 =over
 
-Get the categories of the feed in a array reference containing hash references with scheme/term keys.
+Get the categories of the feed.
 At the feed level, it is almost always one category that defines the kind of the feed (video feed, related feed,etc).
 The C<entry()> uses this information to load the proper class, ie Video or Comment entries.
 
@@ -383,7 +387,7 @@ B<Returns>
 
 =over 4
 
-=item C<categories:ArrayRef> - an array ref containing L<WebService::GData::Node::Category>.
+=item C<categories:Collection> - L<WebService::GData::Collection> containing L<WebService::GData::Node::Category>.
 
 =back
 
@@ -397,6 +401,9 @@ Example:
     foreach my $category (@$categories) {
         #$category->scheme,$category->term,$category->label
     }
+    
+    #search for a particular kind of category
+    my $kind = $categories->scheme('kind')->[0];
     
     #json feed category is as below:
     "category": [
@@ -465,7 +472,7 @@ B<Returns>
 
 =over 4
 
-=item C<author:ArrayRef> - an array ref containing L<WebService::GData::Node::AuthorEntity>.
+=item C<author:Collection> - L<WebService::GData::Collection> containing L<WebService::GData::Node::AuthorEntity>.
 
 =back
 
@@ -649,7 +656,7 @@ B<Returns>
 
 =over 4
 
-=item C<links:ArrayRef> - an array ref containing L<WebService::GData::Node::Link> instances.
+=item C<links:Collection> - L<WebService::GData::Collection> containing L<WebService::GData::Node::Link> instances.
 =back
 
 Example:

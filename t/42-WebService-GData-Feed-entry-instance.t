@@ -1,4 +1,4 @@
-use Test::More tests => 40;
+use Test::More tests => 38;
 use WebService::GData::Feed;
 use t::JSONResponse;
 use JSON;
@@ -31,8 +31,6 @@ ok($feed->author->[0]->name eq "YouTube",'feed author name properly set.');
 ok($feed->author->[0]->uri eq "http://www.youtube.com/",'feed author uri properly set.');
 
 ok(@{$feed->links} ==6,'feed link properly set.');
-
-ok($feed->get_link('service') eq 'http://gdata.youtube.com/feeds/api/videos?alt=atom-service','get_link properly set.');
 
 ok($feed->next_link eq "http://gdata.youtube.com/feeds/api/videos?alt=json&start-index=2&max-results=1&client=ytapi-google-jsdemo",'next_link properly set.');
 
@@ -74,8 +72,6 @@ ok($entry->author->[0]->name eq "TheYoungTurks",'entry author name properly set.
 ok($entry->author->[0]->uri eq "http://gdata.youtube.com/feeds/api/users/theyoungturks",'entry author uri properly set.');
 
 ok(@{$entry->links} ==5,'entry link properly set.');
-
-ok($entry->get_link('self') eq "http://gdata.youtube.com/feeds/api/videos/qWAY3YvHqLE?client=ytapi-google-jsdemo",'entry get_link properly set.');
 
 ok(@{$entry->category} ==30,'entry category properly set.');
 
