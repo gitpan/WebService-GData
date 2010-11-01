@@ -1,25 +1,14 @@
---- #YAML:1.0
-name:               WebService-GData
-version:            0.0302
-abstract:           Google data protocol v2 base object to inherit.
-author:
-    - shirirules<shirirulestheworld@gmail.com>
-license:            unknown
-distribution_type:  module
-configure_requires:
-    ExtUtils::MakeMaker:  0
-build_requires:
-    ExtUtils::MakeMaker:  0
+# http://module-build.sourceforge.net/META-spec.html
+#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
+name:         WebService-GData
+version:      0.0303
+version_from: lib/WebService/GData.pm
+installdirs:  site
 requires:
-    JSON:             2
-    LWP:              0
-    Test::Mock::LWP:  0.05
-    Test::More:       0
-no_index:
-    directory:
-        - t
-        - inc
-generated_by:       ExtUtils::MakeMaker version 6.56
-meta-spec:
-    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
-    version:  1.4
+    JSON:                          2
+    LWP:                           0
+    Test::Mock::LWP:               0.05
+    Test::More:                    0
+
+distribution_type: module
+generated_by: ExtUtils::MakeMaker version 6.30

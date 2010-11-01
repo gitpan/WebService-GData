@@ -1,5 +1,11 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_03  2010/11/01 11:19
+
+	- I messed up with subversion and upload the wrong package it seems. should be ok.
+    - YouTube service may not work entirely right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.03_02  2010/10/30 14:08
 
     - Created a Collection class and related tests

@@ -1,7 +1,7 @@
 use Test::More tests => 1;
-use WebService::GData::YouTube::Node::AboutMe;
+use WebService::GData::YouTube::YT::AboutMe;
 
-my $aboutme = new WebService::GData::YouTube::Node::AboutMe();
+my $aboutme = new WebService::GData::YouTube::YT::AboutMe();
     
    $aboutme->text('I am very funny.');
 

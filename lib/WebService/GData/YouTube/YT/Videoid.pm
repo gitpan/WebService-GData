@@ -1,4 +1,4 @@
 package WebService::GData::YouTube::YT::Videoid;
-use WebService::GData::YouTube::Node;
+use WebService::GData::YouTube::YT;
 
 1;

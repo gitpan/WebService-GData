@@ -1,7 +1,7 @@
 use Test::More tests => 1;
-use WebService::GData::YouTube::Node::AccessControl;
+use WebService::GData::YouTube::YT::AccessControl;
 
-my $accessControl = new WebService::GData::YouTube::Node::AccessControl();
+my $accessControl = new WebService::GData::YouTube::YT::AccessControl();
     
    $accessControl->action('comment');
    $accessControl->permission('allowed');

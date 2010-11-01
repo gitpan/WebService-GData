@@ -116,7 +116,7 @@ lib/WebService/GData/YouTube/YT/AboutMe.pm
 lib/WebService/GData/YouTube/YT/Videoid.pm
 lib/WebService/GData/YouTube/YT/AccessControl.pm
 lib/WebService/GData/YouTube/YT/Age.pm
-lib/WebService/GData/YouTube/YT/Aspectratio.pm
+lib/WebService/GData/YouTube/YT/AspectRatio.pm
 lib/WebService/GData/YouTube/YT/Books.pm
 lib/WebService/GData/YouTube/YT/Company.pm
 lib/WebService/GData/YouTube/YT/CountHint.pm
