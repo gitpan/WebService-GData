@@ -1,6 +1,7 @@
 package WebService::GData::Node::Media;
-
+use WebService::GData::Constants qw/:namespace/;
 use WebService::GData::Node;
+
 
 sub import {
     my $package = caller;
@@ -13,7 +14,8 @@ sub import {
 }
 }
 
-sub root_name {'media'};
 
+sub namespace_prefix {MEDIA_NAMESPACE_PREFIX};
+sub namespace_uri { MEDIA_NAMESPACE_URI }
 
 1;

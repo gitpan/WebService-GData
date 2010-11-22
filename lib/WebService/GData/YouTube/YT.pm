@@ -15,7 +15,7 @@ sub import {
 }
 }
 
-sub root_name {'yt'};
-
+sub namespace_prefix {'yt'}
+sub namespace_uri {'http://gdata.youtube.com/schemas/2007'}
 
 1;

@@ -1,20 +1,16 @@
+use inc::Module::Install;
 use 5.008008;
-use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+  name           'WebService-GData';
+  all_from       'lib/WebService/GData.pm';
+  
+  license 'perl';
+  requires       'LWP'  => 0;
+  requires       'JSON' =>'2';
+  test_requires  'Test::More'  => 0;
+  test_requires  'Test::Mock::LWP'  => '0.05';
+  recommends     'Crypt::SSLeay'=> 0;
+  bugtracker 'http://rt.cpan.org';
+  repository 'http://code.google.com/p/perl-gdata-youtube-api-v2/source/browse/';
 
-                                              
-WriteMakefile(
-    NAME              => 'WebService::GData',
-    VERSION_FROM      => 'lib/WebService/GData.pm', # finds $VERSION
-    PREREQ_PM         => {
-		'LWP'=>0,
-		'JSON'=>2,
-		#this is annoying...
-	    'Test::Mock::LWP' =>0.05,
-	     'Test::More'=>0,
-	}, # e.g., Module::Name => 1.1
-    ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/WebService/GData.pm', # retrieve abstract from module
-       AUTHOR         => 'shirirules<shirirulestheworld@gmail.com>') : ()),
-);
+  
+  WriteAll;

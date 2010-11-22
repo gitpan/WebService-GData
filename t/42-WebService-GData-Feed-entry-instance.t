@@ -1,4 +1,4 @@
-use Test::More tests => 38;
+use Test::More tests => 31;
 use WebService::GData::Feed;
 use t::JSONResponse;
 use JSON;
@@ -41,6 +41,7 @@ ok(@{$entries}==1,'entries properly set.');
 
 my $entry = $entries->[0];
 
+
 ok($entry->isa('WebService::GData::Feed::Entry'),'Entry has been set to the defined class.');
 
 ok($entry->title eq "Young Turks Episode 10-07-09",'$entry title properly set.');
@@ -53,19 +54,8 @@ ok($entry->published eq "2009-10-08T04:39:24.000Z",'$entry published properly se
 
 ok($entry->etag eq "W/\"A0QDSX47eCp7ImA9Wx5RGUw.\"",'$entry etag properly set.');
 
-ok($entry->total_items->isa('WebService::GData::Feed::Entry'),'entry total_items properly set.');
 
-ok($entry->total_results->isa('WebService::GData::Feed::Entry'),'entry total_results properly set.');
 
-ok($entry->start_index->isa('WebService::GData::Feed::Entry'),'entry start_index properly set.');
-
-ok($entry->items_per_page->isa('WebService::GData::Feed::Entry'),'entry items_per_page properly set.');
-
-ok($entry->next_link->isa('WebService::GData::Feed::Entry'),'entry next_link properly set.');
-
-ok($entry->previous_link->isa('WebService::GData::Feed::Entry'),'entry previous_link properly set.');
-
-ok($entry->entry->isa('WebService::GData::Feed::Entry'),'entry entry properly set.');
 
 ok($entry->author->[0]->name eq "TheYoungTurks",'entry author name properly set.');
 

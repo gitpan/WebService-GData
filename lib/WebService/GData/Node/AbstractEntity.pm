@@ -5,10 +5,6 @@ our $VERSION = 0.01_02;
 
 sub __init {}
 
-sub serialize {
-	my $this = shift;
-	$this->_entity->serialize;
-}
 
 sub swap {
     my($this,$remove,$new)=@_;
@@ -67,9 +63,11 @@ sub __get {
             return $this->{$func};
         }
     }
-
-     $this->_entity->{$public};
     
+    return $this->_entity->$public() if($this->_entity->can($public));
+    return $this->_entity->$public() if($this->_entity->__get($public)); 
+    return $this->_entity->{$public} if($this->_entity->{$public});
+   
 }
 
 "The earth is blue like an orange.";
@@ -117,8 +115,6 @@ WebService::GData::Node::AbstractEntity - Abstract proxy class representing seve
        $author->name('john doe');
        $author->uri('http://youtube.com/johndoe');
     
-       $author->serialize;#<author><name>john doe</name><uri>http://youtube.com/johndoe</uri></author>
-
 
 
 =head1 DESCRIPTION

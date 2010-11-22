@@ -1,123 +1,33 @@
 package WebService::GData::Feed;
 use WebService::GData 'private';
-use base 'WebService::GData';
+use base 'WebService::GData::Node::Atom::FeedEntity';
 
-use WebService::GData::Node::AuthorEntity;
-use WebService::GData::Node::Link();
-use WebService::GData::Node::Category();
-use WebService::GData::Node::Title();
-use WebService::GData::Collection;
+use WebService::GData::Node::OpenSearch::ItemsPerPage();
+use WebService::GData::Node::OpenSearch::StartIndex();
+use WebService::GData::Node::OpenSearch::TotalResults();
 
-our $VERSION = 0.01_07;
+our $VERSION = 0.01_08;
 
 sub __init {
-    my ( $this, $feed, $request ) = @_;
+	my ($this,$params,$request) = @_;
+	
+	$this->SUPER::__init($params);
+	
+    $this->{_items_per_page}=new WebService::GData::Node::OpenSearch::ItemsPerPage($this->{_feed}->{'openSearch$itemsPerPage'});
+    $this->_entity->child($this->{_items_per_page});
+    $this->{_start_index}=new WebService::GData::Node::OpenSearch::StartIndex($this->{_feed}->{'openSearch$startIndex'});
+    $this->_entity->child($this->{_start_index});
+    
+    $this->{_total_results}=new WebService::GData::Node::OpenSearch::TotalResults($this->{_feed}->{'openSearch$totalResults'});
+    $this->_entity->child($this->{_total_results});
 
-    $this->{_feed} = {};
+    $this->{_request}= $request;
 
-    if ( ref($feed) eq 'HASH' ) {
-        $this->{_feed} = $feed->{feed} || $feed;
-    }
-    $this->{_request} = $request || undef;
- 
-    $this->__set_tag('WebService::GData::Node::','AuthorEntity','author');
-
-    $this->__init_tags('WebService::GData::Node::',(qw(link category title)));
-
-}
-
-private __set_tag => sub {
-   my ($this,$package,$class,$node)=@_;
-
-   if ( ref( $this->{_feed}->{$node} ) eq 'ARRAY' ) {
-        my $tags     = $this->{_feed}->{$node};
-        my @instances = ();
-        my $class    = $package . "\u$class";
-        foreach my $tag (@$tags) {
-            push @instances, $class->new($tag);
-        }
-        $this->{_feed}->{$node} = new WebService::GData::Collection(\@instances);
-    }
-    else {
-         my $class = $package . "\u$class"; 
-
-         $this->{_feed}->{$node}=  $class->new($this->{_feed}->{$node});      
-  
-        
-    }   
-};
-
-private __init_tags => sub {
-    my ( $this, $package,@nodes ) = @_;
-    foreach my $node (@nodes) {  
-        $this->__set_tag($package,"\u$node",$node);
-    }
-};
-
-sub id {
-    my $this = shift;
-    $this->{_feed}->{id}->{'$t'};
-}
-
-sub title {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->{_feed}->{title}->text($_[0]);
-    }
-    $this->{_feed}->{title}->text;
-}
-
-sub updated {
-    my $this = shift;
-    $this->{_feed}->{updated}->{'$t'};
-}
-
-sub category {
-    my $this = shift;
-    $this->{_feed}->{category};
-}
-
-sub etag {
-    my $this = shift;
-    return $this->{_feed}->{'gd$etag'};
-}
-
-sub author {
-    my $this = shift;
-    return $this->{_feed}->{author};
-}
-
-##OPEN SEARCH 1.1 RESPONSE ELEMENTS
-
-sub total_results {
-    my $this = shift;
-    $this->{_feed}->{'openSearch$totalResults'}->{'$t'};
 }
 
 sub total_items {
     my $this = shift;
     return $this->total_results;
-}
-
-sub start_index {
-    my $this = shift;
-    $this->{_feed}->{'openSearch$startIndex'}->{'$t'};
-}
-
-sub items_per_page {
-    my $this = shift;
-    $this->{_feed}->{'openSearch$itemsPerPage'}->{'$t'};
-}
-
-sub links {
-    my $this = shift;
-    $this->{_feed}->{link};
-}
-
-sub get_link {
-    my ($this,$search) = @_;
-    my $link = $this->links->rel($search)->[0];
-    return $link->href if($link);
 }
 
 sub previous_link {
@@ -176,9 +86,10 @@ private _get_feed_type => sub {
 
     my $feedTypeString = '';
 
-    if ( $this->{_feed}->{category} || $this->{_feed}->{entry}->{category} ) {
-        $feedTypeString = $this->{_feed}->{category}->[0]->term
-          || $this->{_feed}->{entry}->{category}->[0]->term;
+    if ( $this->{_category} || $this->{_feed}->{entry}->{category} ) {
+
+        $feedTypeString = $this->{_category}->[0]->term
+          || $this->{_feed}->{entry}->{category}->[0]->{term};
     }
 
     #the feed type is after the anchor http://gdata.youtube.com/schemas/2007#video
@@ -196,7 +107,7 @@ __END__
 
 =head1 NAME
 
-WebService::GData::Feed - Abstract class wrapping json atom feed for google data API v2.
+WebService::GData::Feed - Base class wrapping json atom feed for google data API v2.
 
 =head1 SYNOPSIS
 

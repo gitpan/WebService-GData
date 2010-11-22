@@ -10,22 +10,27 @@ sub import {
     shift();
     my $package = shift() || caller;
     return if ( $package->isa(__PACKAGE__) || $package eq 'main' );
+    
+    
     WebService::GData->import;
-    WebService::GData::install_in_package( ['set_xml_meta'],
-        sub { return \&set_xml_meta; }, $package );
+    
+    WebService::GData::install_in_package( ['set_meta'],
+        sub { return \&set_meta; }, $package );
 
+    #install this package in the inheritance chain
+    #and create the default tag_name by lowering the last name of the package
     {
         no strict 'refs';
         push @{ $package . '::ISA' }, __PACKAGE__;
         my $pk = $package;
         $package =~ s/.*:://;
-        *{ $pk . '::tag_name' } = sub {
+        *{ $pk . '::node_name' } = sub {
             return "\l$package";
           }
     }
 }
 
-sub set_xml_meta {
+sub set_meta {
     my %data    = @_;
     my $package = caller;
     return if ( $package eq __PACKAGE__ );
@@ -44,6 +49,7 @@ sub set_xml_meta {
 sub __init {
     my ( $this, @args ) = @_;
 
+    $this->{namespaces} = {};
     if ( ref( $args[0] ) eq 'HASH' ) {
 
         #accept a text tag but json feed uses $t tag so adapt
@@ -53,28 +59,39 @@ sub __init {
             delete $args[0]->{'$t'};
         }
         my %args = %{ $args[0] };
-        while(my($attr,$val)=each %args){
+        while ( my ( $attr, $val ) = each %args ) {
             delete $args{$attr};
-            $attr=~s/\$/:/;
-            $args{$attr}=$val;
+            $attr =~ s/\$/:/;
+            $args{$attr} = $val;
         }
         @args = %args;
     }
 
-    $this->SUPER::__init(@args) if(@args%2==0);
+    $this->SUPER::__init(@args) if ( @args % 2 == 0 );
     $this->{_children} = [];
 }
 
-sub root_name  { ""          }
+sub namespace_prefix { "" }
 
-sub tag_name   { ""          }
+sub node_name { "" }
+
+sub namespace_uri { "" }
+
+sub extra_namespaces { }
 
 sub attributes { $attributes }
 
-sub is_parent  { 1           }
+sub is_parent { 1 }
 
-sub __to_string {
-    return +shift->serialize;
+sub namespaces {
+    my ($this) = @_;
+    $this->{namespaces};
+}
+
+sub text {
+    my ($this,@args) = @_;
+    $this->{text}= $args[0] if(@args);
+    return $this->{text};  
 }
 
 sub child {
@@ -90,79 +107,91 @@ sub child {
 }
 
 sub swap {
-    my($this,$remove,$new)=@_;
-    my $i=0;
-    foreach my $child (@{$this->{_children}}){
-        if($child== $remove){
-            $this->{_children}->[$i]=$new; 
+    my ( $this, $remove, $new ) = @_;
+    my $i = 0;
+    foreach my $child ( @{ $this->{_children} } ) {
+        if ( $child == $remove ) {
+            $this->{_children}->[$i] = $new;
         }
         $i++;
     }
 }
 
-sub serialize {
-    my $this = shift;
-    my $tag =
-        $this->root_name
-      ? $this->root_name() . ':' . $this->tag_name()
-      : $this->tag_name();
-    my $out = qq[<$tag];
-    if ( @{ $this->attributes } > 0 ) {
-        my @attrs = ();
-        foreach my $attr ( @{ $this->attributes } ) {
-            my $val = $this->{$attr};
-            push @attrs, qq[$attr="$val"] if ($val);
-        }
-        $out .= ' ' . join( ' ', @attrs ) if(@attrs>0);
-    }
-    if ( $this->is_parent ) {
-        $out .= '>';
-        $out .= $this->{text} if ( $this->{text} );
-        my $children = $this->child;
-        foreach my $child (@$children) {
-            $out .= $child->serialize;
-        }
-        $out .= qq[</$tag>];
-    }
-    else {
-        $out .= '/>';
-    }
-    return $out;
-}
-
 sub __set {
-    my ($this,$func,@args) = @_;
-    if(my ($ns,$tag)=$func=~/^(.+?)_(.+)$/){
-        my @attrs =  @{ $this->attributes };
-        my $attr = $ns.':'.camelcase($tag);
-        if(grep /$attr/,@attrs){
-           $func=$attr;          
+    my ( $this, $func, @args ) = @_;
+    my $called_func= $func;
+        
+    my @attrs = @{ $this->attributes };   
+    
+    if ( !grep /^$func$/, @attrs ) {
+         foreach my $attr (@attrs){
+            $func = $attr if($attr=~m/^.+?:$func$/);       
+         }
+    }
+    
+    if ( my ( $ns, $tag ) = $func =~ /^(.+?)_(.+)$/ ) {
+
+        my $attr  = $ns . ':' . camelcase($tag);
+        if ( grep /^$attr$/, @attrs ) {
+            $func = $attr;
         }
     }
-    $this->{camelcase($func)}= @args==1 ? $args[0]:\@args;
+    my $camelize=camelcase($func);
+    $this->{ $camelize } = @args == 1 ? $args[0] : \@args;
+
+    _install_get_set(ref $this,$called_func,$camelize);
+
     return $this;
 }
 
 sub __get {
-    my ($this,$func)=@_;
-    if(my ($ns,$tag)=$func=~/^(.+?)_(.+)$/){
-        my @attrs =  @{ $this->attributes };
-        my $attr = $ns.':'.camelcase($tag);
-        if(grep /$attr/,@attrs){
-           $func=$attr;          
+    my ( $this, $func ) = @_;
+    my $called_func= $func;
+        
+    my @attrs = @{ $this->attributes };   
+    if ( !grep /^$func$/, @attrs ) {
+         foreach my $attr (@attrs){
+            $func = $attr if($attr=~m/^.+?:$func$/);       
+         }
+    }
+    if ( my ( $ns, $tag ) = $func =~ /^(.+?)_(.+)$/ ) {
+
+        my $attr  = $ns . ':' . camelcase($tag);
+        if ( grep /$attr/, @attrs ) {
+            $func = $attr;
         }
     }
-    $this->{camelcase($func)};
-     
+    my $camelize = camelcase($func);
+    
+    _install_get_set(ref $this,$called_func,$camelize);
+   
+    $this->{ $camelize };
+
 }
 
+private _install_get_set=>sub {
+  my ($package,$called_func,$stored_attr)=@_;
+  
+ {    
+        no strict 'refs';
+        *{$package.'::'.$called_func}= sub {
+            my ($this,@args) = @_;
+            local *__ANON__=$called_func;
+            if(@args>0){
+                $this->{ $stored_attr } = @args == 1 ? $args[0] : \@args;   
+                return $this;     
+            }
+            $this->{ $stored_attr };
+        };
+   }    
+    
+};
 
 sub camelcase {
     my $str = shift;
-    $str=~s/_([a-z])/\U$1/g;
+    $str =~ s/_([a-z])/\U$1/g;
     return $str;
 }
-
 
 "The earth is blue like an orange.";
 
@@ -196,11 +225,13 @@ WebService::GData::Node - Abstract class representing an xml node/tag
    package WebService::GData::Node::Category;
    use WebService::GData::Node;
 
-   set_xml_meta(
+   set_meta(
         attributes=>['scheme','yt:term','label'],#default to []
         is_parent => 0, #default 1
-        root_name => 'k', #default to ''
-        tag_name  => 'category' # default to the package file name with the first letter in lower case
+        namespace_prefix => 'k', #default to ''
+        namespace_uri    =>'http://wwww.k.org/2010',#default to ''
+        tag_name  => 'category' # default to the package file name with the first letter in lower case,
+        extra_namespaces=>{'yt'=>'http://...'} #set namespace at the attribute level here
    );
 
    1;
@@ -224,28 +255,33 @@ WebService::GData::Node - Abstract class representing an xml node/tag
     $name->text;#john doe
     $category->scheme;#author;
     $category->scheme('compositor');
-    
-    print $author;#<author><name>john doe</name><k:category scheme="compositor" yt:term="Author"/></author>
-
+    $category->term('Media');
+   
 
 
 =head1 DESCRIPTION
 
 I<inherits from L<WebService::GData>>
 
-This package is an abstract class representing the information required to serialize a node object into xml.
-It regroups the mechanism to store the meta data about a node and from there built the proper xml output.
-It is not an all purpose class for building complex xml data. It does not parse xml either. 
+This package is an abstract class representing the information required to serialize a node object into xml or any other appropriate format.
 
-You should subclass and set the meta information via the C<set_xml_data> function that will be installed in your package
+
+You should subclass and set the meta information via the C<set_meta> function that will be installed in your package
  (see below for further explanation).
 You can instantiate this class if you want... it will not throw any error but you won't be able to do much. 
 
 A node is only the representation of one xml tag. Feed and Feed subclasses are the representation of an entire JSON response
 or offers a subset.
 
-See also L<WebService::GData::Node::AbstractEntity>.
+See also:
 
+=over
+
+=item * L<WebService::GData::Node::AbstractEntity> - represent set of nodes
+
+=item * L<WebService::GData::Serialize> - serialize into xml or other format
+
+=back
 
 =head2 CONSTRUCTOR
 
@@ -263,7 +299,7 @@ B<Parameters>
 =item C<args:Hash> (optional) - all the xml attributes can be set here. text nodes requires the "text" key.
 or
 
-=item C<args:HashRef> (optional) - all the xml attributes can be set here. text nodes requires the "text" key and 
+=item C<args:HashRef> (optional) - all the node attributes can be set here. text nodes requires the "text" key and 
 the '$t' key is also supported as an alias for 'text' for compatibily with the GData JSON responses.
 
 =back
@@ -285,18 +321,9 @@ Example:
     
        $node->text();#hi;
        
-   print $node;"<>hi<>"; #this is an abstract node!
+   print WebService::GData::Serialize->to_xml($node);"<>hi<>"; #this is an abstract node!
 	
 =back
-
-=head2 OVERLOAD METHOD
-
-=head3 __to_string
-
-=over
-
-This class overwrite the default __to_string method to call C<serialize> and output the xml data.
-Therefore if you use a Node object in a string context, you will get back its xml representation.
 
 =head2 AUTOLOAD
 
@@ -309,7 +336,8 @@ The attributes setter/getters and the text method are generated on the fly.
 =item * you can use either hyphen base notation or camelCase notation.
 
 =item * Attributes containing namespaces can be accessed by replacing ':' with
-'_'. yt:format attribute can be set/get via the yt_format method. You should use the qualified attribute when setting it via the constructor.
+'_' or by just skipping the namespace prefix. yt:format attribute can be set/get via the yt_format method or format.
+You should use the qualified attribute when setting it via the constructor.
 Therefore, new Node(yt_format=>1) will not work but new Node('yt:format'=>1) and new Node({'yt$format'=>1}) will work.
 
 Example:
@@ -405,52 +433,23 @@ Example:
 	   
 =back
 
-=head3 serialize
-
-=over
-
-This method will create the xml output of the instance and make recursive call to the serialize method of the children.
-
-B<Parameters>
-
-=over
-
-=item C<none>
-
-=back
-
-B<Returns> 
-
-=over 
-
-=item C<xml_data:Scalar> - the xml created
-
-=back
-
-Example:
-
-    my $author   = new WebService::GData::Node::Author();
-    my $name     = new WebService::GData::Node::Name(text=>'john doe');
-    my $category = new WebService::GData::Node::Category(scheme=>'author',term=>'Author');
-    
-    $author->child($name)->child($category);
-    
-    $author->serialize;#<author><name>john doe</name><k:category scheme="author" yt:term="Author"/></author>
-	   
-=back
-
 =head 2 STATIC GETTER METHODS
 
 The following methods are installed by default in the package subclassing this class.
-You should set their value via the C<set_xml_data> method (see below).
+You should set their value via the C<set_meta> method (see below).
 
-=head3 root_name
+=head3 namespace_prefix
 
-=head3 tag_name
+=head3 namespace_uri
+
+=head3 node_name
 
 =head3 attributes
 
 =head3 is_parent
+
+=head3 extra_namespaces
+
 	  
 
 =head2 INHERITANCE
@@ -463,7 +462,7 @@ declare the inheritance. As a consequence though, every sub classes that are use
  
 The following function will be accessible in the sub class.
 
-=head3 set_xml_data
+=head3 set_meta
 
 =over
 
@@ -477,9 +476,14 @@ B<Parameters>
 
 =over
 
-=item B<root_name:Scalar> - the namespace name of the tag, ie, yt:, media: ...
+=item B<namespace_uri:Scalar> - the namespace uri. Most of the time a web url ...
 
-=item B<tag_name:Scalar>  - the name of the tag it sefl, ie, category, author...
+=item B<namespace_prefix:Scalar> - the namespace name of the node, ie, yt:, media: ...
+
+=item B<extra_namespaces:HashRef> - Node only supports namespaces at the node level. You can add extra namespaces here if set at the attribute level.
+the key is the namespace_prefix and the value the namespace_uri.
+
+=item B<node_name:Scalar>  - the name of the node it self, ie, category, author...
 
 =item B<attributes:ArrayRef> - a list of the node attributes, ie, src, scheme... Default: []
 
@@ -503,10 +507,10 @@ Example:
    package WebService::GData::Node::Category;
    use WebService::GData::Node;
 
-   set_xml_meta(
+   set_meta(
         attributes=>['scheme','yt:term','label'],#default to []
         is_parent => 0, #default 1
-        root_name => 'k', #default to ''
+        namespace_prefix => 'k', #default to ''
         tag_name  => 'category' # default to the package file name with the first letter in lower case
    );
 
@@ -517,7 +521,6 @@ Example:
    my $category = new WebService::GData::Node::Category('yt:term'=>'term');
       $category->yt_term('youtube term');
       
-      "$category";#<k:category yt:term="youtube term"/>
 	   
 =back
 
@@ -534,22 +537,81 @@ For reference, below is a list of all the tags implemented so far with their met
         - Control
         - Draft
         - Edited
-    Author
-    Category                    #attributes=>scheme term label
-    Content                     #attributes=>src type
-    GD                          #gd: namespace
-       - Comments
-       - FeedLink               #attributes=>rel href countHint,is_parent=>0
-       - Rating                 #attributes=>min max numRaters average value,is_parent=>0
-    GeoRSS #georss: namespace
+        
+    Atom                        #atom: namespace
+        - Author
+        - Category              #attributes=>scheme term label
+        - Content               #attributes=>src type
+        - Entry                 #attributes => gd:etag
+        - Feed                  #attributes => gd:etag
+        - Generator             #attributes => version uri
+        - Id
+        - Link                  #attributes=>rel type href
+        - Logo
+        - Name
+        - Summary
+        - Title
+        - Updated
+        - Uri
+        
+    GD                           #gd: namespace
+        - AditionalName          #attributes=> yomi
+        - Agent
+        - AttendeeStatus         #attributes=>value,is_parent=>0
+        - attendeeType           #attributes=>value,is_parent=>0
+        - City
+        - Comments               #attributes=>rel
+        - Country                #attributes=>code
+        - Deleted                #is_parent=>0
+        - Email                  #attributes=>address displayName label rel primary
+        - EntryLink              #attributes=>href readOnly rel
+        - EventStatus            #attributes=>value,is_parent=>0
+        - ExtendedProperty       #attributes=>name value
+        - FamilyName             #attributes=>yomi
+        - FeedLink               #attributes=>rel href countHint,is_parent=>0
+        - FormattedAddress
+        - GivenName              #attributes=> yomi
+        - Housename
+        - Im                     #attributes=>address label rel protocol primary
+        - Money                  #attributes=>amount currencyCode,is_parent=>0
+        - Name
+        - Neighborhood
+        - Organization           #attributes=>label primary rel
+        - OrgDepartment
+        - OrgJobDescription
+        - OrgName                #attributes=>yomi
+        - OrgSymbol
+        - OrgTitle
+        - OriginalEvent          #attributes=>id href
+        - PhoneNumber            #attributes=>label rel uri primary
+        - Pobox
+        - PostalAddress          #attributes=>label rel primary
+        - Postcode
+        - Rating                 #attributes=>min max numRaters average value rel,is_parent=>0
+        - Recurrence
+        - RecurrenceException    #attributes=>specialized
+        - Region
+        - Reminder               #attributes=>absoluteTime method days hours minutes,is_parent=>0
+        - Resourceid
+        - Street
+        - StructuredPostalAddress #attributes=>rel mailClass usage label primary
+        - Subregion
+        - Transparency            #attributes=>value,is_parent=>0
+        - Visibility              #attributes=>value,is_parent=>0
+        - When                    #attributes=>endTime startTime valueString,is_parent=>0
+        - Where                   #attributes=>label rel valueString
+        - Who                     #attributes=>email rel valueString
+       
+    GeoRSS                      #georss: namespace
        - Where
+       
     GML                         #gml: namespace
        - Point                  #tag_name=>'Point'
        - Pos
-    Link                        #attributes=>rel type href
+       
     Media                       #media: namespace
        - Category               #attributes=>scheme label
-       - Content                #attributes=>url type medium isDefault expression duration yt:format,is_parent=>0
+       - Content                #attributes=>url type medium isDefault expression duration,is_parent=>0
        - Credit                 #attributes=>role yt:type scheme
        - Description            #attributes=>type
        - Group
@@ -559,11 +621,11 @@ For reference, below is a list of all the tags implemented so far with their met
        - Restriction            #attributes=>type relationship
        - Thumbnail              #attributes=>url height width time, is_parent=>0
        - Title                  #attributes=>type
-    Name
-    Summary
-    Title
-    Uri
        
+    OpenSearch                  #openSearch: namespace
+       - ItemsPerPage             
+       - StartIndex                
+       - TotalResults                 
 
 
 =head2  CAVEATS

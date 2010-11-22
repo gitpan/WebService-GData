@@ -1,5 +1,19 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_04  2010/11/03 16:51
+    This update contains many changes that would be hard to list...
+    The next update should deal with lazy loading the classes that are for now loaded in bunch...
+    and separate the storage layers/serialization formats available
+    Below is a short overview for this version:
+    - the Node serialize method has been moved to its own package
+    - the Base package does not handle any namespace related functions (get/add/clean/_namespaces)
+    - added new constants for the prefix and the uri of the namespaces in WebService::GData::Constants
+    - the Node serialize method now discovers all the namespaces and apply them to the root element
+    - Added Atom,OpenSearch,GD namespaces in Node::*
+	- switch to Module::Install
+    - YouTube service may not work right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.03_03  2010/11/01 11:19
 
 	- I messed up with subversion and upload the wrong package it seems. should be ok.

@@ -6,7 +6,7 @@ use Data::Dumper;
 use Carp;
 use overload '""' => "__to_string",'==' =>'equal',fallback=>1;
 
-our $VERSION = 0.03_03;
+our $VERSION = 0.03_04;
 
 our $AUTOLOAD;
 
@@ -107,7 +107,7 @@ sub AUTOLOAD {
 
      $func =~ s/.*:://;
   my $this = shift;
-  return if(!ref($this));
+ # return if(!ref($this));
   return if($func=~m/[A-Z]+/);
 
   if(@_>=1){
@@ -520,7 +520,7 @@ i will try to do my best to fix it (patches welcome)!
 
 shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
 
-=head1 LICENSE AND COPYRIGHT
+=head1 LICENSE
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

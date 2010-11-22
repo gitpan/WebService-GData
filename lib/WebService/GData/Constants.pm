@@ -1,7 +1,7 @@
 package WebService::GData::Constants;
 use strict;
 use warnings;
-our $VERSION  = 1.05;
+our $VERSION  = 1.06;
 
 use constant  {
 	#general...
@@ -76,6 +76,25 @@ use constant  {
 	GML_NAMESPACE		=> 'xmlns:gml="http://www.opengis.net/gml"',
 	MEDIA_NAMESPACE     => 'xmlns:media="http://search.yahoo.com/mrss/"',
 	APP_NAMESPACE		=> 'xmlns:app="http://www.w3.org/2007/app"',
+	
+	#NAMESPACES PREFIX
+	ATOM_NAMESPACE_PREFIX		=> 'atom',
+	OPENSEARCH_NAMESPACE_PREFIX => 'openSearch',
+	GDATA_NAMESPACE_PREFIX      => 'gd',
+	GEORSS_NAMESPACE_PREFIX    	=> 'georss',
+	GML_NAMESPACE_PREFIX		=> 'gml',
+	MEDIA_NAMESPACE_PREFIX      => 'media',
+	APP_NAMESPACE_PREFIX		=> 'app',	
+	
+	#NAMESPACES URI
+	ATOM_NAMESPACE_URI		 => 'http://www.w3.org/2005/Atom',
+	OPENSEARCH_NAMESPACE_URI => 'http://a9.com/-/spec/opensearch/1.1/',
+	GDATA_NAMESPACE_URI      => 'http://schemas.google.com/g/2005',
+	GEORSS_NAMESPACE_URI     => 'http://www.georss.org/georss',
+	GML_NAMESPACE_URI		 => 'http://www.opengis.net/gml',
+	MEDIA_NAMESPACE_URI      => 'http://search.yahoo.com/mrss/',
+	APP_NAMESPACE_URI		 => 'http://www.w3.org/2007/app',	
+	
 
 };
 my  @general   = qw(XML_HEADER GDATA_MINIMUM_VERSION);
@@ -86,7 +105,10 @@ my @http_status= qw(OK CREATED NOT_MODIFIED BAD_REQUEST UNAUTHORIZED FORBIDDEN N
 
 my  @format    = qw(JSON JSONC ATOM RSS);
 
-my  @namespace = qw(ATOM_NAMESPACE OPENSEARCH_NAMESPACE GDATA_NAMESPACE GEORSS_NAMESPACE GML_NAMESPACE MEDIA_NAMESPACE APP_NAMESPACE);
+my  @namespace = qw(ATOM_NAMESPACE OPENSEARCH_NAMESPACE GDATA_NAMESPACE GEORSS_NAMESPACE GML_NAMESPACE MEDIA_NAMESPACE APP_NAMESPACE
+                    ATOM_NAMESPACE_URI OPENSEARCH_NAMESPACE_URI GDATA_NAMESPACE_URI GEORSS_NAMESPACE_URI GML_NAMESPACE_URI MEDIA_NAMESPACE_URI APP_NAMESPACE_URI
+                    ATOM_NAMESPACE_PREFIX OPENSEARCH_NAMESPACE_PREFIX GDATA_NAMESPACE_PREFIX GEORSS_NAMESPACE_PREFIX GML_NAMESPACE_PREFIX MEDIA_NAMESPACE_PREFIX APP_NAMESPACE_PREFIX
+);
 
 my  @service   = qw(YOUTUBE_SERVICE WEBMASTER_SERVICE SPREADSHEETS_SERVICE SIDEWIKI_SERVICE PICASA_SERVICE MAPS_SERVICE HEALTH_SB_SERVICE HEALTH_SERVICE
 					GMAIL_SERVICE FINANCE_SERVICE DOCUMENTS_SERVICE CONTACTS_SERVICE CODE_SERVICE CALENDAR_SERVICE CALENDAR_SERVICE BOOK_SERVICE 
@@ -183,21 +205,51 @@ I<import with :format>
 
 The namespace constants map the available namespace used as of version 2 of the google data API.
 You can choose to import namespace related constants by writing use WebService::GData::Constants qw(:namespace);
-The namespace follow the following format: xmlns:namespace_name="uri"
+The namespace follow the following format: xmlns:namespace_prefix="uri". In the Google Data protocol, the atom namespace is used
+as the default one, which means that it will be xmlns="uri". 
+There is also an atomic version of each namespace via _PREFIX and _URI.
 
 =head3 ATOM_NAMESPACE
 
+=head3 ATOM_NAMESPACE_PREFIX
+
+=head3 ATOM_NAMESPACE_URI
+
 =head3 OPENSEARCH_NAMESPACE
+
+=head3 OPENSEARCH_NAMESPACE_PREFIX
+
+=head3 OPENSEARCH_NAMESPACE_URI
 
 =head3 GDATA_NAMESPACE
 
+=head3 GDATA_NAMESPACE_PREFIX
+
+=head3 GDATA_NAMESPACE_URI
+
 =head3 GEORSS_NAMESPACE
+
+=head3 GEORSS_NAMESPACE_PREFIX
+
+=head3 GEORSS_NAMESPACE_URI
 
 =head3 GML_NAMESPACE
 
+=head3 GML_NAMESPACE_PREFIX
+
+=head3 GML_NAMESPACE_URI
+
 =head3 MEDIA_NAMESPACE
 
+=head3 MEDIA_NAMESPACE_PREFIX
+
+=head3 MEDIA_NAMESPACE_URI
+
 =head3 APP_NAMESPACE
+
+=head3 APP_NAMESPACE_PREFIX
+
+=head3 APP_NAMESPACE_URI
 
 I<import with :namespace>
 

@@ -8,7 +8,7 @@ use WebService::GData::Node::Media::Description();
 use WebService::GData::Node::Media::Keywords();
 use WebService::GData::Node::Media::Player();
 use WebService::GData::Node::Media::Title();
-
+use WebService::GData::Node::PointEntity();
 use WebService::GData::Collection;
 
 our $VERSION = 0.01_01;

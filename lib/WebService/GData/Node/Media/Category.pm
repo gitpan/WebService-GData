@@ -1,7 +1,7 @@
 package WebService::GData::Node::Media::Category;
 use WebService::GData::Node::Media;
 
-set_xml_meta(
+set_meta(
     attributes=>['scheme','label']
 );
 

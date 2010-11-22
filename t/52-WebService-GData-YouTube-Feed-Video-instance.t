@@ -1,4 +1,4 @@
-use Test::More tests => 21;
+use Test::More tests => 14;
 use WebService::GData::YouTube::Feed::Video;
 use t::JSONResponse;
 use JSON;
@@ -39,16 +39,4 @@ foreach my $link (@{$entry->links}) {
     $i++;
 }
 
-foreach my $func (
-    (
-        qw(total_items total_results start_index items_per_page previous_link next_link entry)
-    )
-  )
-{
-
-    ok(
-        $entry->$func->isa('WebService::GData::Feed::Entry'),
-        "disabled functions returned the instance properly."
-    );
-}
 

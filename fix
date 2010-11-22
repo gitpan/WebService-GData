@@ -1,0 +1,111 @@
+#!/usr/bin/perl -w
+use Archive::Tar;
+$Archive::Tar::DO_NOT_USE_PREFIX = 1;
+use strict;
+
+# I found it way too hard to try to make Getopt::Std and Getopt::Long behave as I'd like
+# It's much easier to just implement command line options parsing by hand...
+# Careful: you cannot combine several single letter command line options into one,
+# They must stay separate.
+my %opt;
+while(@ARGV && $ARGV[0] =~ /^-/) {
+    $_ = shift;
+    s/^-i// and $opt{inplace} = $_, next;
+    s/^-o// and $opt{output} = ( length $_ ? $_ : shift ), next;
+    /^--?f/ and $opt{force} = 1, next;
+    /^--?g[a-z]*$/ and $opt{glob} = 1, next;
+    /^--?p[a-z]*$/ and $opt{quickfix} = 0, next;
+    /^--?q[a-z]*$/ and $opt{quickfix} = 1, next;
+    /^--?d[a-z]*$/ and $opt{dryrun} = 1, next;
+    /^--?v[a-z]*$/ and $opt{verbose} = 1, next;
+    last if $_ eq '--';
+    warn "Unknown command line option: '$_'\n" unless /^--?[h?]/;
+    die <<"^USAGE^";
+Command:
+  perl $0 [-i|-i.bak|-o saveas.tar.gz|-d] [-p|-q]? [-f,-g,-v]* distro.tar.gz
+Options:
+  -i, -i.bak
+    inplace fix of source file, optional suffix for name of backup of 
++original file
+  -o filename
+    save fixed distribution as... (file name)
+    Only use this if you only have one parameter file!
+  -d
+    dry run, do not save the output file
+  -v
+    verbose mode, make it list everything it does
+  -g
+    Apply file globbing to argument(s) (for Windows)
+  -p
+    pedantic fix: look at contents of file to guess the correct file mode
+    This merely sets the x bits for scripts, and clears them for other plain files
+  -q
+    quickfix, just clear world writeable bit
+  -f
+    force, save file even if it did not require fixing
+^USAGE^
+}
+
+@ARGV or die "Please provide a '.tar.gz' file as argument";
+if($opt{glob}) {
+    @ARGV = map { /[*?]/ ? glob( / /&&!/^"/ ? qq("$_") : $_ ) : $_ } @ARGV;
+}
+
+unless($opt{inplace} || $opt{output} || $opt{dryrun}) {
+    print "As neither option -i nor -o were given, processing mode has been set to dry run\n";
+    $opt{dryrun} = 1;
+}
+
+while(@ARGV) {
+    my $dist = shift;
+    $dist =~ /\.t(ar\.)?gz$/
+      or die "Wrong argument: '$dist'; please provide a '.tar.gz' file as argument";
+    print "Loading distribution '$dist'\n" if $opt{verbose};
+
+    my $fixes;
+    my $tar = Archive::Tar->new;
+    $tar->read($dist);
+    my @files = $tar->get_files;
+    foreach my $file (@files) {
+        my $fixedmode = my $mode = $file->mode;
+        my $filetype = '';
+        if($file->is_file) {
+            $filetype = 'file';
+            if($opt{quickfix}) {
+                $fixedmode &= ~2;
+            } elsif(substr(${ $file->get_content_by_ref }, 0, 2) eq '#!') {
+                $fixedmode = 0775;
+            } else {
+                $fixedmode = 0664;
+            }
+        } elsif($file->is_dir) {
+            $filetype = 'dir';
+            if($opt{quickfix}) {
+                $fixedmode &= ~2;
+            } else {
+                $fixedmode = 0775;
+            }
+        } else {
+            next;
+        }
+        next if $mode eq $fixedmode;
+        $file->mode($fixedmode);
+        $fixes++;
+        printf "Change mode %03o to %03o for %s '%s'\n", $mode, $fixedmode, $filetype, $file->name
+          if $opt{verbose};
+    }
+
+    if($fixes || $opt{force}) {
+        if($opt{dryrun}) {
+            print "Dry run: file '$dist' would have been patched ($fixes fixes)\n";
+        } else {
+            rename $dist, "$dist$opt{inplace}" or die "Cannot rename file '$dist' to '$dist$opt{inplace}': $!"
+              if defined $opt{inplace} && length $opt{inplace};
+            $dist = $opt{output} if $opt{output};
+            $tar->write($dist, 9);
+            print "File '$dist' saved.\n";
+        }
+    } else {
+        print "File '$dist' didn't need fixing, skipped.\n";
+    }
+}

@@ -5,7 +5,7 @@ use WebService::GData::YouTube::YT::Uploaded();
 use WebService::GData::YouTube::YT::Videoid();
 use WebService::GData::YouTube::YT::AspectRatio();
 use WebService::GData::YouTube::YT::Private();
-
+use WebService::GData::YouTube::YT::Media::Content();
 our $VERSION = 0.01_01;
 
 sub __init {
@@ -17,6 +17,8 @@ sub __init {
     $this->{'_uploaded'}     = new WebService::GData::YouTube::YT::Uploaded($params->{'yt$uploaded'});  
     $this->{'_videoid'}      = new WebService::GData::YouTube::YT::Videoid($params->{'yt$videoid'});    
     $this->{'_aspectratio'}  = new WebService::GData::YouTube::YT::AspectRatio($params->{'yt$aspectRatio'}); 
+    my $content              = new WebService::GData::YouTube::YT::Media::Content($params->{'media$content'}); 
+    $this->swap($this->{_content},$content);
     if($params->{'yt$private'}){
         $this->{'_private'}  = new WebService::GData::YouTube::YT::Private($params->{'yt$private'});
         $this->_entity->child($this->{'_private'});  

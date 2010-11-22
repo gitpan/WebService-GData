@@ -108,11 +108,10 @@ ok(
     $Mock_request->header('Testing') == 1,
     'auth object service header has been set.'
 );
-my $xml_header  = XML_HEADER;
-my $xmlns       = $base->get_namespaces();
-my $xml_content = qq[$xml_header<entry $xmlns><title>tete</title></entry>];
+
+my $xml_content = q[<title>tete</title>];
 ok( $Mock_request->content() eq $xml_content,
-    'insert decorates the contents with xml header and namespaces.' );
+    'insert contents is present.' );
 ok( $resp eq '{}', 'insert sends back the raw response from the server.' );
 
 $resp = $base->update( 'http://www.example.com', '<title>eeee</title>' );

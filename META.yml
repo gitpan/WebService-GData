@@ -1,14 +1,32 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         WebService-GData
-version:      0.0303
-version_from: lib/WebService/GData.pm
-installdirs:  site
-requires:
-    JSON:                          2
-    LWP:                           0
-    Test::Mock::LWP:               0.05
-    Test::More:                    0
-
+---
+abstract: 'Google data protocol v2 base object to inherit.'
+author:
+  - 'shiriru <shirirulestheworld[arobas]gmail.com>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  Test::Mock::LWP: 0.05
+  Test::More: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+generated_by: 'Module::Install version 1.000'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: WebService-GData
+no_index:
+  directory:
+    - inc
+    - t
+recommends:
+  Crypt::SSLeay: 0
+requires:
+  JSON: 2
+  LWP: 0
+  perl: 5.8.8
+resources:
+  bugtracker: http://rt.cpan.org
+  license: http://dev.perl.org/licenses/
+  repository: http://code.google.com/p/perl-gdata-youtube-api-v2/source/browse/
+version: 0.0304

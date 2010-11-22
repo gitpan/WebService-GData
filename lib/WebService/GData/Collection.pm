@@ -40,7 +40,8 @@ sub __set {
 		}
 	}
    $this->{cache}->{$attr.$val}=\@ret;
-   return $this->{cache}->{$attr.$val};
+   
+   $this->{cache}->{$attr.$val}
 }
 
 sub __get {
@@ -49,16 +50,18 @@ sub __get {
 	foreach my $elm (@{ $this->{nodes} }){
 		push @ret,$elm->$func();
 	}
-	\@ret;
+	
+	\@ret
 }
 
 sub serialize {
-	my ($this)=@_;
+	my ($this,$owner) = @_;
 	my $ret ="";
 	foreach my $elm (@{ $this->{nodes} }){
-		$ret.=$elm->serialize();
+		$ret.=$elm->serialize($owner);
 	}
-	$ret;    
+	
+	$ret 
 }
 
 

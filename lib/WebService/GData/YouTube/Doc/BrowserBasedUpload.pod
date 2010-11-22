@@ -1,6 +1,6 @@
 =head1 NAME
 
-WebService::GData::YouTube::Doc:: BrowserBasedUpload - Upload a video by using the Browser-based uploading system.
+WebService::GData::YouTube::Doc::BrowserBasedUpload - Upload a video by using the Browser-based uploading system.
 
 =head1 SYNOPSIS
 
@@ -49,13 +49,13 @@ WebService::GData::YouTube::Doc:: BrowserBasedUpload - Upload a video by using t
     $video->is_private(1);
     
     #all the available settings can be set
-    $entry->access_control('comment','allowed');
+    $video->access_control('comment','allowed');
    
     #make the request
     
     my($url,$token);  
     eval {
-      ($url,$token)= $entry->save();
+      ($url,$token)= $video->save();
     };
     
     if(my $error = $@){
@@ -86,8 +86,8 @@ WebService::GData::YouTube::Doc:: BrowserBasedUpload - Upload a video by using t
     
     http://www.example.com/thankyou.html?id=sxZekqqleksk&status=200
 
-	#or something went wrong:
-	http://www.example.com/thankyou.html?status=403&code=INVALID_TOKEN 
+    #or something went wrong:
+    http://www.example.com/thankyou.html?status=403&code=INVALID_TOKEN 
 
 =head1 DESCRIPTION
 
@@ -164,7 +164,7 @@ In order to be authorized you must log in into an account. You can do so by usin
 
 Example:
 
-	# key from your dashboard
+    #key from your dashboard
 	
     use constant KEY=>'*****r*****************s**************B*';
     
@@ -203,11 +203,11 @@ Now that you are logged in, you have to pass the authorization object to the You
 
 Example:
 
-	use WebService::GData::ClientLogin;
-	use WebService::GData::YouTube;
+    use WebService::GData::ClientLogin;
+    use WebService::GData::YouTube;
 	
-	##do the log in
-	my $auth = new WebService::GData::ClientLogin(...);
+    #log in
+    my $auth = new WebService::GData::ClientLogin(...);
 
     #create an empty video placeholder with read access
     
@@ -234,7 +234,7 @@ So it could be something like that:
 
 Example:
 
-	use CGI;
+    use CGI;
     #create an empty video placeholder with read access
     
     my $video = new WebService::GData::YouTube($auth)->video;
@@ -272,7 +272,7 @@ Now that we have all the meta information we need, let's save them:
 
 Example:
 
-	use CGI;
+    use CGI;
     #create an empty video placeholder with read access
     
     my $video = new WebService::GData::YouTube($auth)->video;
@@ -331,7 +331,7 @@ The user has choosen his/her video, pressed upload.
 YouTube handled the request directly and will redirect to your website (well, to the url specified in nexturl)
 by adding some parameters defining the state of the video.
 
-=head3 SUCCESFUL UPLOAD
+=head3 SUCCESSFUL UPLOAD
 
 Example:
     

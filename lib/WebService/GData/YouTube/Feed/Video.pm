@@ -9,7 +9,6 @@ use WebService::GData::Node::PointEntity();
 use WebService::GData::YouTube::YT::GroupEntity();
 use WebService::GData::YouTube::YT::AccessControl();
 use WebService::GData::Node::Media::Category();
-
 use WebService::GData::Collection;
 
 our $VERSION         = 0.01_05;
@@ -34,7 +33,7 @@ sub __init {
         $this->SUPER::__init({},$feed);  
         $this->_media(new WebService::GData::YouTube::YT::GroupEntity({}));       
     }   
- 
+    $this->_entity->child($this->_media);
 }
 
 
@@ -48,7 +47,7 @@ sub next_url {
 
 sub location {
     my ($this,$pos) = @_;
-    my $where = $this->_location;
+    my $where = $this->{feed}->{'georss$where'};
     if(ref($where) eq 'HASH'){
         $this->_location(new WebService::GData::Node::PointEntity($where->{'gml$Point'}->{'gml$pos'}));
     }
@@ -65,9 +64,10 @@ sub location {
 sub _location {
     my ($this,$instance) = @_;
     if($instance){
-          $this->{_feed}->{'georss$where'}=$instance;        
+          $this->{_where}=$instance;       
+          $this->_entity->child($instance); 
     }
-    $this->{_feed}->{'georss$where'}; 
+    $this->{_where}; 
 }
 
 sub view_count {
@@ -83,9 +83,9 @@ sub favorite_count {
 sub _media {
     my ($this,$instance) = @_;
     if($instance){
-        $this->{_feed}->{'media$group'}=$instance;
+        $this->{_media}=$instance;
     }
-    $this->{_feed}->{'media$group'};    
+    $this->{_media};    
 }
 
 sub media_player {
@@ -153,6 +153,7 @@ sub title {
     my $this = shift;
     if ( @_ == 1 ) {
         $this->_media->title->text($_[0]);
+
         $this->_media->title->type("plain");
     }
     $this->_media->title->text||'';
@@ -163,7 +164,7 @@ sub keywords {
     if ( @_ >1 ) {
         return $this->_media->keywords->text( join(',',@_) );
     }
-    $this->_media->keywords->text||'';
+    $this->_media->keywords||'';
 }
 
 sub is_private {
@@ -191,9 +192,10 @@ sub appcontrol_state {
 sub _access_control {
     my ($this,$instance)= @_;
     if($instance){
-        $this->{_feed}->{'media$accessControl'}=$instance;
+        $this->{_access_control}=$instance;
+        $this->_entity->child($instance);
     }
-    $this->{_feed}->{'media$accessControl'}; 
+    $this->{_access_control}; 
 }
 
 sub access_control {
@@ -208,73 +210,6 @@ sub access_control {
 }
 
 
-sub _serialize {
-    my ($this) = @_;
-
-    my $media  = $this->_media->serialize;
-    my $pos    = $this->_location       ? $this->_location->serialize       :"";
-    my $access = $this->_access_control ? $this->_access_control->serialize :"";
-
-    return $media.$pos.$access;
-
-}
-
-sub is_listing_allowed {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->access_control->[0]->{permission} = $_[0];
-    }
-    return ( $this->access_control->[0]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_comment_allowed {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->access_control->[1]->{permission} = $_[0];
-    }
-    return ( $this->access_control->[1]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_comment_vote_allowed {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->access_control->[2]->{permission} = $_[0];
-    }
-    return ( $this->access_control->[2]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_video_response_allowed {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->access_control->[3]->{permission} = $_[0];
-    }
-    return ( $this->access_control->[3]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_rating_allowed {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->access_control->[4]->{permission} = $_[0];
-    }
-    return ( $this->access_control->[4]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_embedding_allowed {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->access_control->[5]->{permission} = $_[0];
-    }
-    return ( $this->access_control->[5]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_syndication_allowed {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->access_control->[6]->{permission} = $_[0];
-    }
-    return ( $this->access_control->[6]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
 sub delete {
     my $this = shift;
     my $uri  = $BASE_URI . $this->video_id;
@@ -284,13 +219,8 @@ sub delete {
 sub save {
     my ($this) = @_;
 
-    my $content = $this->_serialize();
-     $this->{_request}->clean_namespaces();
-     $this->{_request}->add_namespaces( ATOM_NAMESPACE, MEDIA_NAMESPACE,
-            YOUTUBE_NAMESPACE );
-    if($this->_location){
-        $this->{_request}->add_namespaces(GEORSS_NAMESPACE,GML_NAMESPACE);
-    }
+    my $content = XML_HEADER.$this->serialize();
+
     if ( $this->video_id ) {
         $this->{_request}->update( $BASE_URI . $this->video_id, $content );
     }
@@ -405,11 +335,69 @@ XML
 
 }
 
+sub is_listing_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[0]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[0]->{permission} eq 'allowed' ) ? 1 : 0;
+}
+
+sub is_comment_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[1]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[1]->{permission} eq 'allowed' ) ? 1 : 0;
+}
+
+sub is_comment_vote_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[2]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[2]->{permission} eq 'allowed' ) ? 1 : 0;
+}
+
+sub is_video_response_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[3]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[3]->{permission} eq 'allowed' ) ? 1 : 0;
+}
+
+sub is_rating_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[4]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[4]->{permission} eq 'allowed' ) ? 1 : 0;
+}
+
+sub is_embedding_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[5]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[5]->{permission} eq 'allowed' ) ? 1 : 0;
+}
+
+sub is_syndication_allowed {
+    my $this = shift;
+    if ( @_ == 1 ) {
+        $this->access_control->[6]->{permission} = $_[0];
+    }
+    return ( $this->access_control->[6]->{permission} eq 'allowed' ) ? 1 : 0;
+}
+
+
 private _urlencode => sub {
     my ($string) = shift;
     $string =~ s/(\W)/"%" . unpack("H2", $1)/ge;
     return $string;
 };
+
 "The earth is blue like an orange.";
 
 __END__
@@ -489,7 +477,7 @@ See also:
 
 =over 
 
-=item * L<WebService::GData::YouTube::Doc::BrowserbasedUpload> - overview of the browser based upload mechanism
+=item * L<WebService::GData::YouTube::Doc::BrowserBasedUpload> - overview of the browser based upload mechanism
 
 =back
 

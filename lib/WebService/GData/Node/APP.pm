@@ -1,6 +1,7 @@
 package WebService::GData::Node::APP;
-
+use WebService::GData::Constants qw/:namespace/;
 use WebService::GData::Node;
+
 
 sub import {
     my $package = caller;
@@ -12,7 +13,8 @@ sub import {
 }
 }
 
-sub root_name {'app'};
 
+sub namespace_prefix {APP_NAMESPACE_PREFIX}
+sub namespace_uri {APP_NAMESPACE_URI}
 
 1;

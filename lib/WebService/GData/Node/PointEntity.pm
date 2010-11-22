@@ -4,7 +4,6 @@ use WebService::GData::Node::GeoRSS::Where;
 use WebService::GData::Node::GML::Point;
 use WebService::GData::Node::GML::Pos;
 
-
 our $VERSION = 0.01_01;
 
 sub __init {

@@ -70,22 +70,7 @@ sub get_uri {
     return $this->{__URI__};
 }
 
-sub get_namespaces {
-    my $this = shift;
-    return join( " ", @{ $this->{__NAMESPACES__} } );
-}
 
-sub add_namespaces {
-    my ( $this, @namespaces ) = @_;
-    if ( @namespaces > 0 ) {
-        push @{ $this->{__NAMESPACES__} }, @namespaces;
-    }
-}
-
-sub clean_namespaces {
-    my ($this) = @_;
-    $this->{__NAMESPACES__} = [];
-}
 
 sub get {
     my ( $this, $uri ) = @_;
@@ -193,13 +178,10 @@ private _save => sub {
     }
     $req->content_type('application/atom+xml; charset=UTF-8');
 
-    my $xml_header = XML_HEADER;
-    my $xmlns      = $this->get_namespaces();
 
-    my $xml_content = qq[$xml_header<entry $xmlns>$content</entry>];
 
-    $this->_prepare_request( $req, length($xml_content) );
-    $req->content($xml_content);
+    $this->_prepare_request( $req, length($content) );
+    $req->content($content);
     if ($callback) {
         &$callback($req);
     }
@@ -645,137 +627,6 @@ Example:
     $base->get_user_agent_name();#MyApp-MyCompany-ID WebService::GData::Base/2
 	   
 =back
-
-
-
-
-
-=head3 add_namespaces
-
-=over
-
-When inserting/updating contents, you will use an atom entry tag.
-This entry tag may contain tags that are not in the atom original namespace schema.
-You will need therefore to specify the extra namespaces used so that it gets parsed properly.
-Note that the atom namespace is already set by default and that L<WebService::GData::Constants> already contains some predefined namespaces
-that you might want to use, less typing and if an update is necessary, it will be in this package, not in your source code.
-
-B<Parameters>
-
-=over
-
-=item C<namespace:ScalarList> - the xml representation of a namespace,ie xmlns:media='http://search.yahoo.com/mrss/'
-
-=back
-
-B<Returns> 
-
-=over
-
-=item C<void>
-
-=back
-
-Example:
-
-    use WebService::GData::Base qw(:namespace);
-    use WebService::GData::Base;
-
-	
-    #you must be authorized to do any write actions.
-    my $base   = new WebService::GData::Base(auth=>...);
-    
-    $base->add_namespaces(MEDIA_NAMESPACE,GDATA_NAMESPACE);
-
-	
-    #the content will be decorated with the above namespaces...
-    my $ret = $base->insert($url,$content);
-	
-=back
-
-=head3 get_namespaces 
-
-=over
-
-This method returns as a string separated by a space the namespaces set so far.
-
-B<Parameters>
-
-=over
-
-=item C<none>
-
-=back
-
-B<Returns> 
-
-=over 
-
-=item C<namespaces:Scalar>  - all the namespaces set separated by a space. (Default to L<WebService::GData::Constants>::ATOM_NAMESPACE)
-
-=back
-
-Example:
-
-    use WebService::GData::Constants qw(:namespace);
-    use WebService::GData::Base;
-		
-    my $base   = new WebService::GData::Base();
-    
-    $base->add_namespaces(MEDIA_NAMESPACE,GDATA_NAMESPACES);
-	
-    #the content will be decorated with the above namespaces...
-	
-    my $namespaces = $base->get_namespaces();
-
-    #$namespaces = xmlns="http://www.w3.org/2005/Atom" xmlns:media='http://search.yahoo.com/mrss/'+
-    # xmlns:gd="http://schemas.google.com/g/2005"
-	
-=back
-
-=head3 clean_namespaces 
-
-=over
-
-This method resets all the namespaces set so far, including the default L<WebService::GData::Constants>::ATOM_NAMESPACE.
-
-B<Parameters>
-
-=over
-
-=item C<none>
-
-=back
-
-B<Returns> 
-
-=over 
-
-=item C<void>
-
-=back
-
-Example:
-
-    use WebService::GData::Constants qw(:namespace);
-    use WebService::GData::Base;
-		
-    my $base   = new WebService::GData::Base();
-    
-    $base->add_namespaces(MEDIA_NAMESPACE,GDATA_NAMESPACE);
-	
-    #the content will be decorated with the above namespaces...
-	
-    my $namespaces = $base->get_namespaces();
-
-    #$namespaces = xmlns="http://www.w3.org/2005/Atom" xmlns:media='http://search.yahoo.com/mrss/'+
-    # xmlns:gd="http://schemas.google.com/g/2005"
-	
-    $base->clean_namespaces();
-    my $namespaces = $base->get_namespaces();#""
-	
-=back
-
 
 	
 =head2 READ METHODS

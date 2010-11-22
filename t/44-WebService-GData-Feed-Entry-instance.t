@@ -1,6 +1,6 @@
-use Test::More tests => 21;
+use Test::More tests => 14;
 use WebService::GData::Feed::Entry;
-
+use WebService::GData::Serialize;
 my $entry = new WebService::GData::Feed::Entry( get_entry() );
 
 ok( $entry->title eq "Young Turks Episode 10-07-09", "Title properly set." );
@@ -25,18 +25,7 @@ ok( $entry->category->[0]->scheme eq "http://schemas.google.com/g/2005#kind",
 
 ok( $entry->category->[1]->label eq "Shows", "category label properly set." );
 
-foreach my $func (
-    (
-        qw(total_items total_results start_index items_per_page previous_link next_link entry)
-    )
-  )
-{
 
-    ok(
-        $entry->$func->isa('WebService::GData::Feed::Entry'),
-        "disabled functions returned the instance properly."
-    );
-}
 
 ok( $entry->id eq "tag:youtube.com,2008:video:qWAY3YvHqLE",
     "id properly set." );
@@ -50,7 +39,7 @@ ok(
     "content_src properly set."
 );
 
-ok( $entry->content->isa('WebService::GData::Node::Content'),
+ok( $entry->content->isa('WebService::GData::Node::Atom::Content'),
     "content properly set." );
 
 ok( $entry->author->[0]->name eq "TheYoungTurks", "author properly set." );

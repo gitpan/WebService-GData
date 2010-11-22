@@ -3,6 +3,7 @@ use WebService::GData::Feed;
 
 my $feed = new WebService::GData::Feed( get_feed() );
 
+
 ok( $feed->title eq 'YouTube Videos', "Title properly set." );
 
 $feed->title("new title");
@@ -96,6 +97,14 @@ sub get_feed {
                     'uri'  => { '$t' => 'http://www.youtube.com/' }
                 }
             ],
+            "logo"=> {
+                '$t'=> "http://www.youtube.com/img/pic_youtubelogo_123x63.gif"
+            },
+            "generator"=> {
+               '$t'=> "YouTube data API",
+               "version"=> "2.0",
+               "uri"=> "http://gdata.youtube.com/"
+            },
             'openSearch$totalResults' => { '$t' => 1000000 },
             'openSearch$startIndex'   => { '$t' => 1 },
             'openSearch$itemsPerPage' => { '$t' => 25 },

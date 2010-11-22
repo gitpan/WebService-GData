@@ -1,4 +1,4 @@
-use Test::More tests => 18;
+use Test::More tests => 15;
 use WebService::GData::Base;
 use WebService::GData::Constants qw(:all);
 
@@ -49,21 +49,6 @@ $base->auth(1);
 
 ok( !$base->auth, q[auth is not setted by default.] );
 
-ok(
-    $base->get_namespaces eq ATOM_NAMESPACE,
-    q[the default xml namespace is atom.]
-);
-$base->add_namespaces(MEDIA_NAMESPACE,GEORSS_NAMESPACE);
-
-ok( $base->get_namespaces eq ATOM_NAMESPACE . ' ' . MEDIA_NAMESPACE.' '.GEORSS_NAMESPACE,
-    q[the new xml namespaces are set.] );
-    
-$base->clean_namespaces();
-
-ok(
-    $base->get_namespaces eq '',
-    q[the xml namespaces are unset once clean_namespaces is called.]
-);
 
 ok(
     !$base->get_uri,

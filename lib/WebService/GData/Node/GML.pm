@@ -1,5 +1,5 @@
 package WebService::GData::Node::GML;
-
+use WebService::GData::Constants qw/:namespace/;
 use WebService::GData::Node;
 
 sub import {
@@ -13,7 +13,8 @@ sub import {
 }
 }
 
-sub root_name {'gml'};
+sub namespace_prefix {GML_NAMESPACE_PREFIX}
+sub namespace_uri { GML_NAMESPACE_URI }
 
 
 1;

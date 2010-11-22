@@ -1,5 +1,5 @@
 package WebService::GData::Node::GeoRSS;
-
+use WebService::GData::Constants qw/:namespace/;
 use WebService::GData::Node;
 
 sub import {
@@ -13,7 +13,8 @@ sub import {
 }
 }
 
-sub root_name {'georss'};
+sub namespace_prefix {GEORSS_NAMESPACE_PREFIX};
+sub namespace_uri { GEORSS_NAMESPACE_URI };
 
 
 1;

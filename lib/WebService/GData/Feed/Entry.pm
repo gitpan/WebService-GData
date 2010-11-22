@@ -1,56 +1,39 @@
 package WebService::GData::Feed::Entry;
-use WebService::GData;
-use base 'WebService::GData::Feed';
-use WebService::GData::Node::Content();
-use WebService::GData::Node::Summary();
+use base 'WebService::GData::Node::Atom::EntryEntity';
+use WebService::GData::Serialize;
 
 our $VERSION = 0.01_04;
 
-
-##inherits and not relevant
-WebService::GData::disable(
-    [
-        qw(total_items total_results start_index items_per_page previous_link next_link entry)
-    ]
-);
-
 sub __init {
-    my $this = shift;
-    $this->SUPER::__init(@_);
-    $this->{_feed}->{content}= new WebService::GData::Node::Content($this->{_feed}->{content});
-    $this->{_feed}->{summary}= new WebService::GData::Node::Summary($this->{_feed}->{summary});
+    my ($this,$params,$request) = @_;	
+    $this->SUPER::__init($params);
+    $this->{_request}=$request;
+    $this->{_serializer}= 'xml';
+
 }
 
-##inherits and relevant
-##title,updated,category,link,author,new,etag
-
-
-sub published {
-    my $this = shift;
-    $this->{_feed}->{published}->{'$t'};
+sub serialize_as {
+    my ($this,$serializer)=@_;
+    $this->{_serializer}= $serializer if($serializer);
+    $this->{_serializer};
 }
 
-sub summary {
-    my $this = shift;
-
-    $this->{_feed}->{summary}->text($_[0]) if ( @_ == 1 );
-    $this->{_feed}->{summary}->text;
-}
-
-sub content {
-    my $this = shift;
-    $this->{_feed}->{content};
+sub serialize {
+    my ($this,@args) = @_;
+    my $serialize = $this->{_serializer};
+    return WebService::GData::Serialize->$serialize($this->_entity,$this->_entity,@args);
 }
 
 sub content_type {
     my $this = shift;
-    $this->{_feed}->{content}->type;
+    $this->{_content}->type;
 }
 
 sub content_source {
     my $this = shift;
-    $this->{_feed}->{content}->src;
+    $this->{_content}->src;
 }
+
 
 "The earth is blue like an orange.";
 

@@ -296,7 +296,7 @@ See also:
 
 =over 
 
-=item * L<WebService::GData::YouTube::Doc::BrowserbasedUpload> - overview of the browser based upload mechanism
+=item * L<WebService::GData::YouTube::Doc::BrowserBasedUpload> - overview of the browser based upload mechanism
 
 =back
 

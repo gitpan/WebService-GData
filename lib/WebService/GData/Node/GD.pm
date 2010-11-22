@@ -1,5 +1,5 @@
 package WebService::GData::Node::GD;
-
+use WebService::GData::Constants qw/:namespace/;
 use WebService::GData::Node;
 
 sub import {
@@ -12,7 +12,9 @@ sub import {
 }
 }
 
-sub root_name {'gd'};
+
+sub namespace_prefix {GDATA_NAMESPACE_PREFIX}
+sub namespace_uri {GDATA_NAMESPACE_URI}
 
 
 1;
