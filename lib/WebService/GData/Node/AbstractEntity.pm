@@ -1,7 +1,7 @@
 package WebService::GData::Node::AbstractEntity;
 use base 'WebService::GData';
 
-our $VERSION = 0.01_02;
+our $VERSION = 0.01_03;
 
 sub __init {}
 

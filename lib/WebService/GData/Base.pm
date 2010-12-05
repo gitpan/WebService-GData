@@ -11,7 +11,7 @@ use LWP;
 
 #the base class specifies the basic get/post/insert/update/delete methods
 
-our $VERSION = 0.02_01;
+our $VERSION = 0.02_02;
 
 sub __init {
     my ( $this, %params ) = @_;

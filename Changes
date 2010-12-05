@@ -1,5 +1,16 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_05  2010/12/05 16:51
+    - the Collection serialize method has been removed 
+      and the class now inherits from BaseCollection which implements Iterator, tie array.
+      The mechanism will check for only allowed class and create them in a lazy fashion (next release)
+    - doc update 
+    - some packages version number updated as it should have been done in 0.03_04.
+    - FIX:YouTube service Video package failed to set some parameters (videoid,location)
+    - tests added for the YouTube service Video package.
+    - YouTube service may not work right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.03_04  2010/11/03 16:51
     This update contains many changes that would be hard to list...
     The next update should deal with lazy loading the classes that are for now loaded in bunch...

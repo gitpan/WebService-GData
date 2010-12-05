@@ -2,7 +2,7 @@ package WebService::GData::Node;
 use WebService::GData;
 use base 'WebService::GData';
 
-our $VERSION = 0.01_02;
+our $VERSION = 0.01_03;
 
 my $attributes = [];
 
@@ -93,6 +93,7 @@ sub text {
     $this->{text}= $args[0] if(@args);
     return $this->{text};  
 }
+
 
 sub child {
     my $this = shift;

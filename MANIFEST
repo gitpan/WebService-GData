@@ -1,5 +1,4 @@
 Changes
-fix
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
@@ -10,6 +9,7 @@ inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/WebService/GData.pm
 lib/WebService/GData/Base.pm
+lib/WebService/GData/BaseCollection.pm
 lib/WebService/GData/Batch.pm
 lib/WebService/GData/Batch/Entry.pm
 lib/WebService/GData/Batch/Response.pm
@@ -20,6 +20,7 @@ lib/WebService/GData/Error.pm
 lib/WebService/GData/Error/Entry.pm
 lib/WebService/GData/Feed.pm
 lib/WebService/GData/Feed/Entry.pm
+lib/WebService/GData/Iterator.pm
 lib/WebService/GData/Node.pm
 lib/WebService/GData/Node/AbstractEntity.pm
 lib/WebService/GData/Node/APP.pm
@@ -46,10 +47,6 @@ lib/WebService/GData/Node/Atom/Summary.pm
 lib/WebService/GData/Node/Atom/Title.pm
 lib/WebService/GData/Node/Atom/Updated.pm
 lib/WebService/GData/Node/Atom/Uri.pm
-lib/WebService/GData/Node/Author.pm
-lib/WebService/GData/Node/AuthorEntity.pm
-lib/WebService/GData/Node/Category.pm
-lib/WebService/GData/Node/Content.pm
 lib/WebService/GData/Node/GD.pm
 lib/WebService/GData/Node/GD/AditionalName.pm
 lib/WebService/GData/Node/GD/Agent.pm
@@ -102,7 +99,6 @@ lib/WebService/GData/Node/GeoRSS/Where.pm
 lib/WebService/GData/Node/GML.pm
 lib/WebService/GData/Node/GML/Point.pm
 lib/WebService/GData/Node/GML/Pos.pm
-lib/WebService/GData/Node/Link.pm
 lib/WebService/GData/Node/Media.pm
 lib/WebService/GData/Node/Media/Category.pm
 lib/WebService/GData/Node/Media/Content.pm
@@ -116,16 +112,11 @@ lib/WebService/GData/Node/Media/Rating.pm
 lib/WebService/GData/Node/Media/Restriction.pm
 lib/WebService/GData/Node/Media/Thumbnail.pm
 lib/WebService/GData/Node/Media/Title.pm
-lib/WebService/GData/Node/Name.pm
 lib/WebService/GData/Node/OpenSearch.pm
 lib/WebService/GData/Node/OpenSearch/ItemsPerPage.pm
 lib/WebService/GData/Node/OpenSearch/StartIndex.pm
 lib/WebService/GData/Node/OpenSearch/TotalResults.pm
 lib/WebService/GData/Node/PointEntity.pm
-lib/WebService/GData/Node/Summary.pm
-lib/WebService/GData/Node/Title.pm
-lib/WebService/GData/Node/Uri.pm
-lib/WebService/GData/Nodeny.pm
 lib/WebService/GData/Query.pm
 lib/WebService/GData/Serialize.pm
 lib/WebService/GData/Serialize/XML.pm
@@ -198,7 +189,9 @@ t/17-WebService-GData-Query-instance.t
 t/18-WebService-GData-YouTube-Query-load.t
 t/19-WebService-GData-YouTube-Query-instance.t
 t/20-WebService-GData-Base-load.t
+t/20-WebService-GData-BaseCollection-load.t
 t/21-WebService-GData-Base-instance.t
+t/21-WebService-GData-BaseCollection-instance.t
 t/22-WebService-GData-Base-mockrequest.t
 t/23-WebService-GData-ClientLogin-load.t
 t/24-WebService-GData-ClientLogin-mockrequest.t
@@ -231,7 +224,5 @@ t/49-WebService-GData-YouTube-Node-AboutMe-instance.t
 t/50-WebService-GData-YouTube-load.t
 t/51-WebService-GData-YouTube-Feed-Video-load.t
 t/52-WebService-GData-YouTube-Feed-Video-instance.t
-t/53-WebService-GData-YouTube-Feed-Video-instance.t
-t/54-WebService-GData-YouTube-Feed-Video-instance.t
 t/JSONResponse.pm
 t/MyWeb.pm

@@ -1,24 +1,19 @@
 package WebService::GData::Collection;
-use base 'WebService::GData';
-use overload '@{}'=>\&nodes,fallback=>1;
+use base 'WebService::GData::BaseCollection';
 
-our $VERSION =0.01_01;
+our $VERSION =0.01_03;
 
 
 sub __init {
     my $this = shift;
-    $this->{nodes}=shift();
-    if(ref($this->{nodes}) ne 'ARRAY'){
-        $this->{nodes}=[];
-    }
-    
-    #static lookup table to store the result from a search
+    $this->SUPER::__init(@_);
+    #lookup table to store the result from a search
     $this->{cache}={};
 }
 
 sub nodes {
     my $this = shift;
-    return $this->{nodes};
+    $this->{array}
 }
 
 sub __set {
@@ -33,7 +28,7 @@ sub __set {
 
 	$this->{cache}->{$attr.$val}=[];
 	my @ret= ();
-	foreach my $elm (@{ $this->{nodes} }){
+	foreach my $elm (@{ $this->nodes }){
 	    
 		if($elm->$attr()=~m/$val/) {
 		   push @ret,$elm;
@@ -46,23 +41,15 @@ sub __set {
 
 sub __get {
 	my ($this,$func)=@_;
+	
 	my @ret =();
-	foreach my $elm (@{ $this->{nodes} }){
+	foreach my $elm (@{ $this->nodes }){
 		push @ret,$elm->$func();
 	}
 	
 	\@ret
 }
 
-sub serialize {
-	my ($this,$owner) = @_;
-	my $ret ="";
-	foreach my $elm (@{ $this->{nodes} }){
-		$ret.=$elm->serialize($owner);
-	}
-	
-	$ret 
-}
 
 
 "The earth is blue like an orange.";
@@ -97,7 +84,7 @@ WebService::GData::Collection - Composite class redispatching method calls to qu
 
 =head1 DESCRIPTION
 
-I<inherits from L<WebService::GData>>
+I<inherits from L<WebService::GData::BaseCollection>>
 
 This package accepts an array reference containing identic nodes (link nodes, category nodes,video nodes...).
 Once feed with some data, you can call a node method by specifying a search string.
@@ -191,38 +178,6 @@ Example:
     my $collection = new WebService::GData::Collection(\@authors); 
     
     my $authors = $collection->nodes;
-	
-=back
-
-=back
-
-=head3 serialize
-
-=over
-
-This method calls the serialize method on each element in its array and return the joined result as string.
-
-B<Parameters>
-
-=over 
-
-=item C<none>
-=back
-
-B<Returns> 
-
-=over 
-
-=item L<serialized_data::Scalar>
-
-=back
-
-
-Example:
-
-    my $collection = new WebService::GData::Collection(\@authors); 
-    
-    my $authors = $collection->serialize;#<author><name>...</author><author><name>...</author>
 	
 =back
 

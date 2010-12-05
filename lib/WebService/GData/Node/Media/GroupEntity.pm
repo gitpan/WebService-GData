@@ -8,12 +8,13 @@ use WebService::GData::Node::Media::Description();
 use WebService::GData::Node::Media::Keywords();
 use WebService::GData::Node::Media::Player();
 use WebService::GData::Node::Media::Title();
+use WebService::GData::Node::Media::Thumbnail();
 use WebService::GData::Node::PointEntity();
 use WebService::GData::Collection;
 
 our $VERSION = 0.01_01;
 my $serializable =[qw(category description keywords title)];
-my $nodes        =[qw(credit player content)];
+my $nodes        =[qw(credit player content thumbnail)];
 
 sub __init {
 	my ($this,$params) = @_;
