@@ -1,5 +1,14 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_06  2010/12/17 23:43
+    small update for bug fix.
+	- The XML serializer now encode html entities (querying YouTube then updating the queried result failed)
+	  -> quick fix for now.
+	- The XML serializer now adds the namespace on the root node for any attributes containing an extra namespace
+	  even if the attribute itself is empty (until now it was discarded but could lead to error by not including the gd namespace)
+    - YouTube service may not work right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.03_05  2010/12/05 16:51
     - the Collection serialize method has been removed 
       and the class now inherits from BaseCollection which implements Iterator, tie array.

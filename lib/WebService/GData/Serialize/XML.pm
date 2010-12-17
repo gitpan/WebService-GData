@@ -2,7 +2,7 @@ package WebService::GData::Serialize::XML;
 use WebService::GData;
 use base 'WebService::GData';
 
-our $VERSION = 0.01_02;
+our $VERSION = 0.01_03;
 
 
 sub encode {
@@ -37,17 +37,18 @@ sub encode {
         foreach my $attr ( @{ $this->attributes } ) {
             my $val = $this->{$attr};
             if ($val){
-                push @attrs, qq[$attr="$val"];
-                
-                #we have an attribute with a prefix, yt:format...
-                #let's append the meta info about this namespace
-                if(my($prefix)=$attr=~m/(.+?):/){
+				$val =_to_html_entities($val);
+                push @attrs,qq[$attr="$val"]; 
+            }
 
-                    if(ref $this->extra_namespaces eq 'HASH' && $this->extra_namespaces->{$prefix}){
-                        $owner->namespaces->{ 'xmlns:' . $prefix . '="'. $this->extra_namespaces->{$prefix}. '"' } = 1
-                            if ($owner && $prefix ne $owner->namespace_prefix ); 
-                    } 
-                }
+            #we have an attribute with a prefix, yt:format...
+            #let's append the meta info about this namespace
+            if(my($prefix)=$attr=~m/(.+?):/){
+
+                if(ref $this->extra_namespaces eq 'HASH' && $this->extra_namespaces->{$prefix}){
+                    $owner->namespaces->{ 'xmlns:' . $prefix . '="'. $this->extra_namespaces->{$prefix}. '"' } = 1
+                        if ($owner && $prefix ne $owner->namespace_prefix ); 
+                } 
             }
         }
         $xml .= ' ' . join( ' ', @attrs ) if ( @attrs > 0 );
@@ -115,6 +116,21 @@ sub __add_namespace_uri {
     $namespaces->{ 'xmlns'. ( $namespace_prefix ? ':' . $namespace_prefix : "" ) . '="'. $uri. '"' } = 1
        if ( $namespace_prefix ne $owner->namespace_prefix );    
     
+}
+my %entitymap = (
+ 	'&'=> '&amp;',  
+	'>'=> '&gt;',  
+	'<'=> '&lt;', 
+ 	'"'=> '&quot;',  
+ 	"'"=> '&apos;' 
+);
+
+my $char = '['.join('',(keys %entitymap)).']';
+
+sub _to_html_entities {
+	my $val = shift;
+	$val=~s/($char)/$entitymap{$1}/ge;
+	return $val;
 }
 
 
