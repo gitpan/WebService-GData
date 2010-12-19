@@ -3,7 +3,7 @@ use base 'WebService::GData::BaseCollection';
 
 our $VERSION =0.01_03;
 
-
+use Data::Dumper;
 sub __init {
     my $this = shift;
     $this->SUPER::__init(@_);

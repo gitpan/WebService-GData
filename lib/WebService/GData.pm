@@ -6,7 +6,7 @@ use Data::Dumper;
 use Carp;
 use overload '""' => "__to_string",'==' =>'equal',fallback=>1;
 
-our $VERSION = 0.03_06;
+our $VERSION = 0.03_07;
 
 our $AUTOLOAD;
 

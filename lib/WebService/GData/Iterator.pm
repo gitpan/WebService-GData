@@ -8,7 +8,6 @@ sub TIEARRAY {
         MODIFIER => shift
     }, $class;
     $this->pointer=0;
-    $this->{MODIFIER}->reset($this);
     
     return $this;
  }
@@ -39,7 +38,6 @@ sub FETCHSIZE {
     if($this->pointer>=$this->total || $this->pointer<0){
 
         $this->pointer=0;
-        $this->{MODIFIER}->reset($this);
         return 0;
     }
     return $this->total;
@@ -61,7 +59,6 @@ sub EXISTS {
     my ($this,$index) = @_;
     if(! defined $this->{ARRAY}->[$index]){
         $this->pointer=0;
-        $this->{MODIFIER}->reset($this);
         return 0;
     }
     return 1;

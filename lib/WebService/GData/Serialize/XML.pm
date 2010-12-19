@@ -14,12 +14,11 @@ sub encode {
       : $this->node_name;
       
 
-    my $is_root=( ($owner||{}) == $this );
+    my $is_root=(($owner||{}) == $this );
 
     #the namespace prefix does not need to be specified
     #because we set the root namespace as being the default one
     $tag = $this->node_name if ($is_root);
-
     #if it is not the root but a children of the same type
     #don't need to specify the prefix either
     if ($owner && $this->namespace_prefix eq $owner->namespace_prefix ) {
@@ -30,7 +29,8 @@ sub encode {
 
     #add the root as the default namespace
     $xml .= ' xmlns="' . $this->namespace_uri . '"' if ($is_root);
-    
+
+  
     #get all the attributes for this node and serialize them
     if ( @{ $this->attributes } > 0 ) {
         my @attrs = ();

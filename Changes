@@ -1,5 +1,12 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_07  2010/12/19 16:23
+    small update for bug fix.
+	- YouTube Video access_control could not be edited (only newly created)
+	- Collection class was loosing its binding to the array
+    - YouTube service may not work right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.03_06  2010/12/17 23:43
     small update for bug fix.
 	- The XML serializer now encode html entities (querying YouTube then updating the queried result failed)

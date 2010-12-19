@@ -1,8 +1,7 @@
 package WebService::GData::BaseCollection;
 
-our $VERSION =0.01_01;
+our $VERSION =0.01_02;
 use WebService::GData::Iterator;
-use WebService::GData;
 use base 'WebService::GData';
 
 use overload '@{}'=>'__array',fallback=>1;
@@ -11,10 +10,12 @@ sub __to_string { my $this = shift;$this->{array}; };
 
 sub __init {
 	my ($this,$array,$onset,$onget,@array) = @_;
+
 	tie @array,'WebService::GData::Iterator',$array,$this;
-	$this->{array}=\@array;
+	$this->{array}=$array || \@array;
 	$this->{onset}=$onset;
 	$this->{onget}=$onget;
+
 }
 
 sub onset { return shift()->{onset} }
@@ -24,7 +25,8 @@ sub set {
 	my ($this,$iterator,$index,$val) = @_;
 
 	if(my $code = $this->onset){
-	    return ($index,$val) if $code->($val);
+	    my $ret = $code->($val);
+	    return ($index,$ret);
 	}
     return ($index,$val);
 }
@@ -52,10 +54,7 @@ sub next {
 	return $elm;
  }
  
-sub reset {
-    my ($this,$iterator)=@_;
-    $iterator->pointer=0;
-}
+
 
 
 'The earth is blue like an orange.';

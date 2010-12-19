@@ -1,4 +1,4 @@
-use Test::More tests => 4;
+use Test::More tests => 6;
 use WebService::GData::BaseCollection();
 my $collection = new WebService::GData::BaseCollection(undef,undef);
 
@@ -16,3 +16,13 @@ foreach my $elm (@$collection){
      $i++;
 }
 
+$collection = new WebService::GData::BaseCollection(undef,sub { my $val = shift; ref $val ne 'HASH' ? {text=>'dummy'}:$val });
+
+$nodes = [{text=>'i am a node'},1];
+
+push @$collection, $nodes->[0];
+
+push @$collection, $nodes->[1];
+
+ok(ref $collection->[1] eq 'HASH','the set method changed the value');
+ok($collection->[1]->{text} eq 'dummy','the new value contains the proper text');
