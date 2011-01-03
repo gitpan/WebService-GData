@@ -11,7 +11,6 @@ use WebService::GData::Node::Media::Title();
 use WebService::GData::Node::Media::Thumbnail();
 use WebService::GData::Node::PointEntity();
 use WebService::GData::Collection();
-        use Data::Dumper;
 
 our $VERSION = 0.01_01;
 my $serializable =[qw(category description keywords title)];
@@ -38,14 +37,30 @@ sub __node_factory {
     my $data  = $params->{'media$'.$node};
     if(ref($data) eq 'ARRAY') {
 
+        return new WebService::GData::Collection($data,undef,sub { 
+        	my $elm=shift; 
+        	use Data::Dumper;
+
+        	$elm= $class->new($elm) if ref $elm ne $class; 
+            if($class eq 'WebService::GData::Node::Media::Content'){
+               # die Dumper $elm;
+            }       	
+        	return $elm; 
+        });
         my @collection=();
         foreach my $d (@$data){
             push @collection, $class->new($d);
         }
-        my $collection = new WebService::GData::Collection(\@collection);
-        return $collection;
+       return new WebService::GData::Collection(\@collection);
     }
     return $class->new($data);
+}
+
+sub _create_onget_init {
+    my($class)=shift;
+    my $sub = qq[sub { my \$elm=shift; return $class->new(\$elm) if ref \$elm ne '$class' }];
+    return eval "$sub";
+    
 }
 
 

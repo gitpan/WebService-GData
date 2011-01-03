@@ -56,10 +56,12 @@ sub __get {
     $func='_'.$func;
 
     if($this->{$func}){
-        if(ref($this->{$func})){
+        if(ref($this->{$func})=~m/WebService/){
+
             if(@{$this->{$func}->attributes}==0){
                  return $this->{$func}->{text} ? $this->{$func}->{text}:$this->{$func}; 
             }
+
             return $this->{$func};
         }
     }

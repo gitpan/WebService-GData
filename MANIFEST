@@ -1,3 +1,4 @@
+.project
 Changes
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
@@ -9,7 +10,6 @@ inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/WebService/GData.pm
 lib/WebService/GData/Base.pm
-lib/WebService/GData/BaseCollection.pm
 lib/WebService/GData/Batch.pm
 lib/WebService/GData/Batch/Entry.pm
 lib/WebService/GData/Batch/Response.pm

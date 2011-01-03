@@ -16,9 +16,10 @@ sub __init {
     $this->{'_duration'}     = new WebService::GData::YouTube::YT::Duration($params->{'yt$duration'});
     $this->{'_uploaded'}     = new WebService::GData::YouTube::YT::Uploaded($params->{'yt$uploaded'});  
     $this->{'_videoid'}      = new WebService::GData::YouTube::YT::Videoid($params->{'yt$videoid'});    
-    $this->{'_aspectratio'}  = new WebService::GData::YouTube::YT::AspectRatio($params->{'yt$aspectRatio'}); 
-    my $content              = new WebService::GData::YouTube::YT::Media::Content($params->{'media$content'}); 
-    $this->swap($this->{_content},$content);
+    $this->{'_aspect_ratio'}  = new WebService::GData::YouTube::YT::AspectRatio($params->{'yt$aspectRatio'}); 
+     my $content =  new WebService::GData::Collection($params->{'media$content'},undef,sub { my $elm=shift; return WebService::GData::YouTube::YT::Media::Content->new($elm) if ref $elm ne 'WebService::GData::YouTube::YT::Media::Content';return $elm; });
+
+    $this->{_content}=$content;
     if($params->{'yt$private'}){
         $this->{'_private'}  = new WebService::GData::YouTube::YT::Private($params->{'yt$private'});
         $this->_entity->child($this->{'_private'});  

@@ -190,7 +190,7 @@ foreach my $feed (qw(comments responses related)) {
     *{ __PACKAGE__ . '::get_' . $feed . '_for_video_id' } = sub {
         my ( $this, $id ) = @_;
 
-        my $uri = $this->{_baseuri} . 'video/' . $id . '/' . $feed;
+        my $uri = $this->{_baseuri} . 'videos/' . $id . '/' . $feed;
         my $res = $this->{_request}->get($uri);
 
         my $playlists =
@@ -668,12 +668,53 @@ B<Throws>
 =back
 
 Example:
-
-    use WebService::GData::Base;
     
     my $yt   = new WebService::GData::YouTube();
     
     my $videos = $yt->get_related_for_video_id('Xz2eFFexA');
+
+=back
+
+=head3 get_comments_for_video_id
+
+=over 
+
+Get the comments of a video.
+
+B<Parameters>
+
+=over 4
+
+=item C<video_id:Scalar> - the unique identifier of the video.
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item L<WebService::GData::Collection> instances of L<WebService::GData::YouTube::Feed::Comment>
+
+=back
+
+B<Throws>
+
+=over 4
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+    use WebService::GData::YouTube; 
+    my $yt   = new WebService::GData::YouTube();
+    
+    my $comments = $yt->get_comments_for_video_id('Xz2eFFexA');
+    
+    foreach my $comment (@$comments){
+    	$comment->content;
+    }
 
 =back
 

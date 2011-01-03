@@ -11,7 +11,7 @@ use WebService::GData::YouTube::YT::AccessControl();
 use WebService::GData::Node::Media::Category();
 use WebService::GData::Collection;
 
-our $VERSION = 0.01_06;
+our $VERSION = 0.01_07;
 
 our $UPLOAD_BASE_URI = UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
 
@@ -51,7 +51,7 @@ sub next_url {
 sub location {
     my ( $this, $pos ) = @_;
     my $where = $this->{_feed}->{'georss$where'};
-    if ( ref($where) eq 'HASH' ) {
+    if ( ref($where) eq 'HASH' && !$this->{_where}) {
         $this->_location(
             new WebService::GData::Node::PointEntity(
                 $where->{'gml$Point'}->{'gml$pos'}
@@ -60,13 +60,12 @@ sub location {
     }
     else {
         $this->{_feed}->{'georss$where'} = {};
-        $this->_location( $where = new WebService::GData::Node::PointEntity() );
+        $this->_location(new WebService::GData::Node::PointEntity());
     }
-    if ( $pos && $where ) {
+    if ( $pos ) {
         $this->_location->pos($pos);
-        return $this;
     }
-    return $this->_location->pos;
+    return ref $this->_location->pos ? '':$this->_location->pos;
 
 }
 
@@ -104,7 +103,7 @@ sub media_player {
 
 sub aspect_ratio {
     my $this = shift;
-    $this->_media->aspectratio;
+    $this->_media->aspect_ratio;
 }
 
 sub video_id {
@@ -222,7 +221,7 @@ sub access_control {
               new WebService::GData::YouTube::YT::AccessControl($control);
         }
     }
-    if ( @_ > 1 ) {
+    if ( @_ == 2 ) {
         #first check if the action is already set and if so update
         my $ret = $this->_access_control->action( $_[0]  );
         if ( @$ret > 0 ) {
@@ -235,6 +234,11 @@ sub access_control {
                   { action => $_[0], permission => $_[1] } );
         }
     }
+    if ( @_ == 1 ) {
+        #first check if the action is already set and if so update
+        return $this->_access_control->action( $_[0]  )->[0];
+        
+    }    
     $this->_access_control;
 }
 
@@ -367,60 +371,27 @@ XML
 
 }
 
-sub is_listing_allowed {
-      my $this = shift;
-      if ( @_ == 1 ) {
-          $this->access_control->[0]->{permission} = $_[0];
-      }
-      return ( $this->access_control->[0]->{permission} eq 'allowed' ) ? 1 : 0;
-}
 
-sub is_comment_allowed {
-      my $this = shift;
-      if ( @_ == 1 ) {
-          $this->access_control->[1]->{permission} = $_[0];
-      }
-      return ( $this->access_control->[1]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_comment_vote_allowed {
-      my $this = shift;
-      if ( @_ == 1 ) {
-          $this->access_control->[2]->{permission} = $_[0];
-      }
-      return ( $this->access_control->[2]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_video_response_allowed {
-      my $this = shift;
-      if ( @_ == 1 ) {
-          $this->access_control->[3]->{permission} = $_[0];
-      }
-      return ( $this->access_control->[3]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_rating_allowed {
-      my $this = shift;
-      if ( @_ == 1 ) {
-          $this->access_control->[4]->{permission} = $_[0];
-      }
-      return ( $this->access_control->[4]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_embedding_allowed {
-      my $this = shift;
-      if ( @_ == 1 ) {
-          $this->access_control->[5]->{permission} = $_[0];
-      }
-      return ( $this->access_control->[5]->{permission} eq 'allowed' ) ? 1 : 0;
-}
-
-sub is_syndication_allowed {
-      my $this = shift;
-      if ( @_ == 1 ) {
-          $this->access_control->[6]->{permission} = $_[0];
-      }
-      return ( $this->access_control->[6]->{permission} eq 'allowed' ) ? 1 : 0;
+{
+	no strict 'refs';
+	my %controlList = (
+	   videoRespond=>'video_response',
+	   rate         =>'rating',
+	   embed        =>'embedding',
+	   list         =>'listing',
+	   syndicate    =>'syndication'
+	);
+	my @ytControls = (keys %controlList,'comment','comment_vote');
+	foreach my $access (@ytControls){
+		my $name= $access;
+		   $name =~ s/_([a-z])/\U$1/g;
+		   my $func = $controlList{$access}|| $access;
+		*{__PACKAGE__.'::is_'.$func.'_allowed'} = sub {
+			my $this = shift;
+            my $ret = $this->_access_control->action($name)->[0];
+            return ($ret && $ret->permission eq 'allowed' ) ? 1 : 0;
+		}
+	}
 }
 
 private _urlencode => sub {
@@ -574,11 +545,10 @@ All the following read only methods give access to the information contained in 
 
 =head2 GENERAL SET/GET METHODS
 
-All these methods represents information about the video but as these information can be updated,
+All these methods represents information about the video but you have read/write access on them.
 
-you have read/write access on them.
-
-It is therefore necessary to be logged in programmaticly to be able to use them.
+It is therefore necessary to be logged in programmaticly to be able to use them in write mode 
+(if not, saving the data will not work).
 
 =head3 title
 
@@ -599,9 +569,88 @@ These methods allow to grant access to certain activity.
 
 You can decide to unlist the video from the search, make it private or forbid comments,etc.
 
+=head3 is_private
 
 =head3 access_control
+ 
+=over
 
+The access control gives you access to the list of access for a video.
+
+B<Parameters>
+
+=over 
+
+=item C<none> - getter context
+
+=back
+
+B<Returns> 
+
+=over 
+
+=item L<WebService::GData::Collection> - collection of L<WebService::GData::YouTube::YT::AccessControl> instances
+
+=back
+
+B<Parameters>
+
+=over 
+
+=item C<access_name:Scalar> - a particular access object
+
+=back
+
+B<Returns> 
+
+=over 
+
+=item L<WebService::GData::YouTube::YT::AccessControl> instance
+
+=back
+
+B<Parameters>
+
+=over 
+
+=item C<access_name:Scalar> - a particular access object
+
+=item C<control_type:Scalar> - the value to set the permission
+
+=back
+
+B<Returns> 
+
+=over 
+
+=item void
+
+=back
+
+Example:
+
+    
+    my $controls   = $video->access_control;
+    foreach my $control (@$controls) {
+    	$control->action.'->'.$control->permission;
+    }
+    
+    my $control   = $video->access_control('comment')->permission;#default:allowed
+    
+    $video->access_control('comment','denied');
+    
+    $video->access_control('comment')->permission; #denied
+    
+=back
+ 
+ 
+ 
+
+The following methods are helpers that allows know which access control is allowed.
+It is therefore a shortcut for the following checking:
+
+    $video->access_control('comment')->permission eq 'allowed'
+    
 =head3 is_listing_allowed
 
 =head3 is_comment_allowed
@@ -616,7 +665,6 @@ You can decide to unlist the video from the search, make it private or forbid co
 
 =head3 is_syndication_allowed
 
-=head3 is_private
 
 =head2 QUERY METHODS
 

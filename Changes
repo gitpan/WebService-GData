@@ -1,5 +1,42 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_08  2011/01/03 23:07
+
+    - BUG FIX
+    
+        Even if am focusing on the core, I get many emails regarding the YouTube service.
+        I therefore mainly focused on fixing the bug reports I got so far.
+        
+      - YouTube Video package
+        - aspect_ratio was not pointing to the right value
+        - is_xxx_allowed subs did not use the right order. rewritten to be a base name based setting.
+          (Thanks Brian for the numerous reports)
+      - YouTube package
+        - change a typo in the code for get_comments_for_video_id()
+      - BaseCollection is erased for now as it was not working as I expected and had a circular reference anyway.
+        
+    - NEW
+    
+      - YouTube Video package
+         - change the is_xxx_allowed methods behavior. should update your code if necessary!
+           look at the documentation for further explanation
+      - YouTube Comment package
+        - added a content method
+      - YouTube package
+        - documented the get_comments_for_video_id  
+      - an entity has been changed to behave in a lazy manner and will expand little by little
+        -> need to ensure that data required for serialization is called before hand!
+      - more tests
+      
+    - NEXT RELEASE
+    
+      - need to clean up the tests and start mocking some of the live tests I use on my side...
+      - lazy up thing more and get rid of old variables that take up memory for nothing...
+      - add a bit of doc for YouTube package
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.03_07  2010/12/19 16:23
     small update for bug fix.
 	- YouTube Video access_control could not be edited (only newly created)

@@ -292,7 +292,7 @@ our $CONTENTS=<<'JSON';
      },
      {
       "action": "syndicate",
-      "permission": "allowed"
+      "permission": "denied"
      }
     ],
     "gd$comments": {
@@ -395,6 +395,9 @@ our $CONTENTS=<<'JSON';
      "media$title": {
       "$t": "Young Turks Episode 10-07-09",
       "type": "plain"
+     },
+     "yt$aspectRatio": {
+      "$t": "widescreen"
      },
      "yt$duration": {
       "seconds": "3290"

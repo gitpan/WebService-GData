@@ -1,4 +1,4 @@
-use Test::More tests => 33;
+use Test::More tests => 38;
 use WebService::GData::YouTube::Feed::Video;
 use t::JSONResponse;
 use JSON;
@@ -21,6 +21,12 @@ ok( $entry->published eq "2009-10-08T04:39:24.000Z",
 
 ok( $entry->id eq "tag:youtube.com,2008:video:qWAY3YvHqLE",
     'id properly set.' );
+    
+ok(
+    $entry->aspect_ratio eq
+"widescreen",
+    "aspect_ratio properly set."
+);
 
 ok( @{ $entry->links } == 5, "links properly set." );
 
@@ -79,6 +85,18 @@ ok( @{ $entry->content } == 3,    'number of content is right.' );
 
 ok( @{ $entry->category } == 1,   'number of category is properly set.' );
 
+ok($entry->access_control('syndicate')->permission eq 'denied','syndication is denied');
+
+ok( !$entry->is_syndication_allowed,'syndication is not allowed');
+
+$entry->access_control('syndicate','allowed');
+
+
+ok( $entry->is_syndication_allowed==1,'syndication is allowed');
+
+ok( $entry->is_listing_allowed==1,'listing is allowed');
+
+
 ok( @{ $entry->author } == 1,   'number of author is properly set.' );
 
 ok( $entry->author->[0]->name eq "TheYoungTurks", 'author name properly set.' );
@@ -104,5 +122,4 @@ ok(
 "http://gdata.youtube.com/feeds/api/videos/qWAY3YvHqLE/comments?client=ytapi-google-jsdemo",
     'comments url properly set.'
 );
-
 

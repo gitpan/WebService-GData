@@ -1,19 +1,22 @@
 package WebService::GData::Collection;
-use base 'WebService::GData::BaseCollection';
+use WebService::GData::Iterator;
+use base 'WebService::GData';
+use strict;
+use overload '@{}'=>'__to_string',fallback=>1;
+our $VERSION =0.01_04;
 
-our $VERSION =0.01_03;
+sub __to_string { my $this = shift;$this->{array}; };
 
-use Data::Dumper;
 sub __init {
-    my $this = shift;
-    $this->SUPER::__init(@_);
-    #lookup table to store the result from a search
-    $this->{cache}={};
-}
+    my ($this,$array,$onset,$onget) = @_;
+    $array = ref $array eq 'ARRAY' ? $array :[];
+    my $ar = [];
+    my $obj = tie @{$ar},'WebService::GData::Iterator',$onset,$onget;
+    $this->{array}=$ar;
+    $obj->{ARRAY}=$array;
 
-sub nodes {
-    my $this = shift;
-    $this->{array}
+    $this->{cache}={};
+
 }
 
 sub __set {
@@ -28,8 +31,7 @@ sub __set {
 
 	$this->{cache}->{$attr.$val}=[];
 	my @ret= ();
-	foreach my $elm (@{ $this->nodes }){
-	    
+	foreach my $elm (@$this){
 		if($elm->$attr()=~m/$val/) {
 		   push @ret,$elm;
 		}
@@ -43,10 +45,15 @@ sub __get {
 	my ($this,$func)=@_;
 	
 	my @ret =();
-	foreach my $elm (@{ $this->nodes }){
-		push @ret,$elm->$func();
+	my $last=$this;#don't re-insert result from static methods like attributes()...
+
+   	foreach my $elm (@$this){ 
+        my $ret = $elm->$func();
+        next if ($ret && ((!ref $ret && $ret ne $last) || (ref $ret && $ret==$last)));
+        $last= $ret;
+		push @ret,$ret;
 	}
-	
+
 	\@ret
 }
 
@@ -151,37 +158,6 @@ B<Example>
 =back
 
 
-=head3 nodes
-
-=over
-
-This method returns the array reference stored in the instance and is used for overloading the array reference mechanism.
-
-B<Parameters>
-
-=over 
-
-=item C<none>
-=back
-
-B<Returns> 
-
-=over 
-
-=item L<items::ArrayRef>
-
-=back
-
-
-Example:
-
-    my $collection = new WebService::GData::Collection(\@authors); 
-    
-    my $authors = $collection->nodes;
-	
-=back
-
-=back
 
 =head1 BUGS AND LIMITATIONS
 

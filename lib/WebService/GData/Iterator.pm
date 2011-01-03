@@ -1,24 +1,39 @@
 package WebService::GData::Iterator;
-
+use strict;
 sub TIEARRAY {
     my $class = shift;
-    
+
     my $this  =  bless {
-        ARRAY    => shift || [],
-        MODIFIER => shift
+        ARRAY    => [],
+        SETTER   => shift() || sub { return (shift(),shift())},
+        GETTER   => shift() || sub { return shift()}
     }, $class;
     $this->pointer=0;
     
     return $this;
  }
+
+sub ARRAY {
+	my $this = shift;
+	$this->{ARRAY};
+	
+}
  
 sub FETCH {
     my ($this,$index) = @_;
     $this->pointer=$index;
-    return $this->{MODIFIER}->next($this,$index);
+    return undef if($this->pointer >= $this->total);
+   if(my $code = $this->{GETTER}){
+       use Data::Dumper;
+       $this->ARRAY->[$this->pointer]=$code->($this->ARRAY->[$this->pointer]);
+       
+    }
+
+    return $this->ARRAY->[$this->pointer];
 }
  
 sub pointer:lvalue {
+	my $this = shift;
      $this->{pointer};
 }
 
@@ -27,9 +42,9 @@ sub STORE {
     my $this = shift;
     my( $index, $value ) = @_;
     
-    ($index,$value)=$this->{MODIFIER}->set($this,$index,$value);
+    ($index,$value)=$this->{SETTER}->($index,$value);
     
-    $this->{ARRAY}->[$index] = $value;
+    $this->ARRAY->[$index] = $value;
 }
  
 sub FETCHSIZE {
@@ -45,7 +60,7 @@ sub FETCHSIZE {
  
 sub total {
     my $this = shift;
-    return scalar (@{$this->{ARRAY}});
+    return scalar (@{$this->ARRAY});
 }
  
 sub STORESIZE {
@@ -57,7 +72,7 @@ sub EXTEND {
  
 sub EXISTS {
     my ($this,$index) = @_;
-    if(! defined $this->{ARRAY}->[$index]){
+    if(! defined $this->ARRAY->[$index]){
         $this->pointer=0;
         return 0;
     }
@@ -71,7 +86,7 @@ sub DELETE {
  
 sub CLEAR {
      my $this = shift;
- #    return $this->{ARRAY} = [];
+ #    return $this->ARRAY = [];
 }
  
 ####ARRAY LIKE BEHAVIOR####
@@ -85,12 +100,12 @@ sub PUSH {
  
 sub POP {
      my $this = shift;
-     return pop @{$this->{ARRAY}};
+     return pop @{$this->ARRAY};
 }
  
 sub SHIFT {
      my $this = shift;
-     return shift @{$this->{ARRAY}};
+     return shift @{$this->ARRAY};
 } 
 
 sub UNSHIFT {
@@ -98,8 +113,8 @@ sub UNSHIFT {
     my @list = @_;
     my $size = scalar @list;
    
-    @{$this->{ARRAY}}[ $size .. $#{$this->{ARRAY}} + $size ]
-    = @{$this->{ARRAY}};
+    @{$this->ARRAY}[ $size .. $#{$this->ARRAY} + $size ]
+    = @{$this->ARRAY};
    
     $this->STORE( $_, $list[$_] ) foreach 0 .. $#list;
 }
@@ -113,7 +128,7 @@ sub SPLICE {
          tie @list, ref $this;
          @list = @_;
      }
-     return splice @{$this->{ARRAY}}, $offset, $length, @list;
+     return splice @{$this->ARRAY}, $offset, $length, @list;
 }
  
 'The earth is blue like an orange.';

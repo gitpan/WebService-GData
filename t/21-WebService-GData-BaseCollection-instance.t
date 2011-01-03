@@ -1,28 +1,32 @@
-use Test::More tests => 6;
-use WebService::GData::BaseCollection();
-my $collection = new WebService::GData::BaseCollection(undef,undef);
+use Test::More tests => 4;
+use WebService::GData::Collection;
+use WebService::GData::Node::Atom::Id;
+use WebService::GData::Node::Media::GroupEntity;
 
+my $gr = new WebService::GData::Node::Media::GroupEntity({
+	'media$category'=>[
+	   {'$t'=>'hi'}
+	]	
+});
 
-my $nodes = [{text=>'i am a node'},{text=>'i am also node'}];
-push @$collection, $nodes->[0];
+ok(ref $gr->category->[0] eq 'WebService::GData::Node::Media::Category','data is properly inflated');
 
-push @$collection, $nodes->[1];
+my $collection = new WebService::GData::Collection(
+[
+  {'$t'=>'hi'},
+  {'$t'=>'good bye'}
+],undef,
+sub { 
+	my $val = shift;
+	$val= new WebService::GData::Node::Atom::Id($val) if ref $val ne 'WebService::GData::Node::Atom::Id';
+	return $val;
+}
+);
 
-
-my $i=0;
-foreach my $elm (@$collection){
-     ok($elm->{text} eq $nodes->[$i]->{text});
-     ok($elm->{text} eq $nodes->[$i]->{text});
-     $i++;
+for(my $i=0;$i<scalar(@$collection);$i++){
+	ok(ref $collection->[$i] eq 'WebService::GData::Node::Atom::Id');
 }
 
-$collection = new WebService::GData::BaseCollection(undef,sub { my $val = shift; ref $val ne 'HASH' ? {text=>'dummy'}:$val });
+$collection->[0]=new WebService::GData::Node::Atom::Id({'$t'=>'salut'});
 
-$nodes = [{text=>'i am a node'},1];
-
-push @$collection, $nodes->[0];
-
-push @$collection, $nodes->[1];
-
-ok(ref $collection->[1] eq 'HASH','the set method changed the value');
-ok($collection->[1]->{text} eq 'dummy','the new value contains the proper text');
+ok($collection->[0]->text eq 'salut','properly set');
