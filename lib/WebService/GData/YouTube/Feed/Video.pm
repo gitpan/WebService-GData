@@ -18,313 +18,317 @@ our $UPLOAD_BASE_URI = UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
 our $BASE_URI = BASE_URI . PROJECTION . '/users/default/uploads/';
 
 use constant {
-    DIRECT_UPLOAD  => 'DIRECT_UPLOAD',
-    BROWSER_UPLOAD => 'BROWSER_UPLOAD'
+	DIRECT_UPLOAD  => 'DIRECT_UPLOAD',
+	BROWSER_UPLOAD => 'BROWSER_UPLOAD'
 };
 
 sub __init {
-    my ( $this, $feed, $req ) = @_;
-    
-    if ( ref($feed) eq 'HASH' ) {
-        $this->SUPER::__init( $feed, $req );
-        $this->_media(
-            new WebService::GData::YouTube::YT::GroupEntity(
-                $feed->{'media$group'} || {}
-            )
-        );
-    }
-    else {
-        $this->SUPER::__init( {}, $feed );
-        $this->_media( new WebService::GData::YouTube::YT::GroupEntity( {} ) );
-    }
-    $this->_entity->child( $this->_media );
+	my ( $this, $feed, $req ) = @_;
+
+	if ( ref($feed) eq 'HASH' ) {
+		$this->SUPER::__init( $feed, $req );
+		$this->_media(
+			new WebService::GData::YouTube::YT::GroupEntity(
+				$feed->{'media$group'} || {}
+			)
+		);
+	}
+	else {
+		$this->SUPER::__init( {}, $feed );#$feed ==$req here
+		$this->_media( new WebService::GData::YouTube::YT::GroupEntity( {} ) );
+	}
+	$this->_entity->child( $this->_media );
 }
 
 sub next_url {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->{next_url} = _urlencode( shift() );
-    }
-    return $this->{next_url};
+	my $this = shift;
+	if ( @_ == 1 ) {
+		$this->{next_url} = _urlencode( shift() );
+	}
+	return $this->{next_url};
 }
 
 sub location {
-    my ( $this, $pos ) = @_;
-    my $where = $this->{_feed}->{'georss$where'};
-    if ( ref($where) eq 'HASH' && !$this->{_where}) {
-        $this->_location(
-            new WebService::GData::Node::PointEntity(
-                $where->{'gml$Point'}->{'gml$pos'}
-            )
-        );
-    }
-    else {
-        $this->{_feed}->{'georss$where'} = {};
-        $this->_location(new WebService::GData::Node::PointEntity());
-    }
-    if ( $pos ) {
-        $this->_location->pos($pos);
-    }
-    return ref $this->_location->pos ? '':$this->_location->pos;
+	my ( $this, $pos ) = @_;
+	my $where = $this->{_feed}->{'georss$where'};
+	if ( ref($where) eq 'HASH' && !$this->{_where} ) {
+		$this->_location(
+			new WebService::GData::Node::PointEntity(
+				$where->{'gml$Point'}->{'gml$pos'}
+			)
+		);
+	}
+	else {
+		$this->{_feed}->{'georss$where'} = {};
+		$this->_location( new WebService::GData::Node::PointEntity() );
+	}
+	if ($pos) {
+		$this->_location->pos($pos);
+	}
+	return ref $this->_location->pos ? '' : $this->_location->pos;
 
 }
 
 sub _location {
-    my ( $this, $instance ) = @_;
-    if ($instance) {
-        $this->{_where} = $instance;
-        $this->_entity->child($instance);
-    }
-    $this->{_where};
+	my ( $this, $instance ) = @_;
+	if ($instance) {
+		$this->{_where} = $instance;
+		$this->_entity->child($instance);
+	}
+	$this->{_where};
 }
 
 sub view_count {
-    my $this = shift;
-    $this->{_feed}->{'yt$statistics'}->{'viewCount'};
+	my $this = shift;
+	$this->{_feed}->{'yt$statistics'}->{'viewCount'};
 }
 
 sub favorite_count {
-    my $this = shift;
-    $this->{_feed}->{'yt$statistics'}->{'favoriteCount'};
+	my $this = shift;
+	$this->{_feed}->{'yt$statistics'}->{'favoriteCount'};
 }
 
 sub _media {
-    my ( $this, $instance ) = @_;
-    if ($instance) {
-        $this->{_media} = $instance;
-    }
-    $this->{_media};
+	my ( $this, $instance ) = @_;
+	if ($instance) {
+		$this->{_media} = $instance;
+	}
+	$this->{_media};
 }
 
 sub media_player {
-    my $this = shift;
-    $this->_media->player->url;
+	my $this = shift;
+	$this->_media->player->url;
 }
 
 sub aspect_ratio {
-    my $this = shift;
-    $this->_media->aspect_ratio;
+	my $this = shift;
+	$this->_media->aspect_ratio;
 }
 
 sub video_id {
-    my ( $this, $id ) = @_;
-    $this->_media->videoid($id) if $id;
-    ref $this->_media->videoid ? undef : $this->_media->videoid;
+	my ( $this, $id ) = @_;
+	$this->_media->videoid($id) if $id;
+	ref $this->_media->videoid ? undef : $this->_media->videoid;
 }
 
 sub duration {
-    my $this = shift;
-    $this->_media->duration->seconds;
+	my $this = shift;
+	$this->_media->duration->seconds;
 }
 
 sub content {
-    my $this = shift;
-    $this->_media->content;
+	my $this = shift;
+	$this->_media->content;
 }
 
 sub thumbnails {
-    my $this = shift;
-    $this->_media->thumbnail;
+	my $this = shift;
+	$this->_media->thumbnail;
 }
 
 sub uploaded {
-    my $this = shift;
-    $this->_media->uploaded;
+	my $this = shift;
+	$this->_media->uploaded;
 }
 
 sub category {
-    my $this = shift;
+	my $this = shift;
 
-    if ( @_ == 1 ) {
-        if ( !$this->_media->category->isa('WebService::GData::Collection') ) {
-            $this->_media->swap( $this->_media->category,
-                new WebService::GData::Collection() );
-        }
-        push @{ $this->_media->category },
-          new WebService::GData::Node::Media::Category(
-            {
-                '$t'    => $_[0],
-                'label' => $_[0],
-                'scheme' =>
-                  'http://gdata.youtube.com/schemas/2007/categories.cat'
-            }
-          );
-    }
-    $this->_media->category;
+	if ( @_ == 1 ) {
+		if ( !$this->_media->category->isa('WebService::GData::Collection') ) {
+			$this->_media->swap( $this->_media->category,
+				new WebService::GData::Collection() );
+		}
+		push @{ $this->_media->category },
+		  new WebService::GData::Node::Media::Category(
+			{
+				'$t'    => $_[0],
+				'label' => $_[0],
+				'scheme' =>
+				  'http://gdata.youtube.com/schemas/2007/categories.cat'
+			}
+		  );
+	}
+	$this->_media->category;
 }
 
 sub description {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->_media->description->text( $_[0] );
-        $this->_media->description->type("plain");
-    }
-    $this->_media->description->text || '';
+	my $this = shift;
+	if ( @_ == 1 ) {
+		$this->_media->description->text( $_[0] );
+		$this->_media->description->type("plain");
+	}
+	$this->_media->description->text || '';
 }
 
 sub title {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->_media->title->text( $_[0] );
+	my $this = shift;
+	if ( @_ == 1 ) {
+		$this->_media->title->text( $_[0] );
 
-        $this->_media->title->type("plain");
-    }
-    $this->_media->title->text || '';
+		$this->_media->title->type("plain");
+	}
+	$this->_media->title->text || '';
 }
 
 sub keywords {
-    my $this = shift;
-    if ( @_ > 1 ) {
-        return $this->_media->keywords->text( join( ',', @_ ) );
-    }
-    $this->_media->keywords || '';
+	my $this = shift;
+	if ( @_ >= 1 ) {
+		return $this->_media->keywords( join( ',', @_ ) );
+	}
+	$this->_media->keywords || '';
 }
 
 sub is_private {
-    my $this = shift;
-    if ( @_ == 1 ) {
-        $this->_media->{'_private'} =
-          new WebService::GData::YouTube::YT::Private();
-        $this->_media->_entity->child( $this->_media->{'_private'} );
-    }
-    return ( $this->_media->private ) ? 1 : 0;
+	my $this = shift;
+	if ( @_ == 1 ) {
+		$this->_media->{'_private'} =
+		  new WebService::GData::YouTube::YT::Private();
+		$this->_media->_entity->child( $this->_media->{'_private'} );
+	}
+	return ( $this->_media->private ) ? 1 : 0;
 }
 
 sub comments {
-    my $this = shift;
-    $this->{_feed}->{'gd$comments'}->{'gd$feedLink'}->{'href'};
+	my $this = shift;
+	$this->{_feed}->{'gd$comments'}->{'gd$feedLink'}->{'href'};
 }
 
 sub appcontrol_state {
-    my $this = shift;
-    return $this->{_feed}->{'app$control'}->{'yt$state'}->{reasonCode};
+	my $this = shift;
+	return $this->{_feed}->{'app$control'}->{'yt$state'}->{reasonCode};
 }
 
 #####WRITE FUNCTIONS########################
 
 sub _access_control {
-    my ( $this, $instance ) = @_;
-    if ($instance) {
-        $this->{_access_control} = $instance;
-        $this->_entity->child($instance);
-    }
-    $this->{_access_control};
+	my ( $this, $instance ) = @_;
+	if ($instance) {
+		$this->{_access_control} = $instance;
+		$this->_entity->child($instance);
+	}
+	$this->{_access_control};
 }
 
 sub access_control {
-    my $this = shift;
-    if ( !$this->_access_control ) {
-        $this->_access_control( new WebService::GData::Collection() );
-        my $access = $this->{_feed}->{'yt$accessControl'} || [];
-        foreach my $control (@$access) {
-            push @{ $this->_access_control },
-              new WebService::GData::YouTube::YT::AccessControl($control);
-        }
-    }
-    if ( @_ == 2 ) {
-        #first check if the action is already set and if so update
-        my $ret = $this->_access_control->action( $_[0]  );
-        if ( @$ret > 0 ) {
-              $ret->[0]->permission( $_[1] );
-        }
-        #if not, just push a new entry;
-        else {
-              push @{ $this->_access_control },
-                new WebService::GData::YouTube::YT::AccessControl(
-                  { action => $_[0], permission => $_[1] } );
-        }
-    }
-    if ( @_ == 1 ) {
-        #first check if the action is already set and if so update
-        return $this->_access_control->action( $_[0]  )->[0];
-        
-    }    
-    $this->_access_control;
+	my $this = shift;
+	if ( !$this->_access_control ) {
+		$this->_access_control( new WebService::GData::Collection() );
+		my $access = $this->{_feed}->{'yt$accessControl'} || [];
+		foreach my $control (@$access) {
+			push @{ $this->_access_control },
+			  new WebService::GData::YouTube::YT::AccessControl($control);
+		}
+	}
+	if ( @_ == 2 ) {
+
+		#first check if the action is already set and if so update
+		my $ret = $this->_access_control->action( $_[0] );
+		if ( @$ret > 0 ) {
+			$ret->[0]->permission( $_[1] );
+		}
+
+		#if not, just push a new entry;
+		else {
+			push @{ $this->_access_control },
+			  new WebService::GData::YouTube::YT::AccessControl(
+				{ action => $_[0], permission => $_[1] } );
+		}
+	}
+	if ( @_ == 1 ) {
+
+		#first check if the action is already set and if so update
+		return $this->_access_control->action( $_[0] )->[0];
+
+	}
+	$this->_access_control;
 }
 
 sub delete {
-      my $this = shift;
-      my $uri  = $BASE_URI . $this->video_id;
-      $this->{_request}->delete( $uri, 0 );
+	my $this = shift;
+	my $uri  = $BASE_URI . $this->video_id;
+	$this->{_request}->delete( $uri, 0 );
 }
 
 sub save {
-      my ($this) = @_;
-      my $content = XML_HEADER . $this->serialize();
+	my ($this) = @_;
+	my $content = XML_HEADER . $this->serialize();
 
-      if ( $this->video_id ) {
+	if ( $this->video_id ) {
 
-         my $ret= $this->{_request}->update( $BASE_URI . $this->video_id, $content );
-      }
-      else {
+		my $ret =
+		  $this->{_request}->update( $BASE_URI . $this->video_id, $content );
+	}
+	else {
 
-          if ( $this->upload_mode eq DIRECT_UPLOAD ) {
-              $this->direct_uploading( $UPLOAD_BASE_URI, $content );
-          }
-          else {
-              return $this->browser_uploading( $UPLOAD_BASE_URI, $content );
-          }
-      }
+		if ( $this->upload_mode eq DIRECT_UPLOAD ) {
+			$this->direct_uploading( $UPLOAD_BASE_URI, $content );
+		}
+		else {
+			return $this->browser_uploading( $UPLOAD_BASE_URI, $content );
+		}
+	}
 }
 
 #video upload
 
 sub filename {
-      my $this = shift;
-      return $this->{_filename} = $_[0] if ( @_ == 1 );
-      $this->{_filename};
+	my $this = shift;
+	return $this->{_filename} = $_[0] if ( @_ == 1 );
+	$this->{_filename};
 }
 
 #TODO: stream
 sub _binary_data {
-      my $this = shift;
+	my $this = shift;
 
-      if ( @_ == 1 ) {
-          my $fh = $_[0];
-          binmode($fh);
-          my $data = '';
-          while ( read $fh, my $buf, 1024 ) {
-              $data .= $buf;
-          }
-          close $fh;
-          return $this->{_binary_data} = $data;
-      }
-      $this->{_binary_data};
+	if ( @_ == 1 ) {
+		my $fh = $_[0];
+		binmode($fh);
+		my $data = '';
+		while ( read $fh, my $buf, 1024 ) {
+			$data .= $buf;
+		}
+		close $fh;
+		return $this->{_binary_data} = $data;
+	}
+	$this->{_binary_data};
 }
 
 sub upload_mode {
-      my $this = shift;
-      if ( @_ == 1 ) {
-          $this->{_UPLOAD_MODE} = shift;
-          $this->{_UPLOAD_MODE} = undef
-            if ( $this->{_UPLOAD_MODE} ne DIRECT_UPLOAD
-              || $this->{_UPLOAD_MODE} ne BROWSER_UPLOAD );
-      }
-      $this->{_UPLOAD_MODE} = BROWSER_UPLOAD if ( !$this->{_UPLOAD_MODE} );
-      $this->{_UPLOAD_MODE};
+	my $this = shift;
+	if ( @_ == 1 ) {
+		$this->{_UPLOAD_MODE} = shift;
+		$this->{_UPLOAD_MODE} = undef
+		  if ( $this->{_UPLOAD_MODE} ne DIRECT_UPLOAD
+			|| $this->{_UPLOAD_MODE} ne BROWSER_UPLOAD );
+	}
+	$this->{_UPLOAD_MODE} = BROWSER_UPLOAD if ( !$this->{_UPLOAD_MODE} );
+	$this->{_UPLOAD_MODE};
 }
 
 sub browser_uploading {
-      my ( $this, $uri, $content ) = @_;
-      my $response =
-        $this->{_request}
-        ->insert( 'http://gdata.youtube.com/action/GetUploadToken', $content );
+	my ( $this, $uri, $content ) = @_;
+	my $response =
+	  $this->{_request}
+	  ->insert( 'http://gdata.youtube.com/action/GetUploadToken', $content );
 
-      my ( $url, $token ) =
-        $response =~ m/<url>(.+?)<\/url><token>(.+?)<\/token>/;
-      if ( $this->next_url ) {
-          $url .= '?' . $this->next_url;
-      }
-      return ( $url, $token, $response );
+	my ( $url, $token ) =
+	  $response =~ m/<url>(.+?)<\/url><token>(.+?)<\/token>/;
+	if ( $this->next_url ) {
+		$url .= '?' . $this->next_url;
+	}
+	return ( $url, $token, $response );
 }
 
 #TODO:move this and rewrite!
 sub direct_uploading {
-      my ( $this, $uri, $content ) = @_;
+	my ( $this, $uri, $content ) = @_;
 
-      my $binary = $this->_binary_data;
+	my $binary = $this->_binary_data;
 
-      my $content2 = <<XML;
+	my $content2 = <<XML;
 
 --f93dcbA3
 Content-Type: application/atom+xml; charset=UTF-8
@@ -335,9 +339,9 @@ Content-Type: application/atom+xml; charset=UTF-8
   xmlns:yt="http://gdata.youtube.com/schemas/2007">
 XML
 
-      $content2 .= $content . '</entry>';
+	$content2 .= $content . '</entry>';
 
-      $content2 .= <<XML;
+	$content2 .= <<XML;
 
 --f93dcbA3
 Content-Type: video/quicktime
@@ -348,57 +352,58 @@ $binary
 --f93dcbA3--
 XML
 
-      my $req = HTTP::Request->new( POST => $uri );
+	my $req = HTTP::Request->new( POST => $uri );
 
-      if ( $this->{_request}->auth ) {
-          $this->{_request}->auth->set_authorization_headers( $this, $req );
-          $this->{_request}->auth->set_service_headers( $this, $req );
-      }
-      $req->header( 'GData-Version' => $this->{_request}->query->get('v') );
-      $req->header( 'Slug'          => $this->filename );
-      $req->content_type('multipart/related; boundary="f93dcbA3"');
-      $req->header( 'Content-Length' => length($content2) );
-      $req->header( 'Connection'     => 'close' );
-      $req->content($content2);
+	if ( $this->{_request}->auth ) {
+		$this->{_request}->auth->set_authorization_headers( $this, $req );
+		$this->{_request}->auth->set_service_headers( $this, $req );
+	}
+	$req->header( 'GData-Version' => $this->{_request}->query->get('v') );
+	$req->header( 'Slug'          => $this->filename );
+	$req->content_type('multipart/related; boundary="f93dcbA3"');
+	$req->header( 'Content-Length' => length($content2) );
+	$req->header( 'Connection'     => 'close' );
+	$req->content($content2);
 
-      my $res = $this->{_request}->{__UA__}->request($req);
-      if ( $res->is_success ) {
-          return $this;
-      }
-      else {
-          die new WebService::GData::Error( $res->code, $res->content );
-      }
+	my $res = $this->{_request}->{__UA__}->request($req);
+	if ( $res->is_success ) {
+		return $this;
+	}
+	else {
+		die new WebService::GData::Error( $res->code, $res->content );
+	}
 
 }
 
-
 {
 	no strict 'refs';
+	
 	my %controlList = (
-	   videoRespond=>'video_response',
-	   rate         =>'rating',
-	   embed        =>'embedding',
-	   list         =>'listing',
-	   syndicate    =>'syndication'
+		videoRespond => 'video_response',
+		rate         => 'rating',
+		embed        => 'embedding',
+		list         => 'listing',
+		syndicate    => 'syndication'
 	);
-	my @ytControls = (keys %controlList,'comment','comment_vote');
-	foreach my $access (@ytControls){
-		my $name= $access;
+	my @ytControls = ( keys %controlList, 'comment', 'comment_vote' );
+	
+	foreach my $access (@ytControls) {
+		my $name = $access;
 		   $name =~ s/_([a-z])/\U$1/g;
-		   my $func = $controlList{$access}|| $access;
-		*{__PACKAGE__.'::is_'.$func.'_allowed'} = sub {
+		my $func = $controlList{$access} || $access;
+		*{ __PACKAGE__ . '::is_' . $func . '_allowed' } = sub {
 			my $this = shift;
-            my $ret = $this->_access_control->action($name)->[0];
-            return ($ret && $ret->permission eq 'allowed' ) ? 1 : 0;
-		}
+			my $ret  = $this->_access_control->action($name)->[0];
+			return ( $ret && $ret->permission eq 'allowed' ) ? 1 : 0;
+		  }
 	}
 }
 
 private _urlencode => sub {
-      my ($string) = shift;
-      $string =~ s/(\W)/"%" . unpack("H2", $1)/ge;
-      return $string;
-  };
+	my ($string) = shift;
+	$string =~ s/(\W)/"%" . unpack("H2", $1)/ge;
+	return $string;
+};
 
 "The earth is blue like an orange.";
 

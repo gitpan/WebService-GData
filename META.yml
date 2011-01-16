@@ -1,5 +1,5 @@
 ---
-abstract: 'Google data protocol v2 base object to inherit.'
+abstract: 'Google data protocol v2.'
 author:
   - 'shiriru <shirirulestheworld[arobas]gmail.com>'
 build_requires:
@@ -29,4 +29,4 @@ resources:
   bugtracker: http://rt.cpan.org
   license: http://dev.perl.org/licenses/
   repository: http://code.google.com/p/perl-gdata-youtube-api-v2/source/browse/
-version: 0.0308
+version: 0.0309

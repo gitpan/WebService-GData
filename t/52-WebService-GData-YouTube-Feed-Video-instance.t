@@ -1,4 +1,4 @@
-use Test::More tests => 38;
+use Test::More tests => 39;
 use WebService::GData::YouTube::Feed::Video;
 use t::JSONResponse;
 use JSON;
@@ -69,6 +69,12 @@ ok(
     $entry->keywords eq
 "the, young, turks, cenk, uygur, ana, kasparian, rush, limbaugh, rams, gohmert, sotomayor, shep, smith, obama, guns, rights, delay, cops, be, commentary, analysis, political, commercial, documentary, news, grassroots, outreach",
     'keywords are properly set.'
+);
+
+$entry->keywords('test');
+ok(
+    $entry->keywords eq "test",
+    'keywords are properly set again.'
 );
 
 ok(

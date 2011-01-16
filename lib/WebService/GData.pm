@@ -6,7 +6,7 @@ use Data::Dumper;
 use Carp;
 use overload '""' => "__to_string",'==' =>'equal',fallback=>1;
 
-our $VERSION = 0.03_08;
+our $VERSION = 0.03_09;
 
 our $AUTOLOAD;
 
@@ -137,7 +137,7 @@ __END__
 
 =head1 NAME
 
-WebService::GData - Google data protocol v2 base object to inherit.
+WebService::GData - Google data protocol v2.
 
 =head1 SYNOPSIS
 
@@ -207,9 +207,11 @@ WebService::GData - Google data protocol v2 base object to inherit.
 
 =head1 DESCRIPTION
 
-This package is a blueprint that you should inherit and extend. It offers a basic hashed based object creation via the word new. 
+WebService::GData module intends to implement the Google Data protocol and implements some services that use this protocol, like YouTube.
 
-All sub classes should be hash based. If you want to pock into the instance, it's easy but everything that is not documented 
+This package is a blueprint that most packages in this module inherit from. It offers a simple hashed based object creation mechanism via the word new. 
+
+If you want to pock into the instance, it's easy but everything that is not documented 
 should be considered private. If you play around with undocumented properties/methods and that it changes,upgrading to the new version with all 
 the extra new killer features will be very hard to do. 
 
@@ -217,13 +219,13 @@ so...
 
 dont.
 
-The following classes extends L<WebService::GData> to implement their feature:
+As an example, the following classes extend L<WebService::GData> to implement their feature:
 
 =over
 
 =item L<WebService::GData::Base>
 
-Implements the base get/post/insert/update/delete methods for the Google data protocol.
+Implements the base get/post/insert/update/delete methods via HTTP for the Google data protocol.
 
 =item L<WebService::GData::ClientLogin>
 
@@ -249,7 +251,7 @@ A service in progress:
 
 =item L<WebService::GData::YouTube>
 
-Implements some of the YouTube API functionalities.
+Implements parts of the YouTube API .
 
 =back
 
@@ -259,8 +261,8 @@ Implements some of the YouTube API functionalities.
 
 =over 
 
-Takes an hash which keys will be attached to the instance.
-You can also use C<install_in_package()> to create setters/getters for these parameters.
+Takes an hash which keys will be attached to the instance, $this.
+You can also use C<install_in_package()> to create setters/getters or simply let the methods been redispatched automaticly.
 
 B<Parameters>
 
@@ -284,6 +286,9 @@ Example:
     my $object = new WebService::GData(firstname=>'doe',lastname=>'john',age=>'123');
 
     $object->{firstname};#doe
+    $object->firstname;#doe
+    $object->firstname('billy');
+    $object->firstname;#billy
 	
 =back
 
@@ -295,7 +300,17 @@ Example:
 
 This method is called by the constructor C<new()>.
 This function receives the parameters set in C<new()> and assign the key/values pairs to the instance.
-You should overwrite it and add your own logic.
+You should overwrite it and add your own logic if necessary.
+
+Default implementation:
+
+    sub __init {
+        my ($this,%params) = @_;
+        while(my ($prop,$val)=each %params){
+            $this->{$prop}=$val;
+        }
+        return $this;
+    }
 
 =back
 
@@ -320,19 +335,26 @@ Overload the comparison "==" by checking that boch objects are hosted in the sam
 
 =head2 AUTOLOAD
 
-Calls to undefined methods on instance are catched and dispatch to __get if the call does not contain any parameter or __set if 
-parameters exist. static methods are not supported.
+Calls to undefined methods on an instance are catched and dispatch to __get if the call does not contain any parameter or __set if 
+parameters exist.
 You can overwrite these two methods in your package to meet your naming needs.
-For example, when you call $instance->dont_exist, you look into $instance->{__DONT_EXIST} instead of the default $instance->{dont_exist}.
+For example, when you call $instance->dont_exist, you might want to look into $instance->{__DONT_EXIST} instead of the default $instance->{dont_exist}.
 
 
 =head3 __get
 
 =over
 
-This method cathes all calls to undefined methods to which no parameters are passed.
-If you call C<$instance->unknown_method>, the C<__get> method will return C<$instance->{unknown_method}> by default.
+This method catches all calls to undefined methods to which no parameters are passed.
+If you call $instance->unknown_method, the C<__get> method will return $instance->{unknown_method} by default.
 The C<__get> method gets the instance and the name of the function has parameters.
+
+Below is the default implementation:
+
+sub __get {
+    my ($this,$func) = @_;
+    return $this->{$func};
+}
 
 =back
 
@@ -340,10 +362,20 @@ The C<__get> method gets the instance and the name of the function has parameter
 
 =over
 
-This method cathes all calls to undefined methods to which parameters are passed.
-If you call C<$instance->unknown_method($val,$val2)>, the C<__set> method will set the parameters to C<$instance->{unknown_method}> by default.
+This method catches all calls to undefined methods to which parameters are passed.
+If you call $instance->unknown_method($val,$val2), the C<__set> method will set the parameters to $instance->{unknown_method}
+ by default.
 When several parameters are passed, they are saved as an array reference.
-The C<__get> method gets the instance and the name of the function has parameters.
+The C<__set> method gets the instance,the name of the function and the parameters as its own arguments.
+
+Below is the default implementation:
+
+sub __set {
+    my ($this,$func,@args) = @_;
+    $this->{$func}= @args == 1 ? $args[0] : \@args;
+    return $this;
+}
+
 
 =back
 
@@ -353,7 +385,9 @@ The C<__get> method gets the instance and the name of the function has parameter
 
 =over
 
-Install in the package the methods/subs specified. Mostly use to avoid writting boiler plate getter/setter methods.
+Install in the package the methods/subs specified. Mostly use to avoid writting boiler plate getter/setter methods
+and a bit more efficient than AUTOLOAD methods as they are installed directly into the package 
+so it will not climb up a function chain call. 
 
 B<Parameters>
 
@@ -470,7 +504,7 @@ Example:
 
 Overwrite a method so that it does nothing...
 Some namespaces inherit from functionalities that are not required.
-The function will still be available but will just return the instance.
+The functions will still be available but will just return the instance.
 
 B<Parameters>
 

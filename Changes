@@ -1,5 +1,37 @@
 Revision history for Perl extension WebService::GData.
 
+0.03_09  2011/01/17 12:28
+
+    - BUG FIX
+        
+      - YouTube Video package
+        - keywords setting was not working
+      - Collection 
+        - was warning when matching against an empty list
+      - AtomEntity
+        - force Collection context even for an empty instance to get a coherent result for link, category nodes
+        
+    - NEW
+    
+      - YouTube Comment package
+        - added comment_id,video_id,in_reply_to and a save method (you can now add comments from perl)
+          #warning: not tested very thoroughly... need to write a test suite.
+        - added some doc about this package
+      - YouTube package
+        - added  a comment method, helper to instantiate a Comment class.
+      - Base
+        - doc updated 
+      - a test added for Video
+      
+    - NEXT RELEASE
+    
+      - need to clean up the tests and start mocking some of the live tests I use on my side...
+      - lazy up thing more and get rid of old variables that take up memory for nothing...
+      - add a bit of doc for YouTube package
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.03_08  2011/01/03 23:07
 
     - BUG FIX

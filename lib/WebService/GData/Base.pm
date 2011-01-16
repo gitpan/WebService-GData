@@ -16,7 +16,6 @@ our $VERSION = 0.02_02;
 sub __init {
     my ( $this, %params ) = @_;
 
-    $this->{__NAMESPACES__} = [ATOM_NAMESPACE];
     $this->{__OVERRIDE__}   = FALSE;
     $this->{__AUTH__}       = undef;
     $this->{__URI__}        = undef;
@@ -262,7 +261,7 @@ __END__
 
 =head1 NAME
 
-WebService::GData::Base - core read/write methods for google data API v2.
+WebService::GData::Base - core read/write methods over HTTP for google data API v2.
 
 =head1 SYNOPSIS
 
@@ -290,12 +289,10 @@ WebService::GData::Base - core read/write methods for google data API v2.
 
     my $ret = $base->delete('http://gdata.youtube.com/feeds/api/users/playlist/'.$someid);
 
-    #content is decorated with the xml entry basic tags
     #the content type is application/atom+xml; charset=UTF-8
 	
     my $ret = $base->insert($uri,$content,$callback);
 
-    #does a PUT. The content is decorated with the xml entry basic tags
     #the content type is application/atom+xml; charset=UTF-8
 	
     my $ret = $base->update($uri,$content,$callback);
@@ -320,9 +317,10 @@ WebService::GData::Base - core read/write methods for google data API v2.
 
 I<inherits from L<WebService::GData>>
 
-This package grants you access to the main read/write methods available for the google data APIs by wrapping LWP methods.
-You gain access to: get,post,insert,update,delete.
-Each of them call the authentification object to add extra headers.
+This package allows you to manipulate the data stored on Google servers. 
+It grants you access to the main read/write (get,post,insert,update,delete) methods available for the google data APIs by wrapping LWP methods.
+Some actions require to be authenticated (ClientLogin,OAuth,SubAuth). If an authentication object is set at construction time, 
+it will be called to add any extra headers the authentication mechanism requires.
 This package should be inherited by services (youtube,analytics,calendar) to offer higher level of abstraction.
 
 Every request (get,post,insert,update,delete) will throw a L<WebService::GData::Error> in case of failure.
@@ -332,11 +330,6 @@ The google data based APIs offer different format for the core protocol: atom ba
 In order to offer good parsing performance, we use the json based response as a default to get() the feeds.
 Unfortunately, if we can read the feeds in json,the write methods require atom based data.
 The server also sends back an atom response too. We have therefore a hugly mixed of atom/json logic for now.
-
-but...
-
-The JSONC format which is now being incorporated in google data based services will offer 
-the same level of interaction as the atom based protocol and therefore hope to clean this up later!
 
 
 =head2 CONSTRUCTOR
@@ -518,7 +511,7 @@ B<Parameters>
 
 =item C<none> - use as a getter
 
-=item C<true_or_false:Scalar> - use as a setter: L<WebService::GData::Constants>::TRUE or L<WebService::GData::Constants>::FALSE (default)
+=item C<true_or_false:Scalar> - use as a setter: WebService::GData::Constants::TRUE or WebService::GData::Constants::FALSE (default)
 
 =back
 
@@ -528,7 +521,7 @@ B<Returns>
 
 =item C<void> in a setter context. 
 
-=item C<override_state:Scalar> in a getter context, either L<WebService::GData::Constants>::TRUE or L<WebService::GData::Constants>::FALSE.
+=item C<override_state:Scalar> in a getter context, either WebService::GData::Constants::TRUE or WebService::GData::Constants::FALSE.
 
 =back
 
@@ -751,11 +744,7 @@ B<Parameters>
 
 =item C<url:Scalar> - the url to query
 
-=item C<content:Scalar> - the content to post in xml format will be decorated with:
-
-    <?xml version="1.0" encoding="UTF-8"?><entry $xmlns>$content</entry>
-
-where $xmlns is the result of C<get_namespaces>.
+=item C<content:Scalar> - the content to post
 
 =back
 
@@ -800,11 +789,7 @@ B<Parameters>
 
 =item C<url:Scalar> - the url to query
 
-=item C<content:Scalar> - the content to put in xml format will be decorated with:
-
-    <?xml version="1.0" encoding="UTF-8"?><entry $xmlns>$content</entry>
-
-where $xmlns is the result of C<get_namespaces>.
+=item C<content:Scalar> - the content to put.
 
 =back
 

@@ -32,7 +32,7 @@ sub __set {
 	$this->{cache}->{$attr.$val}=[];
 	my @ret= ();
 	foreach my $elm (@$this){
-		if($elm->$attr()=~m/$val/) {
+		if($elm->$attr() && $elm->$attr()=~m/$val/) {
 		   push @ret,$elm;
 		}
 	}

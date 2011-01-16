@@ -21,8 +21,8 @@ sub __init {
     }
 	
     $this->__set_tag('WebService::GData::Node::Atom::','AuthorEntity','author');
-    $this->__init_tags('WebService::GData::Node::Atom::',(qw(category id link title updated)));
-
+    $this->__init_tags('WebService::GData::Node::Atom::',undef,(qw(id title updated)));
+    $this->__init_tags('WebService::GData::Node::Atom::','force_collection',(qw(category link)));
 }
 
 sub set_children {
@@ -32,7 +32,7 @@ sub set_children {
 }
 
 private __set_tag => sub {
-   my ($this,$package,$class,$node)=@_;
+   my ($this,$package,$class,$node,$collection)=@_;
 
    if ( ref( $this->{_feed}->{$node} ) eq 'ARRAY' ) {
         my $tags     = $this->{_feed}->{$node};
@@ -44,15 +44,20 @@ private __set_tag => sub {
         $this->{'_'.$node} = new WebService::GData::Collection(\@instances);
     }
     else {
-         my $class = $package . "\u$class"; 
-         $this->{'_'.$node}=  $class->new($this->{_feed}->{$node}); 
+        my $class = $package . "\u$class"; 
+    	if($collection) {
+            $this->{'_'.$node}= new WebService::GData::Collection([$class->new($this->{_feed}->{$node})]);  	
+    	}
+    	else{
+            $this->{'_'.$node}=  $class->new($this->{_feed}->{$node}); 
+    	}
     }   
 };
 
 private __init_tags => sub {
-    my ( $this, $package,@nodes ) = @_;
+    my ( $this, $package,$collection,@nodes ) = @_;
     foreach my $node (@nodes) {  
-        $this->__set_tag($package,"\u$node",$node);
+        $this->__set_tag($package,"\u$node",$node,$collection);
     }
 };
 

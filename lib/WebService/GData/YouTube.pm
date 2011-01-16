@@ -80,6 +80,11 @@ sub video {
     return new WebService::GData::YouTube::Feed::Video($this->{_request});
 }
 
+sub comment {
+    my $this = shift;
+    return new WebService::GData::YouTube::Feed::Comment($this->{_request});
+}
+
 sub search_video {
     my ( $this, $query ) = @_;
     $this->query($query) if ($query);
@@ -264,8 +269,11 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
 
 =head1 DESCRIPTION
 
-!WARNINGS! Developer release. Starting refactoring.
-Even if the interface should not change too much, things may change or break but feel free to give me some feedbacks!
+
+!DEVELOPER RELEASE! API may change, program may break or be under optimized.
+!DEVELOPER RELEASE! API may change, program may break or be under optimized.
+!DEVELOPER RELEASE! API may change, program may break or be under optimized.
+!WARNING! Documentation in progress.
 
 I<inherits from L<WebService::GData>>
 
@@ -866,9 +874,176 @@ Example:
 =back
 
 
+
+
+
+
+
+
+
+=head2 FACTORY METHODS
+
+These methods instantiate YouTube::Feed::* packages. It just saves some typing.
+
+=head3 video
+
+=over
+  Return a L<WebService::GData::YouTube::Feed::Video> instance
+ 
+=back
+
+=head3 comment
+
+=over
+  Return a L<WebService::GData::YouTube::Feed::Comment> instance
+ 
+=back
+
+Example:
+    
+    use constant KEY=>'...';
+        
+    my $auth; 
+    eval {
+        $auth = new WebService::GData::ClientLogin(
+           email=>...@gmail.com',
+           password=>'...',
+           key=>KEY
+       );
+    };     
+    
+    my $yt = new WebService::GData::YouTube($auth);
+    
+    #instantiate a comment
+    my $comment = $yt->comment;
+
+       $comment->content('thank you all for watching!');
+       $comment->video_id('2lDekeCDD-J1');#attach the comment to a video
+       $comment->save;
+       
+    #instantiate a video
+    my $video = $yt->video;   
+       $video->title('Live at Shibuya tonight');
+       $video->description('Live performance by 6 local bands.');
+       $video->keywords('music','live','shibuya','tokyo');
+       $video->category('Music');
+    #etc
+         
+
+=back
+
+=head3 get_user_videos
+
+=over
+
+Get the videos for the logged in user or for the user name you specified.
+
+B<Parameters>
+
+=over 4
+
+=item C<user_name:Scalar> (optional) - the user name/channel name
+
+=back
+
+B<Returns>
+
+=over 4 
+
+=item L<WebService::GData::YouTube::Feed::Video> objects 
+
+=back
+
+B<Throws>
+
+=over 4
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+    use WebService::GData::Base;
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+    my $videos = $yt->get_user_videos();
+
+    #if not logged in, pass the user name as the first parameter
+    my $videos = $yt->get_user_videos('live');
+
+=back
+
+
+=head3 get_user_favorite_videos
+
+Get the videos that user specificly set a favorites (meaning that you may not have write access to the content even if you are logged in!).
+
+B<Parameters>
+
+=over 4
+
+=item C<user_name:Scalar> (optional) - the user name/channel name
+
+=back
+
+B<Returns>
+
+=over
+
+=item L<WebService::GData::YouTube::Feed::Video> objects 
+
+=back
+
+B<Throws>
+
+=over 4
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+    use WebService::GData::Base;
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+    my $videos = $yt->get_user_favorite_videos();
+
+    #if not logged in, pass the user name as the first parameter
+    my $videos = $yt->get_user_favorite_videos('live');
+
+=back
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 =head2 USER PLAYLIST METHODS
 
 =over
+
+!WARNING! Playlits related methods does not work yet!!
 
 These methods allow you to access the videos in a playlist or a list of playlists created by a user.
 If you are logged in, you will be able to modify the data.

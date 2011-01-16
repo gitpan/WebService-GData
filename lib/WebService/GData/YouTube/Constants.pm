@@ -8,6 +8,7 @@ use constant {
 
     PROJECTION        => 'api',
     BASE_URI          => 'http://gdata.youtube.com/feeds/',
+    API_DOMAIN_URI    => 'http://gdata.youtube.com/',
     UPLOAD_BASE_URI   => 'http://uploads.gdata.youtube.com/feeds/',
     
     
@@ -40,7 +41,7 @@ use constant {
     DURATION      => 'duration'
 };
 
-my @general   = qw(PROJECTION BASE_URI UPLOAD_BASE_URI);
+my @general   = qw(PROJECTION BASE_URI UPLOAD_BASE_URI API_DOMAIN_URI);
 my @namespace = qw(YOUTUBE_NAMESPACE);
 my @format    = qw(MOBILE_H263 H263 MPEG4 MOBILE_MPEG4 EMBEDDABLE);
 my @time      = qw(TODAY WEEK MONTH ALL_TIME);
