@@ -4,98 +4,97 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Carp;
-use overload '""' => "__to_string",'==' =>'equal',fallback=>1;
+use overload '""' => "__to_string", '==' => 'equal', fallback => 1;
 
-our $VERSION = 0.03_09;
+our $VERSION = 0.04_01;
 
 our $AUTOLOAD;
 
-
 sub import {
-    strict->import;
-    warnings->import;
-    my $import  = shift;
-    my $package = caller;
-    if ($import) {
-        install_in_package( ['private'], sub { return \&private; }, $package );
-    }
+	strict->import;
+	warnings->import;
+	my $import  = shift;
+	my $package = caller;
+	if ($import) {
+		install_in_package( ['private'], sub { return \&private; }, $package );
+	}
 }
 
 sub new {
-    my $package = shift;
-    my $this    = {};
-    bless $this, $package;
-    $this->__init(@_);
-    return $this;
+	my $package = shift;
+	my $this    = {};
+	bless $this, $package;
+	$this->__init(@_);
+	return $this;
 }
 
 sub __init {
-    my ( $this, %params ) = @_;
+	my ( $this, %params ) = @_;
 
-    while ( my ( $prop, $val ) = each %params ) {
-        $this->{$prop} = $val;
-    }
+	while ( my ( $prop, $val ) = each %params ) {
+		$this->{$prop} = $val;
+	}
 }
 
 sub __to_string {
-    return Dumper(shift);
+	return Dumper(shift);
 }
 
 sub equal {
-	my($left,$right)=@_;
+	my ( $left, $right ) = @_;
 	return overload::StrVal($left) eq overload::StrVal($right);
 }
 
 sub install_in_package {
-    my ( $subnames, $callback, $package ) = @_;
+	my ( $subnames, $callback, $package ) = @_;
 
-    $package = $package || caller;
-    return if ( $package eq 'main' );    #never import into main
-    {                                    #install
-        no strict 'refs';
-        no warnings 'redefine';
-        foreach my $sub (@$subnames) {
-            *{ $package . '::' . $sub } = &$callback($sub);
-        }
-    }
+	$package = $package || caller;
+	return if ( $package eq 'main' );    #never import into main
+	{                                    #install
+		no strict 'refs';
+		no warnings 'redefine';
+		foreach my $sub (@$subnames) {
+			*{ $package . '::' . $sub } = &$callback($sub);
+		}
+	}
 
 }
 
 sub private {
-    my ( $name, $sub ) = @_;
-    my $package = caller;
-    install_in_package(
-        [$name],
-        sub {
-            return sub {
-                my @args = @_;
-                my $p    = caller;
-                croak {
-                    code    => 'forbidden_access',
-                    content => 'private method called outside of its package'
-                  }
-                  if ( $p ne $package );
-                return &$sub(@args);
-              }
-        },
-        $package
-    );
+	my ( $name, $sub ) = @_;
+	my $package = caller;
+	install_in_package(
+		[$name],
+		sub {
+			return sub {
+				my @args = @_;
+				my $p    = caller;
+				croak {
+					code    => 'forbidden_access',
+					content => 'private method called outside of its package'
+				  }
+				  if ( $p ne $package );
+				return &$sub(@args);
+			  }
+		},
+		$package
+	);
 }
 
 sub disable {
-    my ( $parameters, $package ) = @_;
-    $package = $package || caller;
-    install_in_package(
-        $parameters,
-        sub {
-            return sub {
+	my ( $parameters, $package ) = @_;
+	$package = $package || caller;
+	install_in_package(
+		$parameters,
+		sub {
+			return sub {
 
-                #keep the chaining
-                return shift();
-              }
-        },
-        $package
-    );
+				#keep the chaining
+				return shift();
+			  }
+		},
+		$package
+	);
 
 }
 
@@ -103,29 +102,28 @@ sub disable {
 ##Might get rid of the following...
 
 sub AUTOLOAD {
-  my $func = $AUTOLOAD;
+	my $func = $AUTOLOAD;
 
-     $func =~ s/.*:://;
-  my $this = shift;
- # return if(!ref($this));
-  return if($func=~m/[A-Z]+/);
+	$func =~ s/.*:://;
+	my $this = shift;
 
-  if(@_>=1){
-	return $this->__set($func,@_);
-  }
-  $this->__get($func);
+	return if ( $func =~ m/[A-Z]+/ );
+
+	return $this->__set( $func, @_ ) if @_ >= 1;
+
+	$this->__get($func);
 
 }
 
 sub __set {
-    my ($this,$func,@args) = @_;
-    $this->{$func}= @args==1 ? $args[0]:\@args;
-    return $this;
+	my ( $this, $func, @args ) = @_;
+	$this->{$func} = @args == 1 ? $args[0] : \@args;
+	return $this;
 }
 
 sub __get {
-    my ($this,$func) = @_;
-    return $this->{$func};
+	my ( $this, $func ) = @_;
+	return $this->{$func};
 }
 
 "The earth is blue like an orange.";
@@ -153,7 +151,6 @@ WebService::GData - Google data protocol v2.
         while(my ($prop,$val)=each %params){
             $this->{$prop}=$val;
         }
-        return $this;
     }
 
 
@@ -309,7 +306,6 @@ Default implementation:
         while(my ($prop,$val)=each %params){
             $this->{$prop}=$val;
         }
-        return $this;
     }
 
 =back

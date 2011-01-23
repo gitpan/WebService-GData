@@ -322,7 +322,7 @@ sub browser_uploading {
 	return ( $url, $token, $response );
 }
 
-#TODO:move this and rewrite!
+#TODO:move this and rewrite from scratch!
 sub direct_uploading {
 	my ( $this, $uri, $content ) = @_;
 

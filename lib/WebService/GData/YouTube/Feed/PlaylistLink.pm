@@ -1,176 +1,362 @@
 package WebService::GData::YouTube::Feed::PlaylistLink;
+
+use WebService::GData 'private';
 use base 'WebService::GData::Feed::Entry';
-our $VERSION  = 0.01_01;
+use WebService::GData::Constants qw(:all);
+use WebService::GData::YouTube::Constants qw(:all);
+use WebService::GData::Node::Atom::Category();
+use WebService::GData::Collection();
+
+our $VERSION = 0.01_02;
+
+our $PROJECTION = WebService::GData::YouTube::Constants::PROJECTION;
+our $BASE       = WebService::GData::YouTube::Constants::BASE_URI;
+
+our $PLAYLISTS_URI = $BASE . $PROJECTION . '/users/default/playlists/';
 #####READ##############
 
 sub __init {
-    my ($this,$feed,$req) = @_;
-    
-    if(ref($feed) eq 'HASH'){
-        $this->SUPER::__init($feed,$req);
-    }
-    else {
+	my ( $this, $feed, $req ) = @_;
 
-        $this->SUPER::__init({},$feed);        
-    }   
+	return $this->SUPER::__init( $feed, $req ) if ref $feed eq 'HASH';
+
+	$this->SUPER::__init( {}, $feed );
+
 }
 
-	sub count_hint {
-		my $this = shift;
-		$this->{_feed}->{'yt$countHint'}->{'$t'};
+sub count_hint {
+	my $this = shift;
+	$this->{_feed}->{'yt$countHint'}->{'$t'};
+}
+
+sub playlist_id {
+	my $this = shift;
+	if ( @_ == 1 ) {
+		$this->{_feed}->{'yt$playlistId'}->{'$t'} = $_[0];
+	}
+	$this->{_feed}->{'yt$playlistId'}->{'$t'};
+}
+
+sub is_private {
+	my $this = shift;
+
+	if ( exists $this->{_feed}->{'yt$private'} || ( @_ == 1 && !$this->{_private} ) ) {
+		$this->{_private} = new WebService::GData::YouTube::YT::Private();
+		$this->_entity->child( $this->{_private} );
+		delete $this->{_feed}->{'yt$private'};
 	}
 
-	sub playlist_id {
-		my $this = shift;
-		if(@_==1){
-			$this->{_feed}->{'yt$playlistId'}->{'$t'}=$_[0];
+	return ( exists $this->{_private} ) ? 1 : 0;
+		
+	
+}
+
+private urldecode => sub {
+	my ($string) = shift;
+	$string =~ tr/+/ /;
+	$string =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
+	return $string;
+};
+
+sub keywords {
+	my ( $this, $keywords ) = @_;
+
+	if ($keywords) {
+
+		#reset tags
+		my $old = $this->{_category};
+
+		$this->_entity->swap( $old,
+			$this->{_category} = new WebService::GData::Collection() );
+
+		my @tags = split( /,/, $keywords );
+
+		foreach (@tags) {
+			push @{ $this->category },
+			  new WebService::GData::Node::Atom::Category(
+				term   => $_,
+				scheme => 'http://gdata.youtube.com/schemas/2007/tags.cat'
+			  );
 		}
-		$this->{_feed}->{'yt$playlistId'}->{'$t'};
 	}
 
-	sub private {
-		my $this = shift;
-		if(@_==1){
-			$this->{_feed}->{'yt$private'}=$_[0];
-		}
-		return ($this->{_feed}->{'yt$private'})?1:0;
-	}
-
-	sub keywords {
-		my ($this,$entry) = @_;
-
-		if($entry) {
-			$this->{_feed}->{category}=[{scheme=>'http://schemas.google.com/g/2005#kind',term=>'http://gdata.youtube.com/schemas/2007#playlistLink'}];
-			my @entries = split ',',$entry;
-			my $i=1;
-			foreach my $entry (@entries){
-				$this->{_feed}->{category}->[$i]= {scheme=>'http://gdata.youtube.com/schemas/2007/tags.cat',term=>$entry};
-				$i++;
-			}
-			return;
-		}
-
-		my $categories = $this->category;
-
-		my @keywords=();
-		foreach my $category (@$categories){
-			if($category->{scheme}=~m/tags/){
-				push @keywords,$category->{term};	
-			}
-		}
-		return join ',',@keywords;
-	}
-
-
+	my @terms;
+	push @terms, urldecode( $_->term )
+	  foreach ( @{ $this->category->scheme('tags.cat') } );
+	return join ',', @terms;
+}
 
 #####WRITE###########
 
-	sub get_videos {
-		my $this = shift;
+sub delete {
+	my $this = shift;
+	$this->{_request}->delete( $PLAYLISTS_URI . $this->playlist_id );
+}
 
-		my $res = $this->{_dbh}->get($this->{_feed}->{'content'}->{src} || 'http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId);
+sub save {
+	my $this = shift;
 
-		$this->{videosInPlaylist} = new WebService::GData::YouTube::Feed($res,$this->{_request})->entry;
-		return $this->{videosInPlaylist};
+	my $content = XML_HEADER . $this->serialize;
+	my $ret;
+	if ( $this->playlist_id ) {
+		$ret =
+		  $this->{_request}->update( $this->get_link('edit')
+			  || $PLAYLISTS_URI . $this->playlist_id, $content );
 	}
-
-
-	sub add {
-		my ($this,%params) = @_;
-		$this->edit(%params);
+	else {
+		$ret = $this->{_request}->insert( $PLAYLISTS_URI, $content );
 	}
+	return $ret;
+}
 
-	sub add_video {
-		my ($this,%params) = @_;
-		$this->{_request}->clean_namespaces();
-		$this->{_request}->add_namespaces('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
-   	   	$this->{_request}->insert('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId,"<id>$params{videoId}</id>");
-	}
+#TODO: rewrite & move this in YouTube? other package?
 
-	sub delete {
-		my $this = shift;
-		my	$uri = 'http://gdata.youtube.com/feeds/api/users/'.$this->{_dbh}->{channel}.'/playlists/'.$this->playlistId;
-		$this->{_request}->delete($uri,0);
-	}
+#	sub get_videos {
+#		my $this = shift;
 
-	sub delete_video {
-		my ($this,%params) = @_;
+#		my $res = $this->{_request}->get($this->{_feed}->{'content'}->{src} || 'http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId);
 
-		if($params{videoId}) {
-			$params{playListVideoId}=$this->_find_playlist_video_id($params{videoId});
-		}
-		$this ->{_request}->delete('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId.'/'.$params{playListVideoId},0);
+#		$this->{videosInPlaylist} = new WebService::GData::YouTube::Feed($res,$this->{_request})->entry;
+#		return $this->{videosInPlaylist};
+#	}
 
-	}
+#sub add_video {
+#	my ($this,%params) = @_;
+#	   	$this->{_request}->insert('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId,"<id>$params{videoId}</id>");
+#}
+#sub delete_video {
+#	my ($this,%params) = @_;
+#	if($params{videoId}) {
+#		$params{playListVideoId}=$this->_find_playlist_video_id($params{videoId});
+#	}
+#	$this ->{_request}->delete('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId.'/'.$params{playListVideoId},0);
+#}
+#	sub set_video_position {
+#		my ($this,%params) = @_;
+#		if($params{videoId}) {
+#			$params{playListVideoId}=$this->_find_playlist_video_id($params{videoId});
+#		}
+#		$this->{_request}->update('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId.'/'.$params{playListVideoId},"<yt:position>$params{position}</yt:position>");
+#	}
+#	sub _find_playlist_video_id {
+#		my ($this,$videoid) = @_;
 
-	sub set_video_position {
-		my ($this,%params) = @_;
+#		my $id="";
+#		if(!$this->{videosInPlaylist}){
+#			$this->get_videos;
+#		}
+#		foreach my $vid (@{$this->{videosInPlaylist}}){
+#			if($vid->videoId eq $videoid){
+#				$id= (split(':',$vid->id))[-1];
+#			}
+#		}
+#		return $id;
+#	}
 
-		if($params{videoId}) {
-			$params{playListVideoId}=$this->_find_playlist_video_id($params{videoId});
-		}
-		$this->{_request}->clean_namespaces();
-		$this->{_request}->add_namespaces('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
-		$this->{_request}->update('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId.'/'.$params{playListVideoId},"<yt:position>$params{position}</yt:position>");
+"The earth is blue like an orange.";
 
-	}
-
-
-	sub save {
-		my $this = shift;
-
-		my $isPrivate = $this->private==1?'<yt:private/>':'';
-		my $title     = $this->title;	
-		my $summary   = $this->summary;
-		my $keywords  = $this->_keywords_serialize;	
-		my $content = <<XML;
-<title type="text">$title</title>
-<summary>$summary</summary>
-$isPrivate
-$keywords
-XML
-		$this->{_request}->clean_namespaces();
-		$this->{_request}->add_namespaces('xmlns:yt="http://gdata.youtube.com/schemas/2007"');
-
-		if($this->playlistId){
-			$this->{_request}->update('http://gdata.youtube.com/feeds/api/users/'.$this->{_dbh}->{channel}.'/playlists/'.$this->playlistId,$content);
-		}
-		else {
-   	   		$this->{_request}->insert('http://gdata.youtube.com/feeds/api/users/default/playlists',$content);
-		}
-
-	}
+__END__
 
 
-##private###
+=pod
 
-	sub _find_playlist_video_id {
-		my ($this,$videoid) = @_;
+=head1 NAME
 
-		my $id="";
-		if(!$this->{videosInPlaylist}){
-			$this->getVideos;
-		}
-		foreach my $vid (@{$this->{videosInPlaylist}}){
-			if($vid->videoId eq $videoid){
-				$id= (split(':',$vid->id))[-1];
-			}
-		}
-		return $id;
-	}
+WebService::GData::YouTube::Feed::PlaylistLink - playlists meta data (read/write) for data API v2.
 
-	sub _keywords_serialize {
-		my $this = shift;
-		my $categories = $this->category;
-		my @keywords=();
+=head1 SYNOPSIS
 
-		foreach my $category (@$categories){
+    use WebService::GData::YouTube;
+    
+    use constant KEY=>'...';
+        
+    my $auth; 
+    eval {
+        $auth = new WebService::GData::ClientLogin(
+            email=>'...',
+            password=>'...',
+            key=>KEY
+       );
+    };     
+    die $@->code,$@->content if $@;  
+     
+    my $yt = new WebService::GData::YouTube($auth);  
+     
+    #get logged in user playlists
+    
+    my $playlists;
+    eval {
+       $playlists = $yt->get_user_playlists; 
+    };
+    die $@->code,$@->content if $@;    
 
-			if($category->{scheme}=~m/tags/){
-				push @keywords,qq[<category scheme='http://gdata.youtube.com/schemas/2007/tags.cat' term='$category->{term}'/>];
-			}
-		}
-		return join '',@keywords;
-	}
+    #and list them:
+    
+    foreach my $playlist (@$playlists){
+    	
+      print $playlist->title;
+      
+      print $playlist->summary;
+      
+      print $playlist->keywords; 
+      
+      print $playlist->is_private;
+      
+      print $playlist->playlist_id;
+      
+    }
 
-1;
+
+    #erase a specific playlist
+    
+    my $playlist = $yt->playlists;
+       $playlist->playlist_id(q[9ED74863...A2B8]);
+       $playlist->delete;
+ 
+
+   #create a playlist
+
+    my $playlist = $yt->playlists;    
+ 
+    #set information about the playlist
+    
+    $playlist->title('testing something');
+    $playlist->summary('new summary');
+    $playlist->keywords("keyword1,keyword2"); 
+    $playlist->is_private(1);
+    
+    eval {
+        $playlist->save;
+    };
+    die $@->code,$@->content if $@;   
+
+     
+
+
+
+=head1 DESCRIPTION
+
+!DEVELOPER RELEASE! API may change, program may break or be under optimized.
+
+!WARNING! Documentation in progress.
+
+
+I<inherits from L<WebService::GData::Feed::Entry>>.
+
+This package represents a PlaylistLink which contains the meta information about playlists (title,description,keywords,etc). 
+
+If you are logged in you can edit/erase existing playlist metadata,create a new playlist.
+
+Most of the time you will not instantiate this class directly but use the helper in the L<WebService::GData::YouTube> class.
+
+
+=head2 CONSTRUCTOR
+
+
+=head3 new
+
+=over
+
+Create a L<WebService::GData::YouTube::Feed::PlaylistLink> instance. 
+
+=back
+
+B<Parameters>:
+
+=over
+
+=item C<jsonc_playlists_entry_feed:Object> (Optional)
+
+=item C<authorization:Object> (Optional)
+
+or 
+
+=item C<authorization:Object> (Optional)
+
+=back
+
+If an authorization object is set (L<WebService::GData::ClientLogin>), 
+
+it will allow you to access private contents and insert/edit/delete playlists.
+
+=head2 GET METHODS
+
+All the following read only methods give access to the information contained in a playlist feed.
+
+
+=head3 count_hint
+
+
+=head2 GENERAL SET/GET METHODS
+
+All these methods represents the meta data of a playlist but you have read/write access on them.
+
+It is therefore necessary to be logged in programmaticly to be able to use them in write mode 
+(if not, saving the data will not work).
+
+=head3 title
+
+This will be the name of your playlist.
+
+=head3 summary
+
+This will be the explanation of the kind of content contained in this playlist.
+
+=head3 keywords
+
+Keywords representing the playlists. 
+
+=head3 is_private
+
+Only specific person can access this playlist if set to private.
+      
+=head3 playlist_id
+
+The unique id of this playlist (usually required for edit/erase)
+
+
+=head2 QUERY METHODS
+
+These methods actually query the service to save your edits.
+
+You must be logged in programmaticly to be able to use them.
+
+=head3 delete
+
+You must specify the playlist to erase by setting its unique id via playlist_id.
+
+=head3 save
+
+The save method will do an insert if there is no playlist_id or an update if there is one.
+
+
+=head1  CONFIGURATION AND ENVIRONMENT
+
+none
+
+
+=head1  DEPENDENCIES
+
+L<JSON>
+
+L<LWP>
+
+=head1  INCOMPATIBILITIES
+
+none
+
+=head1 BUGS AND LIMITATIONS
+
+If you do me the favor to _use_ this module and find a bug, please email me
+i will try to do my best to fix it (patches welcome)!
+
+=head1 AUTHOR
+
+shiriru E<lt>shirirulestheworld[arobas]gmail.comE<gt>
+
+=head1 LICENSE AND COPYRIGHT
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. 
+
+=cut

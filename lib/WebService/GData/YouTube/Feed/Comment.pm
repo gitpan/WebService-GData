@@ -169,8 +169,6 @@ Most of the time you will not instantiate this class directly but use the commen
 
 Create a L<WebService::GData::YouTube::Feed::Comment> instance. 
 
-=back
-
 B<Parameters>:
 
 =over
@@ -189,10 +187,13 @@ If an authorization object is set (L<WebService::GData::ClientLogin>),
 
 it will allow you to insert new comments.
 
+=back
+
 =head2 INHERITED METHODS
 
 All the following read only methods give access to the information contained in a comment feed entry.
 
+=over 
 
 =head3 etag
 
@@ -208,11 +209,13 @@ All the following read only methods give access to the information contained in 
 
 =head3 title 
 
+=over 
+
+The title is a small part of the content.
+
 =back
-  the title is a small part of the content.
-=over      
-
-
+  
+=back     
 
 =head2 GENERAL GET METHODS
 
@@ -220,48 +223,53 @@ The following method is an helper.
 
 =head3 comment_id
 
-=back
-  It looks into the id to retrieve the comment id.
+=over 
+
+It looks into the id to retrieve the comment id.
  
-=over
+=back
 
 =head2 GENERAL SET/GET METHODS
 
 =head3 content
 
-=back
-  This is the comment itself. The package does not encode,clean the data.
-  YouTube replaces HTML with html entities.
-   
 =over
+
+This is the comment itself. The package does not encode,clean the data.
+YouTube replaces HTML with html entities.
+   
+=back
 
 =head3 video_id
 
-=back
-  The video id to which you want to add a comment.
 =over
+
+The video id to which you want to add a comment.
+  
+=back
 
 =head3 in_reply_to
 
-=back
-  It should be set to the comment id you want to reply to.
-  You can use this method to see if a comment is a response to an other comment.
 =over
+
+It should be set to the comment id you want to reply to.
+You can use this method to see if a comment is a response to an other comment.
+  
+=back
 
 
 =head2 QUERY METHODS
 
 This method actually query the service to save your data.
-
 You must be logged in programmaticly to be able to use them.
 
 =head3 save
 
-=back
-
- The L<save> method will do an insert only if a video_id is set.
-
 =over
+
+The save method will do an insert only if a video_id is set.
+
+=back
 
 
 =head1  CONFIGURATION AND ENVIRONMENT
