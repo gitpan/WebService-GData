@@ -98,7 +98,7 @@ sub _media {
 
 sub media_player {
 	my $this = shift;
-	$this->_media->player->url;
+	$this->_media->player({})->url;
 }
 
 sub aspect_ratio {
@@ -109,12 +109,12 @@ sub aspect_ratio {
 sub video_id {
 	my ( $this, $id ) = @_;
 	$this->_media->videoid($id) if $id;
-	ref $this->_media->videoid ? undef : $this->_media->videoid;
+	ref $this->_media->videoid ? '': $this->_media->videoid;
 }
 
 sub duration {
 	my $this = shift;
-	$this->_media->duration->seconds;
+	$this->_media->duration({})->seconds;
 }
 
 sub content {
@@ -156,20 +156,20 @@ sub category {
 sub description {
 	my $this = shift;
 	if ( @_ == 1 ) {
-		$this->_media->description->text( $_[0] );
-		$this->_media->description->type("plain");
+		$this->_media->description( $_[0] );
+		$this->_media->description({})->type("plain");
 	}
-	$this->_media->description->text || '';
+	$this->_media->description || '';
 }
 
 sub title {
 	my $this = shift;
 	if ( @_ == 1 ) {
-		$this->_media->title->text( $_[0] );
+		$this->_media->title( $_[0] );
 
-		$this->_media->title->type("plain");
+		$this->_media->title({})->type("plain");
 	}
-	$this->_media->title->text || '';
+	$this->_media->title || '';
 }
 
 sub keywords {
@@ -238,7 +238,6 @@ sub access_control {
 	}
 	if ( @_ == 1 ) {
 
-		#first check if the action is already set and if so update
 		return $this->_access_control->action( $_[0] )->[0];
 
 	}

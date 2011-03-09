@@ -11,15 +11,39 @@ use LWP;
 
 #the base class specifies the basic get/post/insert/update/delete methods
 
-our $VERSION = 0.02_02;
+our $VERSION = 0.02_03;
 
+sub __set {
+    my ($this,$func,$val)=@_;
+    die new WebService::GData::Error('forbidden_method_call',
+        'agent() is used internally.' ) if $func eq 'agent';    
+
+    if(my $code = $this->{__UA__}->can($func)){
+    	$code->($this->{__UA__},$val);
+    	return $this;
+    }
+    die new WebService::GData::Error('unknown_method_call',
+        $func.'() is not a LWP::UserAgent Method.' );
+}
+
+sub __get {
+	my ($this,$func)=@_;
+    die new WebService::GData::Error('forbidden_method_call',
+        'agent() is used internally.' ) if $func eq 'agent';
+	my $code = $this->{__UA__}->can($func);
+	return $code->($this->{__UA__}) if $code;
+    die new WebService::GData::Error('unknown_method_call',
+        $func.'() is not a LWP::UserAgent Method.' );
+}
 sub __init {
     my ( $this, %params ) = @_;
 
+    $this->{__COMPRESSION__}= FALSE;
     $this->{__OVERRIDE__}   = FALSE;
     $this->{__AUTH__}       = undef;
     $this->{__URI__}        = undef;
-    $this->{__UA__}         = undef;
+    $this->{__UA__}         = LWP::UserAgent->new;
+    $this->{__UA_NAME__}    = '';
     $this->query( new WebService::GData::Query() );
 
     $this->auth( $params{auth} )
@@ -31,10 +55,7 @@ sub auth {
 
     if ( _is_auth_object_compliant($auth) ) {
         $this->{__AUTH__} = $auth;
-
-        #update the ua agent string
-        $this->{__UA__}->agent( $auth->source() . ' ' . _ua_base_name() )
-          if ( $this->{__UA__} );
+        $this->_set_ua_name;
     }
     return $this->{__AUTH__};
 }
@@ -59,16 +80,32 @@ sub override_method {
     }
 }
 
-sub get_user_agent_name {
-    my $this = shift;
-    return $this->{__UA__}->agent if ( $this->{__UA__} );
+sub enable_compression {
+    my ( $this, $compression ) = @_;
+
+    return $this->{__COMPRESSION__} if ( !$compression );
+
+    if ( $compression eq TRUE ) {
+        $this->{__COMPRESSION__} = TRUE;
+    }
+    if ( $compression eq FALSE ) {
+        $this->{__COMPRESSION__} = FALSE;
+    }
+    $this->_set_ua_name;
+}
+
+sub user_agent_name {
+    my ($this,$name) = @_;
+    return $this->{__UA__}->agent if not defined $name;
+    $this->{__UA_NAME__}=$name;
+    $this->_set_ua_name;
+    
 }
 
 sub get_uri {
     my $this = shift;
     return $this->{__URI__};
 }
-
 
 
 sub get {
@@ -143,21 +180,29 @@ sub delete {
 
 #methods#
 
+private _set_ua_name => sub {
+    my ( $this ) = @_;	
+    my $custom = $this->{__UA_NAME__} ? $this->{__UA_NAME__}.' ' : '';
+    my $name = $custom._ua_base_name();
+       $name = $this->auth->source . ' ' . $name if $this->auth;
+       $name.= ' (gzip)' if $this->enable_compression eq TRUE;
+    $this->{__UA__}->agent($name);
+};
+
 private _request => sub {
     my ( $this, $req ) = @_;
 
-    if ( !$this->{__UA__} ) {
-        my $name = _ua_base_name();
-        if ( $this->auth ) {
-            $name = $this->auth->source . ' ' . $name;
-        }
-        $this->{__UA__} = _create_ua($name);
+    $this->_set_ua_name();
+   
+    if($this->enable_compression eq TRUE) {
+    	my $compressions = HTTP::Message::decodable();
+        $this->{__UA__}->default_header('Accept-Encoding' => $compressions) if $compressions=~m/gzip/;
     }
 
     my $res = $this->{__UA__}->request($req);
 
     if ( $res->is_success ) {
-        return $res->content();
+        return $this->enable_compression eq TRUE ? $res->decoded_content():$res->content();
     }
     else {
         die new WebService::GData::Error( $res->code, $res->content );
@@ -210,12 +255,6 @@ private _ua_base_name => sub {
     return __PACKAGE__ . "/" . $VERSION;
 };
 
-private _create_ua => sub {
-    my $name = shift;
-    my $ua   = LWP::UserAgent->new;
-    $ua->agent($name);
-    return $ua;
-};
 
 private _is_object => sub {
     my $val = shift;
@@ -364,6 +403,25 @@ Example:
     my $base   = new WebService::GData::Base(auth=>$auth);
 	
 =back
+
+=head2 PROXY METHODS
+
+Any call to a method that is not defined in this package will be dispatched to the L<LWP::UserAgent> instance.
+In getter context, they send back the WebService::GData::Base instance.
+
+Example:
+
+    use WebService::GData::Base;
+
+    my $base = new WebService::GData::Base();
+    
+    #LWP::UserAgent timeout is set to 15 
+    #and will look after environment variables for proxy settings
+       $base->timeout(15)->env_proxy; 
+       
+=back
+
+
 
 =head2 SETTER/GETTER METHODS
 
@@ -544,6 +602,49 @@ Example:
 	   
 =back
 
+=head3 enable_compression
+
+=over
+
+Set/get the compression mode. 
+
+Depending on your perl configuration, you might be able to handle data compress using gzip.
+By setting this method to TRUE, the data coming from Google servers will be gzipped and unzipped for you as a convenience.
+It may offer a way to limit the number of bytes exchanged over the network but requires more calculation on your side.
+By default, compression mode is not enabled.
+
+
+B<Parameters>
+
+=over
+
+=item C<none> - use as a getter
+
+=item C<true_or_false:Scalar> - use as a setter: WebService::GData::Constants::TRUE or WebService::GData::Constants::FALSE (default)
+
+=back
+
+B<Returns> 
+
+=over 
+
+=item C<void> in a setter context. 
+
+=item C<compression_state:Scalar> in a getter context, either WebService::GData::Constants::TRUE or WebService::GData::Constants::FALSE.
+
+=back
+
+Example:
+
+    use WebService::GData::Constants qw(:all);
+    use WebService::GData::Base;
+
+    $base->enable_compression(TRUE);
+    
+    my $ret = $base->get($url);#the data was gzipped and ungzipped if possible
+       
+=back
+
 
 =head3 get_uri
 
@@ -581,18 +682,20 @@ Example:
 =back
 
 
-=head3 get_user_agent_name
+=head3 user_agent_name
 
 =over
 
-Get the user agent name setted. 
+Set or get the user agent name set. 
 
 
 B<Parameters>
 
 =over
 
-=item C<none> - getter only
+=item C<none> - getter 
+
+=item C<name:Scalar> - set the user agent name 
 
 =back
 
@@ -600,8 +703,7 @@ B<Returns>
 
 =over 
 
-=item C<uri:Scalar> in a getter context, either undef if no query has been made or the current package name/version. 
-if an auth object has been set, it will be auth->source current package name/version.
+=item C<user_agent_name:Scalar> the full user agent name when used in a getter context 
 
 =back
 
@@ -613,11 +715,13 @@ Example:
 
     $base->get('http://www.example.com?v=2');
 	
-    $base->get_user_agent_name();#WebService::GData::Base/2
+    $base->user_agent_name();#WebService::GData::Base/2
 	
     $base->auth($auth);#where $auth->source eq 'MyApp-MyCompany-ID'
 
     $base->get_user_agent_name();#MyApp-MyCompany-ID WebService::GData::Base/2
+    
+    $base->get_user_agent_name("my app");#MyApp-MyCompany-ID my app WebService::GData::Base/2
 	   
 =back
 

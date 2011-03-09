@@ -66,8 +66,9 @@ sub keywords {
 		#reset tags
 		my $old = $this->{_category};
 
-		$this->_entity->swap( $old,
-			$this->{_category} = new WebService::GData::Collection() );
+        $this->{_category} = new WebService::GData::Collection();
+
+		$this->_entity->swap( $old,$this->{_category});
 
 		my @tags = split( /,/, $keywords );
 

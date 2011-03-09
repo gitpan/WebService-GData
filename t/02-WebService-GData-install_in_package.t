@@ -1,4 +1,4 @@
-use Test::More tests => 11;
+use Test::More tests => 10;
 use WebService::GData;
 use t::MyWeb;
 use Data::Dumper;
@@ -25,7 +25,6 @@ $web->firstname('marley');
 
 ok($web->firstname eq 'marley','$web->firstname is properly reset.');
 
-ok("$web" eq Dumper($web),'string overload is working fine.');
 
 eval {
 $web->this_function_is_private();

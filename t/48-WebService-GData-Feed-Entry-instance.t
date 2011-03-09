@@ -39,7 +39,7 @@ ok(
     "content_src properly set."
 );
 
-ok( $entry->content->isa('WebService::GData::Node::Atom::Content'),
+ok( $entry->content({})->isa('WebService::GData::Node::Atom::Content'),
     "content properly set." );
 
 ok( $entry->author->[0]->name eq "TheYoungTurks", "author properly set." );

@@ -1,5 +1,44 @@
 Revision history for Perl extension WebService::GData.
 
+0.04_02  2011/01/30 21:44
+    
+    - NON BACKWARD COMPATIBLE
+    
+      - You must pass a hash ref in order to access attributes for nodes that contain both text&attributes 
+        ie: $feed->generator("perl");
+            $feed->generator({})->uri("http://www.perl.org")
+            $feed->content({})->src or $feed->content_src
+      - WebService::GData::Base 
+        get_user_agent_name is now user_agent_name and works as both getter/setter
+
+    - BUG FIX
+    
+       - ClientLogin was warning for the YouTube key not being set when used with an other service.
+         #reported by Larry
+       - force Test::Mock::LWP is compulsory,again...
+       - Reorganized the tests a bit
+        
+    - NEW
+      - new tests
+      - Atom Title node has now the type attribute
+      - The default __to_string does not use Data::Dumper anymore(simple stub).
+      - GData doc updated 
+      - The XML serializer only outputs elements set (instead of empty tags)
+      - WebService::GData::Base 
+        - enable_compression will try to get gzip data from Google if your environment allows it
+        - unknown methods calls are first dispatch to the user agent instance before dying (agent method is forbidden)
+      - WebService::GData::YouTube 
+        - connection returns the WebService::GData::Base instance
+      
+    - NEXT RELEASE
+    
+      - start mocking some of the live tests I use on my side...
+      - lazy up thing more and get rid of old variables that take up memory for nothing...
+      - add a bit of doc for YouTube package
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.04_01  2011/01/23 22:44
         
     - NEW

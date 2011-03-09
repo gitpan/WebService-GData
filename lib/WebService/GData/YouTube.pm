@@ -16,7 +16,7 @@ use WebService::GData::YouTube::Feed::Comment;
 our $PROJECTION = WebService::GData::YouTube::Constants::PROJECTION;
 our $BASE_URI   = WebService::GData::YouTube::Constants::BASE_URI;
 
-our $VERSION    = 0.01_08;
+our $VERSION    = 0.01_09;
 
 sub __init {
 	my ( $this, $auth ) = @_;
@@ -29,6 +29,11 @@ sub __init {
 	my $query = new WebService::GData::YouTube::Query();
 	$query->key( $auth->key ) if ($auth);
 	$this->query($query);
+}
+
+sub connection {
+    my ( $this ) = @_;
+    return $this->{_request};
 }
 
 sub query {
@@ -239,9 +244,9 @@ WebService::GData::YouTube - Access YouTube contents(read/write) with API v2.
     my $videos  = $yt->get_top_rated_videos('JP','Comedy');
 
     foreach my $video (@$videos) {
-        $video->video_id;
-        $video->title;
-        $video->content;
+        say $video->video_id;
+        say $video->title;
+        say $video->content;
     }
 
     #connect to a YouTube account
@@ -326,8 +331,6 @@ See also:
 
 =back
 
-
-
 =back
 
 
@@ -377,7 +380,7 @@ Example:
     #give write access with a $auth object that you created
     my $yt = new WebService::GData::YouTube($auth);
 
-=over
+=back
 
 
 =head2 GENERAL METHODS
@@ -447,6 +450,7 @@ B<Returns>
 
 =back
 
+=back
 
 =head3 base_query
 
@@ -469,6 +473,38 @@ B<Returns>
 =item C<url:Scalar> - default to ?alt=json&prettyprint=false&strict=true
 
 =back
+
+=back
+
+=head3 connection
+
+=over
+
+Get the connection handler (WebService::GData::Base by default).
+Mostly usefull to set connector settings.
+
+B<Parameters>
+
+=over 4
+
+=item C<none>
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item  C<object:Object> the connector instance,by default L<WebService::GData::Base>.
+
+=back
+
+Example:
+
+    use WebService::GData::YouTube;
+    
+    my $yt   = new WebService::GData::YouTube();
+       $yt->connection->timeout(100)->env_proxy;
 
 =back
 
@@ -739,7 +775,7 @@ Example:
     my $comments = $yt->get_comments_for_video_id('Xz2eFFexA');
     
     foreach my $comment (@$comments){
-    	$comment->content;
+    	say $comment->content;
     }
 
 =back

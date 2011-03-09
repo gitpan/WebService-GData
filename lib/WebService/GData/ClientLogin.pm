@@ -16,7 +16,7 @@ WebService::GData::install_in_package(
         my $subname = shift;
         return sub {
             my $this = shift;
-            $this->{$subname};
+            $this->{$subname}
           }
     }
 );
@@ -76,7 +76,7 @@ sub set_authorization_headers {
 #youtube
 sub set_service_headers {
     my ( $this, $subject, $req ) = @_;
-    $req->header( 'X-GData-Key' => 'key=' . $this->key );
+    $req->header( 'X-GData-Key' => 'key=' . $this->key ) if defined $this->key;
 }
 
 #private

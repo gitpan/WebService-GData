@@ -31,9 +31,11 @@ sub encode {
     $xml .= ' xmlns="' . $this->namespace_uri . '"' if ($is_root);
 
   
+    my @attrs = ();
+    
     #get all the attributes for this node and serialize them
     if ( @{ $this->attributes } > 0 ) {
-        my @attrs = ();
+        
         foreach my $attr ( @{ $this->attributes } ) {
             my $val = $this->{$attr};
             if ($val){
@@ -51,15 +53,17 @@ sub encode {
                 } 
             }
         }
-        $xml .= ' ' . join( ' ', @attrs ) if ( @attrs > 0 );
+        $xml .= ' ' . join( ' ', @attrs ) if @attrs;
     }
 
     if ( $this->is_parent ) {
+    	
+    	return "" if !@attrs && !$this->{text} && !@{$this->child};
 
         my $xmlchild   = "";
         
         #append the text first
-        $xmlchild .= $this->{text} if ( $this->{text} );
+        $xmlchild .= $this->{text} if $this->{text};
         
         #serialize all the children
         foreach my $child (@{$this->child}) {
@@ -71,9 +75,11 @@ sub encode {
             }
             
             #we append the namespace prefix and uri to the root
-            __add_namespace_uri($child,$owner) if ($owner);
+            __add_namespace_uri($child,$owner) if $owner;
  
         }
+        
+        return "" if !@attrs && !$this->{text} && !length($xmlchild);
         
         if($is_root) {
             #gather all the namespaces
@@ -104,13 +110,16 @@ sub __add_namespace_uri {
 
     #Collection is an array of identic nodes, so look for the first node only
     if ( $child->isa('WebService::GData::Collection') ) {
-         $namespace_prefix = $child->[0]->namespace_prefix;
-         $uri       = $child->[0]->namespace_uri;
+    	 my $node          = $child->[0];
+    	 return if !ref $node;
+         $namespace_prefix = $node->namespace_prefix;
+         $uri              = $node->namespace_uri;
     }
     #if this child is an Entity, look for the root
     if ( $child->isa('WebService::GData::Node::AbstractEntity') ) {
-          $namespace_prefix = $child->_entity->namespace_prefix;
-          $uri       = $child->_entity->namespace_uri;
+    	  my $node          = $child->_entity;
+          $namespace_prefix = $node->namespace_prefix;
+          $uri              = $node->namespace_uri;
     }
 
     $namespaces->{ 'xmlns'. ( $namespace_prefix ? ':' . $namespace_prefix : "" ) . '="'. $uri. '"' } = 1

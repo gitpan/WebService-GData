@@ -67,9 +67,9 @@ ok(@{$entry->category} ==30,'entry category properly set.');
 
 ok($entry->category->[3]->term eq 'young','entry category third element properly set.');
 
-ok($entry->content->src eq "http://www.youtube.com/v/qWAY3YvHqLE?f=videos&c=ytapi-google-jsdemo&app=youtube_gdata",'entry content src properly set.');
+ok($entry->content({})->src eq "http://www.youtube.com/v/qWAY3YvHqLE?f=videos&c=ytapi-google-jsdemo&app=youtube_gdata",'entry content src properly set.');
 
-ok($entry->content->type eq "application/x-shockwave-flash",'entry content type properly set.');
+ok($entry->content({})->type eq "application/x-shockwave-flash",'entry content type properly set.');
 
 ok($entry->content_source eq "http://www.youtube.com/v/qWAY3YvHqLE?f=videos&c=ytapi-google-jsdemo&app=youtube_gdata",'entry content_source properly set.');
 

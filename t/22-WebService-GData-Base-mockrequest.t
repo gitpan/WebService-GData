@@ -1,4 +1,5 @@
-use Test::More tests=>20;
+use Test::More tests=>24;
+
 use Test::Mock::LWP;
 
 my %RHeaders = ();
@@ -48,6 +49,7 @@ use WebService::GData::Base;
 use WebService::GData::Constants qw(:all);
 
 my $base = new WebService::GData::Base();
+
 $base->query->alt('atom');
 my $resp = $base->get('http://www.example.com/?alt=json');
 
@@ -67,7 +69,7 @@ ok(
 );
 
 ok(
-    $base->get_user_agent_name eq 'WebService::GData::Base/'
+    $base->user_agent_name eq 'WebService::GData::Base/'
       . $WebService::GData::Base::VERSION,
     'the user agent is set to the package name and version.'
 );
@@ -87,7 +89,39 @@ $base->auth($mockauth);
 ok( ref( $base->auth ) eq 'MockAuth', 'auth object as been properly set.' );
 
 ok(
-    $base->get_user_agent_name eq $mockauth->source
+    $base->user_agent_name eq $mockauth->source
+      .' '. ref($base) . '/'
+      . $WebService::GData::Base::VERSION,
+    'the user agent name is properly set.'
+);
+
+$base->enable_compression('true');
+ok(
+    $base->user_agent_name eq $mockauth->source
+      .' '. ref($base) . '/'
+      . $WebService::GData::Base::VERSION.' (gzip)',
+    'the user agent name is properly set.'
+);
+
+$base->enable_compression('false');
+ok(
+    $base->user_agent_name eq $mockauth->source
+      .' '. ref($base) . '/'
+      . $WebService::GData::Base::VERSION,
+    'the user agent name is properly set.'
+);
+$base->user_agent_name('bot');
+$base->enable_compression('true');
+ok(
+    $base->user_agent_name eq $mockauth->source
+      .' bot '. ref($base) . '/'
+      . $WebService::GData::Base::VERSION.' (gzip)',
+    'the user agent name is properly set.'
+);
+$base->user_agent_name('');
+$base->enable_compression('false');
+ok(
+    $base->user_agent_name eq $mockauth->source
       .' '. ref($base) . '/'
       . $WebService::GData::Base::VERSION,
     'the user agent name is properly set.'

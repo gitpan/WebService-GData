@@ -2,11 +2,10 @@ package WebService::GData;
 use 5.008008;
 use strict;
 use warnings;
-use Data::Dumper;
 use Carp;
 use overload '""' => "__to_string", '==' => 'equal', fallback => 1;
 
-our $VERSION = 0.04_01;
+our $VERSION = 0.04_02;
 
 our $AUTOLOAD;
 
@@ -37,7 +36,7 @@ sub __init {
 }
 
 sub __to_string {
-	return Dumper(shift);
+	return shift;
 }
 
 sub equal {
@@ -107,7 +106,7 @@ sub AUTOLOAD {
 	$func =~ s/.*:://;
 	my $this = shift;
 
-	return if ( $func =~ m/[A-Z]+/ );
+	return if $func =~ m/[A-Z]+/;
 
 	return $this->__set( $func, @_ ) if @_ >= 1;
 
@@ -192,10 +191,6 @@ WebService::GData - Google data protocol v2.
     my $object = new WebService::MyService(name=>'test');
 
     $object->name;#test
-
-    #overloaded string will dump the object with Data::Dumper;
-	
-    print $object;#$VAR1 = bless( { 'name' => 'test' }, 'WebService::MyService' );
     
     #__set and __get are used to create automaticly getters and setters
     $object->age(24);
@@ -316,8 +311,8 @@ Default implementation:
 
 =over
 
-Overload the stringification quotes and display a dump of the instance by using L<Data::Dumper>. 
-You should overwrite it should you need to create a specific output.
+Overload the stringification quotes and return the object. 
+You should overwrite it to create a specific output (Dump the object, display a readable representation...).
 
 =back
 

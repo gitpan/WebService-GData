@@ -8,11 +8,10 @@ ok( $feed->title eq 'YouTube Videos', "Title properly set." );
 
 $feed->title("new title");
 
-ok( $feed->id eq "tag:youtube.com,2008:videos",
-    "id properly set." );
-
 ok( $feed->title eq 'new title', "Title properly set." );
 
+ok( $feed->id eq "tag:youtube.com,2008:videos",
+    "id properly set." );
 
 ok( $feed->etag eq 'W/\'CkICQX45cCp7ImA9Wx5XGUQ.\'', "etag properly set." );
 
@@ -28,7 +27,7 @@ ok( $feed->author->[0]->name eq 'YouTube', "author properly set." );
 ok( $feed->category->[0]->scheme eq 'http://schemas.google.com/g/2005#kind',
     "category properly set." );
     
-ok($feed->generator->uri eq 'http://gdata.youtube.com/','generator uri is properly set');
+ok($feed->generator({})->uri eq 'http://gdata.youtube.com/','generator uri is properly set');
 ok($feed->logo eq 'http://www.youtube.com/img/pic_youtubelogo_123x63.gif','generator uri is properly set');
 
 $feed->logo('gif');
@@ -95,11 +94,7 @@ sub get_feed {
                '$t'=> "YouTube data API",
                "version"=> "2.0",
                "uri"=> "http://gdata.youtube.com/"
-            },
-            'openSearch$totalResults' => { '$t' => 1000000 },
-            'openSearch$startIndex'   => { '$t' => 1 },
-            'openSearch$itemsPerPage' => { '$t' => 25 },
-            'entry' => []   #erased as there are implemented in each sub classes
+            }
         }
     };
 }

@@ -18,15 +18,14 @@ sub ARRAY {
 	$this->{ARRAY};
 	
 }
- 
+
 sub FETCH {
     my ($this,$index) = @_;
-    $this->pointer=$index;
-    return undef if($this->pointer >= $this->total);
-   if(my $code = $this->{GETTER}){
-       use Data::Dumper;
+    $this->pointer=$index;   
+    return undef if($this->pointer >= $this->total && $this->total!=0);
+
+    if(my $code = $this->{GETTER}){
        $this->ARRAY->[$this->pointer]=$code->($this->ARRAY->[$this->pointer]);
-       
     }
 
     return $this->ARRAY->[$this->pointer];

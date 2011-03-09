@@ -4,8 +4,6 @@ author:
   - 'shiriru <shirirulestheworld[arobas]gmail.com>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
-  Test::Mock::LWP: 0.05
-  Test::More: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
@@ -24,9 +22,11 @@ recommends:
 requires:
   JSON: 2
   LWP: 0
+  Test::Mock::LWP: 0.05
+  Test::More: 0
   perl: 5.8.8
 resources:
   bugtracker: http://rt.cpan.org
   license: http://dev.perl.org/licenses/
   repository: http://code.google.com/p/perl-gdata-youtube-api-v2/source/browse/
-version: 0.0401
+version: 0.0402

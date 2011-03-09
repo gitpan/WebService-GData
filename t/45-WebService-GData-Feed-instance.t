@@ -42,6 +42,7 @@ ok( $feed->author->[0]->name eq 'YouTube', "author properly set." );
 ok( $feed->category->[0]->scheme eq 'http://schemas.google.com/g/2005#kind',
     "category properly set." );
 
+
 sub get_feed {
 
     return {

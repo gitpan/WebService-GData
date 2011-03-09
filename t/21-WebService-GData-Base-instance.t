@@ -1,4 +1,4 @@
-use Test::More tests => 15;
+use Test::More tests => 16;
 use WebService::GData::Base;
 use WebService::GData::Constants qw(:all);
 
@@ -55,10 +55,18 @@ ok(
     q[no uri by default.]
 );
 
+$base->timeout(100);
+ok($base->timeout eq 100, 'unknown method calls proxied to lwp::useragent properly.');
+
+eval {
+    $base->agent();
+};
+my $er = $@;
 ok(
-    !$base->get_user_agent_name,
-    q[no user agent name by default.]
+    $er->code eq 'forbidden_method_call',
+    q[setting the agent directly throw an error.]
 );
+
 eval {
     $base->post();
 };
