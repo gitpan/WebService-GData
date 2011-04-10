@@ -4,6 +4,7 @@ use WebService::GData 'private';
 use base 'WebService::GData::Feed::Entry';
 use WebService::GData::Constants qw(:all);
 use WebService::GData::YouTube::Constants qw(:all);
+use WebService::GData::YouTube::StagingServer ();
 use WebService::GData::Node::Atom::Category();
 use WebService::GData::Collection();
 
@@ -11,7 +12,9 @@ our $VERSION = 0.01_02;
 
 our $PROJECTION = WebService::GData::YouTube::Constants::PROJECTION;
 our $BASE       = WebService::GData::YouTube::Constants::BASE_URI;
-
+if(WebService::GData::YouTube::StagingServer->is_on){
+  $BASE         = STAGING_BASE_URI;
+}
 our $PLAYLISTS_URI = $BASE . $PROJECTION . '/users/default/playlists/';
 #####READ##############
 

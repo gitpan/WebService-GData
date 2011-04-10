@@ -1,5 +1,48 @@
 Revision history for Perl extension WebService::GData.
 
+0.04_03  2011/03/10 19:49
+
+    - NON BACKWARD COMPATIBLE
+    
+      - WebService::GData::YouTube
+        get_watch_on_mobile_videos is not supported anymore by YouTube
+        
+    - NEW
+    
+     YOUTUBE RELATED
+     
+      - WebService::GData::YouTube
+         - 2 new standard feeds: most_shared and on_the_web.
+         - new method:get_user_profile to access user profile information
+         
+      - WebService::GData::YouTube::Query
+         - caption parameter should now be set to either true or false (not setting a value will revert to true)    
+           
+      - WebService::GData::YouTube::Feed::Video
+        - restriction method added to handle media:restriction tag
+		- denied_countries is a shortcut sending back the list of countries that are denied access to the video
+		
+      - new WebService::GData::YouTube::StagingServer 
+        - switch to staging server
+      
+      - new WebService::GData::YouTube::Feed::UserProfile
+        - get information about a user 
+           
+      - WebService::GData::Node::Media::GroupContent
+        - added the Restriction tag
+        - force Collection context for some tags(content thumbnails restriction,etc)
+        
+      - new tests
+      
+    - NEXT RELEASE
+    
+      - start mocking some of the live tests I use on my side...
+      - lazy up thing more and get rid of old variables that take up memory for nothing...
+      - add a bit of doc for YouTube package
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.04_02  2011/01/30 21:44
     
     - NON BACKWARD COMPATIBLE

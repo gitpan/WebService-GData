@@ -5,12 +5,18 @@ use base 'WebService::GData::Feed::Entry';
 use WebService::GData::Constants qw(:all);
 use WebService::GData::YouTube::Constants qw(:all);
 use WebService::GData::Node::Atom::Link();
-
-our $VERSION = 0.01_03;
+use WebService::GData::YouTube::StagingServer ();
+our $VERSION = 0.01_04;
 
 our $BASE_URI = BASE_URI . PROJECTION . '/videos/';
-
+our $WRITE_BASE_URI = $BASE_URI;
 our $RESPONSE_REL  = API_DOMAIN_URI . q[schemas/2007#in-reply-to];
+
+if(WebService::GData::YouTube::StagingServer->is_on){
+  $WRITE_BASE_URI        = STAGING_BASE_URI . PROJECTION . '/videos/';  
+}
+
+
 our $RESPONSE_TYPE = q[application/atom+xml];
 
 sub __init {
@@ -76,7 +82,7 @@ sub save {
 			  ));
 		}
 		my $content= XML_HEADER . $this->serialize();
-		my $ret =$this->{_request}->insert( $BASE_URI . $this->video_id . '/comments/', $content );
+		my $ret =$this->{_request}->insert( $WRITE_BASE_URI . $this->video_id . '/comments/', $content );
 	}
 }
 

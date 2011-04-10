@@ -1,4 +1,4 @@
-use Test::More tests => 39;
+use Test::More tests => 43;
 use WebService::GData::YouTube::Feed::Video;
 use t::JSONResponse;
 use JSON;
@@ -115,6 +115,18 @@ ok(
 
 ok( $entry->location eq "25.482952117919922 32.34375",
     'location is properly set.' );
+
+ok( $entry->restriction->[0]->relationship eq "deny",
+    'restriction relationship is properly set.' );
+
+is( $entry->restriction->[0]->text, 'AD AE AF AG AI AL AM AN AO AQ AR AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BM BN BO BR BS BT',
+    'restriction country list is properly set.' );
+
+is( $entry->denied_countries, 'AD AE AF AG AI AL AM AN AO AQ AR AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BM BN BO BR BS BT',
+    'restriction country list is properly set with denied_countries.' );
+
+is( $entry->restriction->[0]->type, 'country',
+    'restriction type is properly set.' );
 
 ok(
     $entry->media_player eq

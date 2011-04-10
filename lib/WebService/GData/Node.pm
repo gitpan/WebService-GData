@@ -330,9 +330,9 @@ Example:
 
 =head3 __set/__get
 
-=over
-
 The attributes setter/getters and the text method are generated on the fly.
+
+=over
 
 =item * you can use either hyphen base notation or camelCase notation.
 
@@ -352,6 +352,8 @@ Example:
     #or
     $feedlink->count_hint;
 
+=back
+
 =head2 METHODS
 
 =head3 child
@@ -363,7 +365,6 @@ You can not set the instance as a child of itself.
 The child method checks against the memory slot of the object and will return the instance without setting the object 
 if it appears to be the same.
 
-=back
 
 B<Parameters>
 
@@ -434,7 +435,7 @@ Example:
 	   
 =back
 
-=head 2 STATIC GETTER METHODS
+=head2 STATIC GETTER METHODS
 
 The following methods are installed by default in the package subclassing this class.
 You should set their value via the C<set_meta> method (see below).
@@ -451,7 +452,6 @@ You should set their value via the C<set_meta> method (see below).
 
 =head3 extra_namespaces
 
-	  
 
 =head2 INHERITANCE
 
@@ -475,7 +475,7 @@ B<Parameters>
 
 =item C<args::Hash> 
 
-=over
+=over 4
 
 =item B<namespace_uri:Scalar> - the namespace uri. Most of the time a web url ...
 
@@ -490,11 +490,11 @@ the key is the namespace_prefix and the value the namespace_uri.
 
 =item B<is_parent:Int> - specify if the node can accept children, including text node. Default: 1 (true),0 if not.
 
+=back
 
 =back
 
 B<Returns> install the methods in the package.
-
 
 =over 
 

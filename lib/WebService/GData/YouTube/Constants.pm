@@ -2,15 +2,17 @@ package WebService::GData::YouTube::Constants;
 use strict;
 use warnings;
 
-our $VERSION = 1.01;
+our $VERSION = 1.02;
 
 use constant {
 
     PROJECTION        => 'api',
     BASE_URI          => 'http://gdata.youtube.com/feeds/',
+    STAGING_BASE_URI  => 'http://stage.gdata.youtube.com/feeds/',
     API_DOMAIN_URI    => 'http://gdata.youtube.com/',
+    STAGING_API_DOMAIN_URI =>'http://stage.gdata.youtube.com/',
     UPLOAD_BASE_URI   => 'http://uploads.gdata.youtube.com/feeds/',
-    
+    STAGING_UPLOAD_BASE_URI=>'http://uploads.stage.gdata.youtube.com/feeds/',
     
     YOUTUBE_NAMESPACE => 'xmlns:yt="http://gdata.youtube.com/schemas/2007"',
 
@@ -41,7 +43,7 @@ use constant {
     DURATION      => 'duration'
 };
 
-my @general   = qw(PROJECTION BASE_URI UPLOAD_BASE_URI API_DOMAIN_URI);
+my @general   = qw(PROJECTION BASE_URI UPLOAD_BASE_URI API_DOMAIN_URI STAGING_BASE_URI STAGING_UPLOAD_BASE_URI STAGING_API_DOMAIN_URI);
 my @namespace = qw(YOUTUBE_NAMESPACE);
 my @format    = qw(MOBILE_H263 H263 MPEG4 MOBILE_MPEG4 EMBEDDABLE);
 my @time      = qw(TODAY WEEK MONTH ALL_TIME);
@@ -115,7 +117,17 @@ The default projection used is "api".
 
 =head3 BASE_URI
 
+=head3 API_DOMAIN_URI
+
 =head3 UPLOAD_BASE_URI
+
+Below are the constants used to switch to the youtube staging server:
+
+=head3 STAGING_BASE_URI
+
+=head3 STAGING_API_DOMAIN_URI
+
+=head3 STAGING_UPLOAD_BASE_URI
 
 
 I<import with :general>

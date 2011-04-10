@@ -88,7 +88,7 @@ private _get_feed_type => sub {
 
     if ( $this->{_category} || $this->{_feed}->{entry}->{category} ) {
 
-        $feedTypeString = $this->{_category}->[0]->term
+        $feedTypeString = $this->{_category}->[0]->{term}
           || $this->{_feed}->{entry}->{category}->[0]->{term};
     }
 

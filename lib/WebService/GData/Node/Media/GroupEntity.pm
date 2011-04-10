@@ -9,49 +9,39 @@ use WebService::GData::Node::Media::Keywords();
 use WebService::GData::Node::Media::Player();
 use WebService::GData::Node::Media::Title();
 use WebService::GData::Node::Media::Thumbnail();
+use WebService::GData::Node::Media::Restriction();
 use WebService::GData::Node::PointEntity();
 use WebService::GData::Collection();
 
-our $VERSION = 0.01_01;
-my $serializable =[qw(category description keywords title)];
-my $nodes        =[qw(credit player content thumbnail)];
+our $VERSION = 0.01_02;
+
+my $collections  = [qw(category restriction thumbnail credit content)];
+my $nodes        = [qw(player title description keywords)];
 
 sub __init {
 	my ($this,$params) = @_;
 
 	$this->_entity(new WebService::GData::Node::Media::Group());
-    foreach my $node (@$serializable){
-        $this->{'_'.$node}= $this->__node_factory($node,$params);
-    
+    foreach my $node (@$collections){
+        $this->{'_'.$node}= $this->__node_factory($node,$params,1);
         $this->_entity->child($this->{'_'.$node});
-
     }	
     foreach my $node (@$nodes){
         $this->{'_'.$node}= $this->__node_factory($node,$params);
+        $this->_entity->child($this->{'_'.$node});
     }
 }
 
 sub __node_factory {
-    my($this,$node,$params)=@_;
+    my($this,$node,$params,$collection)=@_;
     my $class = 'WebService::GData::Node::Media::'."\u$node";
     my $data  = $params->{'media$'.$node};
-    if(ref($data) eq 'ARRAY') {
-
-        return new WebService::GData::Collection($data,undef,sub { 
+    if(ref($data) eq 'ARRAY' || $collection) {
+        return new WebService::GData::Collection($data||[],undef,sub { 
         	my $elm=shift; 
-        	use Data::Dumper;
-
         	$elm= $class->new($elm) if ref $elm ne $class; 
-            if($class eq 'WebService::GData::Node::Media::Content'){
-               # die Dumper $elm;
-            }       	
         	return $elm; 
         });
-        my @collection=();
-        foreach my $d (@$data){
-            push @collection, $class->new($d);
-        }
-       return new WebService::GData::Collection(\@collection);
     }
     return $class->new($data);
 }

@@ -4,6 +4,7 @@ use WebService::GData;
 use base 'WebService::GData::Feed::Entry';
 use WebService::GData::Constants qw(:all);
 use WebService::GData::YouTube::Constants qw(:all);
+use WebService::GData::YouTube::StagingServer ();
 use WebService::GData::Error;
 use WebService::GData::Node::PointEntity();
 use WebService::GData::YouTube::YT::GroupEntity();
@@ -11,11 +12,19 @@ use WebService::GData::YouTube::YT::AccessControl();
 use WebService::GData::Node::Media::Category();
 use WebService::GData::Collection;
 
-our $VERSION = 0.01_07;
+our $VERSION = 0.01_08;
 
 our $UPLOAD_BASE_URI = UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
+our $BASE_URI        = BASE_URI . PROJECTION . '/users/default/uploads/';
+our $API_DOMAIN_URI  = API_DOMAIN_URI;
 
-our $BASE_URI = BASE_URI . PROJECTION . '/users/default/uploads/';
+if(WebService::GData::YouTube::StagingServer->is_on){
+	
+  $UPLOAD_BASE_URI = STAGING_UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
+  $BASE_URI        = STAGING_BASE_URI . PROJECTION . '/users/default/uploads/';
+  $API_DOMAIN_URI  = STAGING_API_DOMAIN_URI;
+  
+}
 
 use constant {
 	DIRECT_UPLOAD  => 'DIRECT_UPLOAD',
@@ -99,6 +108,22 @@ sub _media {
 sub media_player {
 	my $this = shift;
 	$this->_media->player({})->url;
+}
+
+sub restriction {
+	my $this = shift;
+	$this->_media->restriction;
+}
+
+sub denied_countries {
+	my $this = shift;
+	my $denied = $this->_media->restriction->relationship('deny');
+	return if !ref $denied;
+	my @countries;
+	foreach my $d (@$denied){
+		push @countries, $d->text if($d->type eq 'country');
+	}
+	return join ' ', @countries;
 }
 
 sub aspect_ratio {
@@ -311,7 +336,7 @@ sub browser_uploading {
 	my ( $this, $uri, $content ) = @_;
 	my $response =
 	  $this->{_request}
-	  ->insert( 'http://gdata.youtube.com/action/GetUploadToken', $content );
+	  ->insert( $API_DOMAIN_URI.'action/GetUploadToken', $content );
 
 	my ( $url, $token ) =
 	  $response =~ m/<url>(.+?)<\/url><token>(.+?)<\/token>/;
@@ -428,12 +453,12 @@ WebService::GData::YouTube::Feed::Video - a Video YouTube contents(read/write) f
     my $videos  = $yt->get_top_rated('JP','Comedy');
 
     foreach my $video (@$videos) {
-        $video->video_id;
-        $video->title;
-        $video->content;
-		$video->view_count;
-		$video->favorite_count;
-		$video->duration;
+        say $video->video_id;
+        say $video->title;
+        say $video->content;
+        say $video->view_count;
+        say $video->favorite_count;
+        say $video->duration;
 		#...etc
     }
 
@@ -545,6 +570,10 @@ All the following read only methods give access to the information contained in 
 =head3 etag
 
 =head3 appcontrol_state
+
+=head3 denied_countries
+
+=head3 restriction
 
 
 =head2 GENERAL SET/GET METHODS

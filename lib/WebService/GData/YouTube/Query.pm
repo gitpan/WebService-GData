@@ -20,8 +20,8 @@ WebService::GData::Query::install([qw(key uploader format time restriction order
 
 	#need to better handle the caption...
 	sub caption {
-		my ($this)=@_;
-		return $this->_set_query('caption',undef);
+		my ($this,$val)=@_;
+		return $this->_set_query('caption',$val);
 	}
 
 "The earth is blue like an orange.";
@@ -42,7 +42,7 @@ WebService::GData::YouTube::Query - implements the core query parameters availab
     #create an object that only has read access
     my $query = new WebService::GData::YouTube::Query();
 
-    $query->safe_search('none')->orderby('rating')->caption->time('today');
+    $query->safe_search('none')->orderby('rating')->caption('true')->time('today');
 
 
 

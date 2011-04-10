@@ -35,6 +35,7 @@ sub __get {
     die new WebService::GData::Error('unknown_method_call',
         $func.'() is not a LWP::UserAgent Method.' );
 }
+
 sub __init {
     my ( $this, %params ) = @_;
 
@@ -638,8 +639,8 @@ Example:
 
     use WebService::GData::Constants qw(:all);
     use WebService::GData::Base;
-
-    $base->enable_compression(TRUE);
+	my $base = new WebService::GData::Base();
+       $base->enable_compression(TRUE);
     
     my $ret = $base->get($url);#the data was gzipped and ungzipped if possible
        
@@ -719,9 +720,9 @@ Example:
 	
     $base->auth($auth);#where $auth->source eq 'MyApp-MyCompany-ID'
 
-    $base->get_user_agent_name();#MyApp-MyCompany-ID WebService::GData::Base/2
+    $base->user_agent_name();#MyApp-MyCompany-ID WebService::GData::Base/2
     
-    $base->get_user_agent_name("my app");#MyApp-MyCompany-ID my app WebService::GData::Base/2
+    $base->user_agent_name("my app");#MyApp-MyCompany-ID my app WebService::GData::Base/2
 	   
 =back
 

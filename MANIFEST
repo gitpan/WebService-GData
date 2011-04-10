@@ -126,8 +126,10 @@ lib/WebService/GData/YouTube/Feed.pm
 lib/WebService/GData/YouTube/Feed/Comment.pm
 lib/WebService/GData/YouTube/Feed/Playlist.pm
 lib/WebService/GData/YouTube/Feed/PlaylistLink.pm
+lib/WebService/GData/YouTube/Feed/UserProfile.pm
 lib/WebService/GData/YouTube/Feed/Video.pm
 lib/WebService/GData/YouTube/Query.pm
+lib/WebService/GData/YouTube/StagingServer.pm
 lib/WebService/GData/YouTube/YT.pm
 lib/WebService/GData/YouTube/YT/AboutMe.pm
 lib/WebService/GData/YouTube/YT/AccessControl.pm
@@ -224,5 +226,8 @@ t/53-WebService-GData-YouTube-Node-AccessControl-instance.t
 t/54-WebService-GData-YouTube-Node-AboutMe-instance.t
 t/55-WebService-GData-YouTube-Feed-Video-load.t
 t/56-WebService-GData-YouTube-Feed-Video-instance.t
+t/57-WebService-Gdata-Youtube-StagingServer.t
+t/58-WebService-GData-YouTube-Feed-UserProfile-instance.t
 t/JSONResponse.pm
 t/MyWeb.pm
+t/UserProfileFeedResponse.pm

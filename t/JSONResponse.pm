@@ -361,6 +361,13 @@ our $CONTENTS=<<'JSON';
      "media$player": {
       "url": "http://www.youtube.com/watch?v\u003dqWAY3YvHqLE&feature\u003dyoutube_gdata_player"
      },
+     "media$restriction": [
+      {
+       "$t": "AD AE AF AG AI AL AM AN AO AQ AR AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BM BN BO BR BS BT",
+       "type": "country",
+       "relationship": "deny"
+      }
+     ],
      "media$thumbnail": [
       {
        "url": "http://i.ytimg.com/vi/qWAY3YvHqLE/default.jpg",

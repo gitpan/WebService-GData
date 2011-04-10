@@ -31,7 +31,7 @@ diag("Do you wish to test the ClientLogin with your account? [yes] or [no]:");
 
 my $dotest = <STDIN>;
 alarm 0;
-if ( $dotest =~ m/y(es)*/ ) {
+if ( $dotest && $dotest =~ m/y(es)*/ ) {
     while (1) {
         diag(
 'Enter a username, a password and service name(youtube,cl,...) separated by a space.'

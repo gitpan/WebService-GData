@@ -5,7 +5,7 @@ use base 'WebService::GData';
 use WebService::GData::Base;
 use WebService::GData::YouTube::Constants;
 use WebService::GData::YouTube::Query;
-
+use WebService::GData::YouTube::StagingServer ();
 #TODO: load these packages on demand
 use WebService::GData::YouTube::Feed;
 use WebService::GData::YouTube::Feed::PlaylistLink;
@@ -13,15 +13,19 @@ use WebService::GData::YouTube::Feed::Video;
 use WebService::GData::YouTube::Feed::Comment;
 
 
-our $PROJECTION = WebService::GData::YouTube::Constants::PROJECTION;
-our $BASE_URI   = WebService::GData::YouTube::Constants::BASE_URI;
+our $PROJECTION        = WebService::GData::YouTube::Constants::PROJECTION;
+our $BASE_URI          = WebService::GData::YouTube::Constants::BASE_URI;
 
-our $VERSION    = 0.01_09;
+if(WebService::GData::YouTube::StagingServer->is_on){
+  $BASE_URI          = WebService::GData::YouTube::Constants::STAGING_BASE_URI;
+}
+
+our $VERSION    = 0.02;
 
 sub __init {
 	my ( $this, $auth ) = @_;
-
 	$this->{_baseuri} = $BASE_URI . $PROJECTION . '/';
+	
 	$this->{_request} = new WebService::GData::Base();
 	$this->{_request}->auth($auth) if ($auth);
 
@@ -82,6 +86,21 @@ sub get_user_playlists {
 	return $playlists if ($full);
 
 	return $playlists->entry;
+}
+
+sub get_user_profile {
+    my ( $this, $channel, $full ) = @_;
+
+    #by default, the one connected is returned
+    my $uri = $this->{_baseuri} . 'users/default/';
+    $uri = $this->{_baseuri} . 'users/' . $channel if ($channel);
+
+    my $res = $this->{_request}->get($uri);
+
+    my $playlists =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
+
+    return $playlists->entry->[0];
 }
 
 #video related
@@ -186,7 +205,16 @@ sub move_video {
 #standard feeds
 no strict 'refs';
 foreach my $stdfeed (
-	qw(top_rated top_favorites most_viewed most_popular most_recent most_discussed most_responded recently_featured watch_on_mobile)
+	qw(top_rated 
+	   top_favorites 
+	   most_viewed
+	   most_shared 
+	   most_popular 
+	   most_recent 
+	   most_discussed 
+	   most_responded 
+	   recently_featured 
+	   on_the_web)
   )
 {
 
@@ -322,6 +350,10 @@ the position of the video within the playlist.
 
 This object represents all the playlists metadata of a user.
 It is not possible to get the metadata of one playlist. You need to query them all and search for the one you're interested in.
+
+=item L<WebService::GData::YouTube::StagingServer>
+
+use this package at the very top of your program to switch all the read/writes urls to the staging server
 
 See also:
 
@@ -522,6 +554,8 @@ B<methods>
 
 =head3 get_most_viewed_videos
 
+=head3 get_most_shared_videos
+
 =head3 get_most_popular_videos
 
 =head3 get_most_recent_videos
@@ -532,7 +566,9 @@ B<methods>
 
 =head3 get_recently_featured_videos
 
-=head3 get_watch_on_mobile_videos 
+=head3 get_on_the_web_videos
+
+See http://code.google.com/intl/en/apis/youtube/2.0/developers_guide_protocol_video_feeds.html#Standard_feeds
 
 =over
 
@@ -977,6 +1013,56 @@ Example:
        $video->category('Music');
     #etc
          
+=back
+
+
+=head2 USER PROFILE METHOD
+
+=head3 get_user_profile
+
+=over
+
+Get the user profile info for the logged in user or the user set as a parameter.
+
+B<Parameters>
+
+=over 4
+
+=item C<user_name:Scalar> (optional) - the user name/channel name
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item L<WebService::GData::YouTube::Feed::UserProfile> instance
+
+
+=back
+
+B<Throws>
+
+=over 4 
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+    use WebService::GData::ClientLogin;
+    use WebService::GData::YouTube;
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+    my $profile = $yt->get_user_profile;
+    
+    #or if you did not pass a $auth object:
+    my $profile = $yt->get_user_profile('profile_name_here');    
+
 =back
 
 
