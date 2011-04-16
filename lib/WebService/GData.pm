@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 use overload '""' => "__to_string", '==' => 'equal', fallback => 1;
 
-our $VERSION = 0.04_03;
+our $VERSION = 0.04_04;
 
 our $AUTOLOAD;
 

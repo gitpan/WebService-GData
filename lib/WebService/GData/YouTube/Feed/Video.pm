@@ -9,17 +9,18 @@ use WebService::GData::Error;
 use WebService::GData::Node::PointEntity();
 use WebService::GData::YouTube::YT::GroupEntity();
 use WebService::GData::YouTube::YT::AccessControl();
+use WebService::GData::YouTube::YT::Rating();
 use WebService::GData::Node::Media::Category();
 use WebService::GData::Collection;
 
-our $VERSION = 0.01_08;
-
+our $VERSION = 0.01_09;
+our $ROOT_URI        = BASE_URI;
 our $UPLOAD_BASE_URI = UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
 our $BASE_URI        = BASE_URI . PROJECTION . '/users/default/uploads/';
 our $API_DOMAIN_URI  = API_DOMAIN_URI;
 
 if(WebService::GData::YouTube::StagingServer->is_on){
-	
+  $ROOT_URI        = STAGING_BASE_URI;	
   $UPLOAD_BASE_URI = STAGING_UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
   $BASE_URI        = STAGING_BASE_URI . PROJECTION . '/users/default/uploads/';
   $API_DOMAIN_URI  = STAGING_API_DOMAIN_URI;
@@ -33,20 +34,21 @@ use constant {
 
 sub __init {
 	my ( $this, $feed, $req ) = @_;
-
-	if ( ref($feed) eq 'HASH' ) {
-		$this->SUPER::__init( $feed, $req );
-		$this->_media(
-			new WebService::GData::YouTube::YT::GroupEntity(
-				$feed->{'media$group'} || {}
-			)
-		);
+	
+    $feed||={};
+	if (ref($feed) ne 'HASH' ) {
+        $req  = $feed;
+        $feed = {};		
 	}
-	else {
-		$this->SUPER::__init( {}, $feed );#$feed ==$req here
-		$this->_media( new WebService::GData::YouTube::YT::GroupEntity( {} ) );
-	}
-	$this->_entity->child( $this->_media );
+	
+	$this->SUPER::__init( $feed, $req );
+	$this->_media(
+		new WebService::GData::YouTube::YT::GroupEntity(
+			$feed->{'media$group'} || {}
+		)
+	);
+    $this->{_rating}= new WebService::GData::YouTube::YT::Rating($feed->{'yt$rating'});
+	$this->_entity->child( $this->_media )->child($this->{_rating});
 }
 
 sub next_url {
@@ -273,6 +275,13 @@ sub delete {
 	my $this = shift;
 	my $uri  = $BASE_URI . $this->video_id;
 	$this->{_request}->delete( $uri, 0 );
+}
+
+sub rate {
+    my ($this,$val) = @_;
+    $this->rating->value($val) if $val;
+    my $uri  = $ROOT_URI . PROJECTION.'/videos/'.$this->video_id.'/ratings';
+    $this->{_request}->insert( $uri, XML_HEADER . $this->serialize() );	
 }
 
 sub save {

@@ -1,5 +1,33 @@
 Revision history for Perl extension WebService::GData.
 
+0.04_04 2011/04/17 11:49
+        
+    - NEW
+    
+     YOUTUBE RELATED
+     
+      - WebService::GData::YouTube
+         - added like_video and dislike_video to rate a video
+         - added a complaint method
+         
+      - WebService::GData::YouTube::Video
+         - added rating method to access num_likes, num_dislikes
+         - added rate method to save a rating value
+         
+      - new WebService::GData::YouTube::Feed::Complaint
+         - used with the complaint method factory to add a complaint on a video
+        
+      - new tests
+      
+    - NEXT RELEASE
+    
+      - start mocking some of the live tests I use on my side...
+      - lazy up thing more and get rid of old variables that take up memory for nothing...
+      - add a bit of doc for YouTube package
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.04_03  2011/03/10 19:49
 
     - NON BACKWARD COMPATIBLE

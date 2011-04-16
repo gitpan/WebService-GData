@@ -11,7 +11,7 @@ use WebService::GData::YouTube::Feed;
 use WebService::GData::YouTube::Feed::PlaylistLink;
 use WebService::GData::YouTube::Feed::Video;
 use WebService::GData::YouTube::Feed::Comment;
-
+use WebService::GData::YouTube::Feed::Complaint;
 
 our $PROJECTION        = WebService::GData::YouTube::Constants::PROJECTION;
 our $BASE_URI          = WebService::GData::YouTube::Constants::BASE_URI;
@@ -20,7 +20,7 @@ if(WebService::GData::YouTube::StagingServer->is_on){
   $BASE_URI          = WebService::GData::YouTube::Constants::STAGING_BASE_URI;
 }
 
-our $VERSION    = 0.02;
+our $VERSION    = 0.0202;
 
 sub __init {
 	my ( $this, $auth ) = @_;
@@ -105,6 +105,20 @@ sub get_user_profile {
 
 #video related
 
+sub like_video {
+    my ($this,$id) = @_;
+     my $vid = $this->video;
+        $vid->video_id($id);
+    	$vid->rate('like');
+}
+
+sub dislike_video {
+    my ($this,$id) = @_;
+     my $vid = $this->video;
+        $vid->video_id($id);
+        $vid->rate('dislike');
+}
+
 sub video {
 	my $this = shift;
 	return new WebService::GData::YouTube::Feed::Video( $this->{_request} );
@@ -118,6 +132,11 @@ sub playlists {
 sub comment {
 	my $this = shift;
 	return new WebService::GData::YouTube::Feed::Comment( $this->{_request} );
+}
+
+sub complaint {
+    my $this = shift;
+    return new WebService::GData::YouTube::Feed::Complaint( $this->{_request} );
 }
 
 sub search_video {
@@ -963,6 +982,62 @@ Example:
 
 =back
 
+=head2 RATING METHODS
+
+=over
+
+These methods allows you to rate,like or dislike, a video.
+They are helper methods that instantiate a video instance for you.
+
+You must be logged in to use these methods.
+
+=head3 like_video
+
+=head3 dislike_video
+
+B<Parameters>
+
+=over 4
+
+=item C<video_id:Scalar> the video id to rate
+
+=back
+
+B<Returns>
+
+=over
+
+=item L<void> 
+
+=back
+
+B<Throws>
+
+=over 4
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+       $yt->like_video('video_id');
+       $yt->dislike_video('video_id');
+       
+   #in the background it simply does:
+   
+   my $vid = $yt->video;
+      $vid->video_id('video_id');
+      $vid->rate('like');
+
+=back
+
+
 
 =head2 FACTORY METHODS
 
@@ -981,6 +1056,10 @@ Return a L<WebService::GData::YouTube::Feed::Comment> instance
 =head3 playlists
  
 Return a L<WebService::GData::YouTube::Feed::PlaylistLink> instance
+
+=head3 complaint
+ 
+Return a L<WebService::GData::YouTube::Feed::Complaint> instance
 
 Example:
     

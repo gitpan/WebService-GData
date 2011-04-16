@@ -124,6 +124,7 @@ lib/WebService/GData/YouTube/Constants.pm
 lib/WebService/GData/YouTube/Doc/BrowserBasedUpload.pod
 lib/WebService/GData/YouTube/Feed.pm
 lib/WebService/GData/YouTube/Feed/Comment.pm
+lib/WebService/GData/YouTube/Feed/Complaint.pm
 lib/WebService/GData/YouTube/Feed/Playlist.pm
 lib/WebService/GData/YouTube/Feed/PlaylistLink.pm
 lib/WebService/GData/YouTube/Feed/UserProfile.pm
@@ -166,7 +167,7 @@ lib/WebService/GData/YouTube/YT/Uploaded.pm
 lib/WebService/GData/YouTube/YT/Username.pm
 lib/WebService/GData/YouTube/YT/Videoid.pm
 Makefile.PL
-MANIFEST
+MANIFEST			This list of files
 META.yml
 README
 t/00-WebService-GData-load.t
@@ -228,6 +229,7 @@ t/55-WebService-GData-YouTube-Feed-Video-load.t
 t/56-WebService-GData-YouTube-Feed-Video-instance.t
 t/57-WebService-Gdata-Youtube-StagingServer.t
 t/58-WebService-GData-YouTube-Feed-UserProfile-instance.t
+t/59-WebService-GData-YouTube-Feed-Complaint-instance.t
 t/JSONResponse.pm
 t/MyWeb.pm
 t/UserProfileFeedResponse.pm
