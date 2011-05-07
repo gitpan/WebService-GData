@@ -250,6 +250,11 @@ our $CONTENTS=<<'JSON';
       "href": "http://m.youtube.com/details?v\u003dqWAY3YvHqLE"
      },
      {
+      "rel": "edit",
+      "type": "application/atom+xml",
+      "href": "http://gdata.youtube.com/feeds/api/users/default/uploads/qWAY3YvHqLE"
+     },
+     {
       "rel": "self",
       "type": "application/atom+xml",
       "href": "http://gdata.youtube.com/feeds/api/videos/qWAY3YvHqLE?client\u003dytapi-google-jsdemo"
@@ -318,7 +323,7 @@ our $CONTENTS=<<'JSON';
      ],
      "media$content": [
       {
-       "url": "http://www.youtube.com/v/qWAY3YvHqLE?f\u003dvideos&c\u003dytapi-google-jsdemo&app\u003dyoutube_gdata",
+       "url": "http://www.youtube.com/v/qWAY3YvHqLE",
        "type": "application/x-shockwave-flash",
        "medium": "video",
        "isDefault": "true",
@@ -426,6 +431,9 @@ our $CONTENTS=<<'JSON';
     "yt$statistics": {
      "favoriteCount": "31",
      "viewCount": "13067"
+    },
+    "yt$recorded": {
+     "$t": "2010-08-05"
     },
     "yt$rating": {
      "numDislikes": "10",

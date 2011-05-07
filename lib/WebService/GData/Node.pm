@@ -148,7 +148,7 @@ sub __set {
 sub __get {
     my ( $this, $func ) = @_;
     my $called_func= $func;
-        
+     
     my @attrs = @{ $this->attributes };   
     if ( !grep /^$func$/, @attrs ) {
          foreach my $attr (@attrs){

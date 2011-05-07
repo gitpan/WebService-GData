@@ -61,7 +61,7 @@ ok($entry->author->[0]->name eq "TheYoungTurks",'entry author name properly set.
 
 ok($entry->author->[0]->uri eq "http://gdata.youtube.com/feeds/api/users/theyoungturks",'entry author uri properly set.');
 
-ok(@{$entry->links} ==5,'entry link properly set.');
+ok(@{$entry->links} ==6,'entry link properly set.');
 
 ok(@{$entry->category} ==30,'entry category properly set.');
 

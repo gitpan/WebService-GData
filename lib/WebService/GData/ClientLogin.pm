@@ -240,6 +240,10 @@ More information about ClientLogin can be found here:
 
 L<http://code.google.com/intl/en/apis/accounts/docs/AuthForInstalledApps.html>
 
+Some problems can be encountered if your account is not directly linked to a Google Account.
+
+Please see L<http://apiblog.youtube.com/2011/03/clientlogin-fail.html>.
+
 
 =head2 CONSTRUCTOR
 

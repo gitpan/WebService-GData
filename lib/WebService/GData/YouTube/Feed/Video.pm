@@ -10,21 +10,23 @@ use WebService::GData::Node::PointEntity();
 use WebService::GData::YouTube::YT::GroupEntity();
 use WebService::GData::YouTube::YT::AccessControl();
 use WebService::GData::YouTube::YT::Rating();
+use WebService::GData::YouTube::YT::Recorded();
 use WebService::GData::Node::Media::Category();
 use WebService::GData::Collection;
 
-our $VERSION = 0.01_09;
+our $VERSION         = 0.02_01;
 our $ROOT_URI        = BASE_URI;
 our $UPLOAD_BASE_URI = UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
 our $BASE_URI        = BASE_URI . PROJECTION . '/users/default/uploads/';
 our $API_DOMAIN_URI  = API_DOMAIN_URI;
 
-if(WebService::GData::YouTube::StagingServer->is_on){
-  $ROOT_URI        = STAGING_BASE_URI;	
-  $UPLOAD_BASE_URI = STAGING_UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
-  $BASE_URI        = STAGING_BASE_URI . PROJECTION . '/users/default/uploads/';
-  $API_DOMAIN_URI  = STAGING_API_DOMAIN_URI;
-  
+if ( WebService::GData::YouTube::StagingServer->is_on ) {
+	$ROOT_URI = STAGING_BASE_URI;
+	$UPLOAD_BASE_URI =
+	  STAGING_UPLOAD_BASE_URI . PROJECTION . '/users/default/uploads/';
+	$BASE_URI       = STAGING_BASE_URI . PROJECTION . '/users/default/uploads/';
+	$API_DOMAIN_URI = STAGING_API_DOMAIN_URI;
+
 }
 
 use constant {
@@ -34,21 +36,25 @@ use constant {
 
 sub __init {
 	my ( $this, $feed, $req ) = @_;
-	
-    $feed||={};
-	if (ref($feed) ne 'HASH' ) {
-        $req  = $feed;
-        $feed = {};		
+
+	$feed ||= {};
+	if ( ref($feed) ne 'HASH' ) {
+		$req  = $feed;
+		$feed = {};
 	}
-	
+
 	$this->SUPER::__init( $feed, $req );
 	$this->_media(
 		new WebService::GData::YouTube::YT::GroupEntity(
 			$feed->{'media$group'} || {}
 		)
 	);
-    $this->{_rating}= new WebService::GData::YouTube::YT::Rating($feed->{'yt$rating'});
-	$this->_entity->child( $this->_media )->child($this->{_rating});
+	$this->{_rating} =
+	  new WebService::GData::YouTube::YT::Rating( $feed->{'yt$rating'} );
+	$this->{_recorded} =
+	  new WebService::GData::YouTube::YT::Recorded( $feed->{'yt$recorded'} );
+	$this->_entity->child( $this->_media )->child( $this->{_rating} )
+	  ->child( $this->{_recorded} );
 }
 
 sub next_url {
@@ -109,7 +115,7 @@ sub _media {
 
 sub media_player {
 	my $this = shift;
-	$this->_media->player({})->url;
+	$this->_media->player( {} )->url;
 }
 
 sub restriction {
@@ -118,12 +124,12 @@ sub restriction {
 }
 
 sub denied_countries {
-	my $this = shift;
+	my $this   = shift;
 	my $denied = $this->_media->restriction->relationship('deny');
 	return if !ref $denied;
 	my @countries;
-	foreach my $d (@$denied){
-		push @countries, $d->text if($d->type eq 'country');
+	foreach my $d (@$denied) {
+		push @countries, $d->text if ( $d->type eq 'country' );
 	}
 	return join ' ', @countries;
 }
@@ -136,12 +142,12 @@ sub aspect_ratio {
 sub video_id {
 	my ( $this, $id ) = @_;
 	$this->_media->videoid($id) if $id;
-	ref $this->_media->videoid ? '': $this->_media->videoid;
+	ref $this->_media->videoid ? '' : $this->_media->videoid;
 }
 
 sub duration {
 	my $this = shift;
-	$this->_media->duration({})->seconds;
+	$this->_media->duration( {} )->seconds;
 }
 
 sub content {
@@ -157,6 +163,13 @@ sub thumbnails {
 sub uploaded {
 	my $this = shift;
 	$this->_media->uploaded;
+}
+
+sub uploader {
+	my $this = shift;
+	if ( @{ $this->_media->credit->role('uploader') } > 0 ) {
+		$this->_media->credit->role('uploader')->[0]->text;
+	}
 }
 
 sub category {
@@ -180,11 +193,23 @@ sub category {
 	$this->_media->category;
 }
 
+sub genre {
+	my $this = shift;
+	if ( @{ $this->_media->category } > 0 ) {
+		$this->_media->category->[0]->text;
+	}
+}
+
+sub is_read_only {
+	my $this = shift;
+	return 1 if ( @{ $this->links->rel('edit') } > 0 );
+}
+
 sub description {
 	my $this = shift;
 	if ( @_ == 1 ) {
 		$this->_media->description( $_[0] );
-		$this->_media->description({})->type("plain");
+		$this->_media->description( {} )->type("plain");
 	}
 	$this->_media->description || '';
 }
@@ -194,7 +219,7 @@ sub title {
 	if ( @_ == 1 ) {
 		$this->_media->title( $_[0] );
 
-		$this->_media->title({})->type("plain");
+		$this->_media->title( {} )->type("plain");
 	}
 	$this->_media->title || '';
 }
@@ -273,15 +298,48 @@ sub access_control {
 
 sub delete {
 	my $this = shift;
-	my $uri  = $BASE_URI . $this->video_id;
+
+	my $uri =
+	  @{ $this->links->rel('edit') } > 0
+	  ? $this->links->rel('edit')->[0]->href
+	  : $BASE_URI . $this->video_id;
 	$this->{_request}->delete( $uri, 0 );
 }
 
 sub rate {
-    my ($this,$val) = @_;
-    $this->rating->value($val) if $val;
-    my $uri  = $ROOT_URI . PROJECTION.'/videos/'.$this->video_id.'/ratings';
-    $this->{_request}->insert( $uri, XML_HEADER . $this->serialize() );	
+	my ( $this, $val ) = @_;
+	$this->rating->value($val) if $val;
+	my $uri =
+	  $ROOT_URI . PROJECTION . '/videos/' . $this->video_id . '/ratings';
+	$this->{_request}->insert( $uri, XML_HEADER . $this->serialize() );
+}
+
+sub add_video_response {
+	my ( $this, $response ) = @_;
+	my $uri =
+	  $ROOT_URI . PROJECTION . '/videos/' . $this->video_id . '/responses';
+	$this->{_request}->insert( $uri, XML_HEADER . $response->serialize() );
+}
+
+sub delete_video_response {
+	my ( $this, $response_id ) = @_;
+	my $uri =
+	    $ROOT_URI. PROJECTION
+	  . '/videos/'. $this->video_id
+	  . '/responses/' . $response_id;
+	$this->{_request}->delete($uri);
+}
+
+sub add_favorite_video {
+    my ( $this,$id) = @_;
+    
+    $this->id($id) if $id;
+    
+    if($this->id){
+        my $uri =
+            $ROOT_URI . PROJECTION . '/users/default/favorites';
+            $this->{_request}->insert( $uri, XML_HEADER . $this->serialize() );
+    }
 }
 
 sub save {
@@ -345,7 +403,7 @@ sub browser_uploading {
 	my ( $this, $uri, $content ) = @_;
 	my $response =
 	  $this->{_request}
-	  ->insert( $API_DOMAIN_URI.'action/GetUploadToken', $content );
+	  ->insert( $API_DOMAIN_URI . 'action/GetUploadToken', $content );
 
 	my ( $url, $token ) =
 	  $response =~ m/<url>(.+?)<\/url><token>(.+?)<\/token>/;
@@ -410,7 +468,7 @@ XML
 
 {
 	no strict 'refs';
-	
+
 	my %controlList = (
 		videoRespond => 'video_response',
 		rate         => 'rating',
@@ -419,10 +477,10 @@ XML
 		syndicate    => 'syndication'
 	);
 	my @ytControls = ( keys %controlList, 'comment', 'comment_vote' );
-	
+
 	foreach my $access (@ytControls) {
 		my $name = $access;
-		   $name =~ s/_([a-z])/\U$1/g;
+		$name =~ s/_([a-z])/\U$1/g;
 		my $func = $controlList{$access} || $access;
 		*{ __PACKAGE__ . '::is_' . $func . '_allowed' } = sub {
 			my $this = shift;
@@ -584,6 +642,16 @@ All the following read only methods give access to the information contained in 
 
 =head3 restriction
 
+=head3 rating
+
+=head3 uploader
+
+=head3 recorded
+
+=head3 genre
+
+=head3 is_read_only
+
 
 =head2 GENERAL SET/GET METHODS
 
@@ -708,7 +776,7 @@ It is therefore a shortcut for the following checking:
 =head3 is_syndication_allowed
 
 
-=head2 QUERY METHODS
+=head2 VIDEO QUERY METHODS
 
 These methods actually query the service to save your edits.
 
@@ -719,6 +787,46 @@ The L<save> method will do an insert if there is no video_id or an update if the
 =head3 delete
 
 =head3 save
+
+=head2 COMMUNITY RELATED QUERY METHODS
+
+These methods actually query the service to save your edits.
+
+You must be logged in programmaticly to be able to use them and have a video_id already set.
+
+Most of the time you will use their counterpart in the L<WebService::GData::YouTube> package as they are shorter.
+
+=head3 rate 
+
+This will add a rating to the video. It uses the like/dislike system only:
+
+    $video->rate('like');
+    $video->rate('dislike');
+    
+
+=head3 add_video_response
+	
+You can add a video response to a video by specifying an other video object.
+
+    $response_video->id('response_video_id');
+    
+    $video->add_video_response($response_video);
+
+
+=head3 delete_video_response
+
+    $video->delete_video_response('response_video_id');
+    
+    
+=head3 add_favorite_video 
+
+    $video->id('video_id');
+    $video->add_favorite_video(); 
+    
+    or 
+    
+    $video->add_favorite_video('video_id');#helper that set the $video->id('video_id')     
+
 
 
 =head1  CONFIGURATION AND ENVIRONMENT

@@ -110,9 +110,11 @@ sub get_uri {
 
 
 sub get {
-    my ( $this, $uri ) = @_;
+    my ( $this, $uri,$with_query_string ) = @_;
 
     #the url from the feeds contain the version but not the one we pass directly
+    $this->query->set_from_query_string($uri) if $with_query_string;
+    
     $uri = _delete_query_string($uri);
 
     _error_invali_uri('get') if ( !$uri || length($uri) == 0 );

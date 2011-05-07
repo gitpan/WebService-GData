@@ -1,4 +1,4 @@
-use Test::More tests => 43;
+use Test::More tests => 53;
 use WebService::GData::YouTube::Feed::Video;
 use t::JSONResponse;
 use JSON;
@@ -28,9 +28,12 @@ ok(
     "aspect_ratio properly set."
 );
 
-ok( @{ $entry->links } == 5, "links properly set." );
+ok( @{ $entry->links } == 6, "links properly set." );
 
 ok( $entry->links->[0]->rel eq 'alternate', "first link properly set." );
+
+
+ok( $entry->is_read_only==1, "edit link is properly set." );
 
 ok(
     $entry->links->rel('#video.responses')->[0]->href eq
@@ -87,7 +90,21 @@ ok( @{ $entry->access_control } == 7, 'access control is properly set.' );
 
 ok( @{ $entry->thumbnails } == 5, 'number of thumbnails is right.' );
 
+ok($entry->thumbnails->[0]->url eq 'http://i.ytimg.com/vi/qWAY3YvHqLE/default.jpg','thumbnail is properly set.');
+
+
+ok($entry->uploader eq 'TheYoungTurks','uploader properly set.');
+
+
+ok( $entry->content->type('flash')->[0]->url eq 'http://www.youtube.com/v/qWAY3YvHqLE','flash content is properly set.');
+
+ok( $entry->content->format(5)->[0]->url eq 'http://www.youtube.com/v/qWAY3YvHqLE','format content is properly set.');
+
 ok( @{ $entry->content } == 3,    'number of content is right.' );
+
+ok( @{ $entry->category } == 1,   'number of category is properly set.' );
+
+ok($entry->genre eq 'Shows','the genre is properly set.');
 
 ok( @{ $entry->category } == 1,   'number of category is properly set.' );
 
@@ -134,10 +151,19 @@ ok(
     "media player properly set."
 );
 
+ok(
+    $entry->recorded eq "2010-08-05",
+    "recorded properly set."
+);
+
+
+ok(
+    $entry->rating->num_dislikes ==10,
+    "dislike rating properly set."
+);
 
 ok(
     $entry->comments eq
 "http://gdata.youtube.com/feeds/api/videos/qWAY3YvHqLE/comments?client=ytapi-google-jsdemo",
     'comments url properly set.'
 );
-

@@ -1,6 +1,6 @@
 =head1 NAME
 
-WebService::GData::YouTube::Doc::BrowserBasedUpload - Upload a video by using the Browser-based uploading system.
+WebService::GData::YouTube::Doc::BrowserBasedUpload - YouTube Video browser based upload system
 
 =head1 SYNOPSIS
 

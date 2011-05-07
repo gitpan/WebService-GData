@@ -7,6 +7,7 @@ inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
+lib/.ytpl
 lib/WebService/GData.pm
 lib/WebService/GData/Base.pm
 lib/WebService/GData/Batch.pm
@@ -122,9 +123,11 @@ lib/WebService/GData/Serialize/XML.pm
 lib/WebService/GData/YouTube.pm
 lib/WebService/GData/YouTube/Constants.pm
 lib/WebService/GData/YouTube/Doc/BrowserBasedUpload.pod
+lib/WebService/GData/YouTube/Doc/GeneralOverview.pod
 lib/WebService/GData/YouTube/Feed.pm
 lib/WebService/GData/YouTube/Feed/Comment.pm
 lib/WebService/GData/YouTube/Feed/Complaint.pm
+lib/WebService/GData/YouTube/Feed/Favorite.pm
 lib/WebService/GData/YouTube/Feed/Playlist.pm
 lib/WebService/GData/YouTube/Feed/PlaylistLink.pm
 lib/WebService/GData/YouTube/Feed/UserProfile.pm

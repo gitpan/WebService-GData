@@ -4,7 +4,9 @@ use WebService::GData::YouTube::YT();
 
 
 sub attributes {
-  return \(@{WebService::GData::Node::Media::Content->attributes},'yt:format');
+	my @array = @{WebService::GData::Node::Media::Content->attributes};
+	push @array, 'yt:format';
+  return \@array;
 }
 
 sub extra_namespaces {

@@ -23,6 +23,20 @@ sub __init {
     return $this;
 }
 
+
+sub set_from_query_string {
+	my ($this,$uri) = @_;
+	my (undef,$query_string) = split(/\?/,$uri);
+	
+	my @elements = split(/&/,$query_string);
+	
+	foreach my $element (@elements){
+		my ($param,$val)= split(/=/,$element);
+	   $this->_set_query($param,$val);
+	}
+}
+
+
 sub install_sub {
     my $subname = shift;
     my $field   = $subname;

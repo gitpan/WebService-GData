@@ -20,7 +20,7 @@ if(WebService::GData::YouTube::StagingServer->is_on){
   $BASE_URI          = WebService::GData::YouTube::Constants::STAGING_BASE_URI;
 }
 
-our $VERSION    = 0.0202;
+our $VERSION    = 0.0203;
 
 sub __init {
 	my ( $this, $auth ) = @_;
@@ -28,7 +28,7 @@ sub __init {
 	
 	$this->{_request} = new WebService::GData::Base();
 	$this->{_request}->auth($auth) if ($auth);
-
+$this->{__cache__}={};
 	#overwrite default query engine to support youtube extra feature
 	my $query = new WebService::GData::YouTube::Query();
 	$query->key( $auth->key ) if ($auth);
@@ -58,17 +58,28 @@ sub base_query {
 #playlist related
 
 sub get_user_playlist_by_id {
-	my ( $this, $playlistid, $full ) = @_;
+	my ( $this, $playlistid,$preserve_start_index) = @_;
+	
+    return if(exists $this->{__cache__}->{$playlistid} && !$this->{__cache__}->{$playlistid});
+    
+	my $uri;
+	if($this->{__cache__}->{$playlistid}){
+		$uri = $this->{__cache__}->{$playlistid};
+	}
+	else {
+		$this->query->start_index(1) if !$preserve_start_index;
+	}
 
+    my @request=$uri ? ($uri,1) : $this->{_baseuri} . 'playlists/' . $playlistid;
 	my $res =
-	  $this->{_request}->get( $this->{_baseuri} . 'playlists/' . $playlistid );
+	  $this->{_request}->get(@request);
 
-	my $playlists =
+	my $feed =
 	  new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-	return $playlists if ($full);
+    $this->{__cache__}->{$playlistid}= $feed->next_link;
 
-	return $playlists->entry->[0];
+	return wantarray ? ($feed->entry,$feed):$feed->entry;
 }
 
 sub get_user_playlists {
@@ -117,6 +128,31 @@ sub dislike_video {
      my $vid = $this->video;
         $vid->video_id($id);
         $vid->rate('dislike');
+}
+
+sub add_video_response {
+    my ($this,$video_id,$response_id) = @_;	
+    
+    my $video = $this->video;
+       $video->video_id($video_id);
+    my $response = $this->video;
+       $response->id($response_id);	
+       $video->add_video_response($response);
+}
+
+sub delete_video_response {
+    my ($this,$video_id,$response_id) = @_; 
+    
+    my $video = $this->video;
+       $video->video_id($video_id);
+       $video->delete_video_response($response_id);
+
+}
+
+sub add_favorite_video {
+    my ($this,$video_id) = @_; 
+    my $video = $this->video;
+       $video->add_favorite_video($video_id);	
 }
 
 sub video {
@@ -199,27 +235,40 @@ sub get_user_favorite_videos {
 
 	my $res = $this->{_request}->get($uri);
 
-	my $playlists =
+	my $feed =
 	  new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-	return $playlists->entry;
+	return $feed->entry;
 }
 
-sub move_video {
-	my ( $this, %params ) = @_;
+sub get_recommended_videos {
+    my ( $this) = @_;
 
-	my $playlistLink =
-	  new WebService::GData::YouTube::Feed::PlaylistLink( {},
-		$this->{_request} );
+    my $uri = $this->{_baseuri} . 'users/default/recommendations';
+
+    my $res = $this->{_request}->get($uri);
+
+    my $feed =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
+
+    return $feed->entry;
+}
+
+#sub move_video {
+#	my ( $this, %params ) = @_;
+
+#	my $playlistLink =
+#	  new WebService::GData::YouTube::Feed::PlaylistLink( {},
+#		$this->{_request} );
 
 	#delete old one
-	$playlistLink->playlistId( $params{'from'} );
-	$playlistLink->deleteVideo( videoId => $params{'videoid'} );
+#	$playlistLink->playlistId( $params{'from'} );
+#	$playlistLink->deleteVideo( videoId => $params{'videoid'} );
 
 	#put in new one
-	$playlistLink->playlistId( $params{'to'} );
-	$playlistLink->addVideo( videoId => $params{'videoid'} );
-}
+#	$playlistLink->playlistId( $params{'to'} );
+#	$playlistLink->addVideo( videoId => $params{'videoid'} );
+#}
 
 #standard feeds
 no strict 'refs';
@@ -880,8 +929,6 @@ B<Throws>
 
 Example:
 
-    use WebService::GData::Base;
-
     my $auth = new WebService::GData::ClientLogin(email=>...);
     
     my $yt   = new WebService::GData::YouTube($auth);
@@ -925,8 +972,6 @@ B<Throws>
 
 Example:
 
-    use WebService::GData::Base;
-
     my $auth = new WebService::GData::ClientLogin(email=>...);
     
     my $yt   = new WebService::GData::YouTube($auth);
@@ -940,6 +985,8 @@ Example:
 
 
 =head3 get_user_favorite_videos
+
+=over
 
 Get the videos that user specificly set a favorites (meaning that you may not have write access to the content even if you are logged in!).
 
@@ -969,8 +1016,6 @@ B<Throws>
 
 Example:
 
-    use WebService::GData::Base;
-
     my $auth = new WebService::GData::ClientLogin(email=>...);
     
     my $yt   = new WebService::GData::YouTube($auth);
@@ -979,6 +1024,90 @@ Example:
 
     #if not logged in, pass the user name as the first parameter
     my $videos = $yt->get_user_favorite_videos('live');
+
+=back
+
+=head3 add_favorite_video
+
+=over
+    
+B<Parameters>
+
+=over 4
+
+=item C<video_id:Scalar> the video id you want to add as a favorite
+
+
+=back
+
+B<Returns>
+
+=over
+
+=item L<void> 
+
+=back
+
+B<Throws>
+
+=over 4
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+       $yt->add_favorite_video('video_id');
+
+=back
+
+=head3 get_recommended_videos
+
+=over
+
+Get the videos that a user may be interested in (defined by the YouTube algorithm).
+
+You must be logged in to use this feature.
+
+B<Parameters>
+
+=over 4
+
+none
+
+=back
+
+B<Returns>
+
+=over
+
+=item L<WebService::GData::YouTube::Feed::Video> objects 
+
+=back
+
+B<Throws>
+
+=over 4
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+    my $videos = $yt->get_recommended_videos();
+
+
 
 =back
 
@@ -1037,6 +1166,93 @@ Example:
 
 =back
 
+=head2 VIDEO RESPONSE METHODS
+
+=over
+
+These methods allow you to add a video as a response to an other video.
+You can also erase a video response.
+
+They are helper methods that instantiate a video instance for you.
+You must be logged in to use these methods.
+    
+=head3 add_video_response
+    
+B<Parameters>
+
+=over 4
+
+=item C<video_id:Scalar> the video id you want to response to
+
+=item C<video_response_id:Scalar> the video id of the response
+
+=back
+
+B<Returns>
+
+=over
+
+=item L<void> 
+
+=back
+
+B<Throws>
+
+=over 4
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+       $yt->add_video_response('video_id','video_response_id');
+
+
+=head3 delete_video_response
+
+B<Parameters>
+
+=over 4
+
+=item C<video_id:Scalar> the video id that was responsed to
+
+=item C<video_response_id:Scalar> the video id of the response
+
+=back
+
+B<Returns>
+
+=over
+
+=item L<void> 
+
+=back
+
+B<Throws>
+
+=over 4
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+       $yt->delete_video_response('video_id','video_response_id');
+       
+
+=back
 
 
 =head2 FACTORY METHODS
@@ -1150,7 +1366,7 @@ Example:
 
 =over
 
-!WARNING! Playlits related methods does not work yet!!
+!WARNING! Playlits related methods does not work perfectly yet!!
 
 These methods allow you to access the videos in a playlist or a list of playlists created by a user.
 If you are logged in, you will be able to modify the data.
@@ -1194,13 +1410,24 @@ B<Throws>
 
 Example:
 
-    use WebService::GData::Base;
 
-    my $auth = new WebService::GData::ClientLogin(email=>...);
+    my $auth = new WebService::GData::ClientLogin(email=>...);#not compulsory
     
     my $yt   = new WebService::GData::YouTube($auth);
     
     my $videos_in_playlist = $yt->get_user_playlist_by_id('CFESE01KESEQE');
+    
+    #a feed returns by default up to 25 videos. 
+    #you can loop over the entire playlist (if you have more than 25 videos)
+    #if your playlist contains more than 50 videos, you can set the query limit to be 50
+    #it will result in less calls to the server.
+    
+    while(my $videos = $yt->get_user_playlist_by_id('CFESE01KESEQE')){
+    	
+    	foreach my $video (@$videos) {
+    		say $video->title;
+    	}
+    }
 	
 =back
 
@@ -1285,7 +1512,7 @@ Example:
 
     #enclose your code in a eval block...
     eval {
-        $videos = $yt->get_user_videos;;
+        $videos = $yt->get_user_videos;
     }; 
 
     #if something went wrong, you will get a WebService::GData::Error object back:

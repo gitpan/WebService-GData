@@ -1,5 +1,70 @@
 Revision history for Perl extension WebService::GData.
 
+0.04_07 2011/05/06 12:23
+
+ fix some doc problem for the YouTube packages...
+
+0.04_06 2011/05/05 0:48
+
+ fix some doc problem for the YouTube packages...
+
+
+0.04_05 2011/05/03 16:49
+        
+    - NEW
+    
+     YOUTUBE RELATED
+     
+      - WebService::GData::YouTube
+         - added the following methods:
+         
+            get_recommended_videos
+            add_video_response
+            delete_video_response
+            add_favorite_video
+           
+         - get_user_playlist_by_id can now be looped over to get all the videos within a playlist
+           Other methods returning multiple result shall behave this way in up-coming releases.
+           
+           
+      - WebService::GData::YouTube::Video
+         - added the following methods:
+            add_video_response 
+            delete_video_response 
+            add_favorite_video
+            rating (available since 0.04_04 but not listed)
+            uploader
+            recorded
+            genre (returns the youtube video category name)
+            is_read_only
+         - delete method tries first to use the feed edit link if set
+           and else reverse to the usual system.
+         
+      - new general overview documentation (in progress)
+      
+    - BUG FIX
+    
+      YOUTUBE RELATED
+      
+       - WebService::GData::YouTube 
+         - get_user_favorite_videos refers to Favorite package not Video
+           but there wasn't any Favorite package....
+           
+        - WebService::GData::YouTube::Video
+          - fix the content method (bug in the youtube node) so that you can access the format value
+          
+    - new tests
+        
+      
+    - NEXT RELEASE
+    
+      - start mocking some of the live tests I use on my side...
+      - lazy up thing more and get rid of old variables that take up memory for nothing...
+      - add a bit of doc for YouTube package
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.04_04 2011/04/17 11:49
         
     - NEW
