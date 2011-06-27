@@ -1,5 +1,33 @@
 Revision history for Perl extension WebService::GData.
 
+
+0.04_08 2011/06/28 00:00
+        
+    - NEW
+    
+     YOUTUBE RELATED
+     
+      - WebService::GData::YouTube
+         - added the following methods:
+         
+            get_user_contacts
+            contact
+           
+           
+      - WebService::GData::YouTube::Feed::Friend
+        A new feed representation to access contact/friend data.
+         
+      - few minor doc changes
+            
+    - NEXT RELEASE
+    
+      - start mocking some of the live tests I use on my side...
+      - lazy up thing more and get rid of old variables that take up memory for nothing...
+      - add a bit of doc for YouTube package
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.04_07 2011/05/06 12:23
 
  fix some doc problem for the YouTube packages...

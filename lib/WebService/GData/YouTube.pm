@@ -12,6 +12,7 @@ use WebService::GData::YouTube::Feed::PlaylistLink;
 use WebService::GData::YouTube::Feed::Video;
 use WebService::GData::YouTube::Feed::Comment;
 use WebService::GData::YouTube::Feed::Complaint;
+use WebService::GData::YouTube::Feed::Friend;
 
 our $PROJECTION        = WebService::GData::YouTube::Constants::PROJECTION;
 our $BASE_URI          = WebService::GData::YouTube::Constants::BASE_URI;
@@ -20,7 +21,7 @@ if(WebService::GData::YouTube::StagingServer->is_on){
   $BASE_URI          = WebService::GData::YouTube::Constants::STAGING_BASE_URI;
 }
 
-our $VERSION    = 0.0203;
+our $VERSION    = 0.0204;
 
 sub __init {
 	my ( $this, $auth ) = @_;
@@ -100,7 +101,7 @@ sub get_user_playlists {
 }
 
 sub get_user_profile {
-    my ( $this, $channel, $full ) = @_;
+    my ( $this, $channel ) = @_;
 
     #by default, the one connected is returned
     my $uri = $this->{_baseuri} . 'users/default/';
@@ -112,6 +113,21 @@ sub get_user_profile {
       new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
     return $playlists->entry->[0];
+}
+
+sub get_user_contacts {
+    my ( $this, $channel ) = @_;
+
+    #by default, the one connected is returned
+    my $uri = $this->{_baseuri} . 'users/default/contacts';
+    $uri = $this->{_baseuri} . 'users/' . $channel.'/contacts' if ($channel);
+
+    my $res = $this->{_request}->get($uri);
+
+    my $contacts =
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} );
+
+    return $contacts->entry;
 }
 
 #video related
@@ -173,6 +189,11 @@ sub comment {
 sub complaint {
     my $this = shift;
     return new WebService::GData::YouTube::Feed::Complaint( $this->{_request} );
+}
+
+sub contact {
+    my $this = shift;
+    return new WebService::GData::YouTube::Feed::Friend( $this->{_request} );
 }
 
 sub search_video {
@@ -428,6 +449,18 @@ See also:
 =over 
 
 =item * L<WebService::GData::YouTube::Doc::BrowserBasedUpload> - overview of the browser based upload mechanism
+
+=back
+
+=over 
+
+=item * L<WebService::GData::YouTube::Doc::GeneralOverview> - in progress but should allow you to learn the library easily
+
+=back
+
+=over 
+
+=item * L<http://szabgab.com/blog/2011/06/fetching-data-from-youtube-using-perl.html> - a short video on the library by Gabor Szabo.
 
 =back
 
@@ -1277,6 +1310,10 @@ Return a L<WebService::GData::YouTube::Feed::PlaylistLink> instance
  
 Return a L<WebService::GData::YouTube::Feed::Complaint> instance
 
+=head3 contact
+ 
+Return a L<WebService::GData::YouTube::Feed::Friend> instance
+
 Example:
     
     use constant KEY=>'...';
@@ -1311,7 +1348,7 @@ Example:
 =back
 
 
-=head2 USER PROFILE METHOD
+=head2 USER PROFILE RELATED METHODS
 
 =head3 get_user_profile
 
@@ -1357,6 +1394,54 @@ Example:
     
     #or if you did not pass a $auth object:
     my $profile = $yt->get_user_profile('profile_name_here');    
+
+=back
+
+=head3 get_user_profile
+
+=over
+
+Get the user contact info for the logged in user or the user set as a parameter.
+A maximum of 100 contacts can be retrieved.
+
+B<Parameters>
+
+=over 4
+
+=item C<user_name:Scalar> (optional) - the user name/channel name
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item L<WebService::GData::YouTube::Feed::Friend> instance
+
+
+=back
+
+B<Throws>
+
+=over 4 
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+    use WebService::GData::ClientLogin;
+    use WebService::GData::YouTube;
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+    my $contacts = $yt->get_user_contacts;
+    
+    #or if you did not pass a $auth object:
+    my $contacts = $yt->get_user_contacts('profile_name_here');    
 
 =back
 

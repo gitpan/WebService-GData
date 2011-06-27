@@ -27,7 +27,7 @@ sub __init {
             $elm= WebService::GData::Node::GD::FeedLink->new($elm) if ref $elm ne 'WebService::GData::Node::GD::FeedLink'; 
             return $elm; 
         });
-    $this->_entity->child($this->{'_statistics'})
+    $this->_entity->child($this->{_statistics})
                   ->child($this->{_feed_links});
 }
 
@@ -73,8 +73,6 @@ WebService::GData::YouTube::Feed::UserProfile - a youtube user profile for data 
 
 =head1 SYNOPSIS
 
-    #READ COMMENTS
-    #query the comments for a video and loop other the results
 
     use WebService::GData::YouTube;
     
