@@ -41,17 +41,18 @@ sub encode {
             if ($val){
 				$val =_to_html_entities($val);
                 push @attrs,qq[$attr="$val"]; 
-            }
 
-            #we have an attribute with a prefix, yt:format...
-            #let's append the meta info about this namespace
-            if(my($prefix)=$attr=~m/(.+?):/){
 
-                if(ref $this->extra_namespaces eq 'HASH' && $this->extra_namespaces->{$prefix}){
-                    $owner->namespaces->{ 'xmlns:' . $prefix . '="'. $this->extra_namespaces->{$prefix}. '"' } = 1
-                        if ($owner && $prefix ne $owner->namespace_prefix ); 
-                } 
-            }
+                #we have an attribute with a prefix, yt:format...
+                #let's append the meta info about this namespace
+                if(my($prefix)=$attr=~m/(.+?):/){
+
+                    if(ref $this->extra_namespaces eq 'HASH' && $this->extra_namespaces->{$prefix}){
+                        $owner->namespaces->{ 'xmlns:' . $prefix . '="'. $this->extra_namespaces->{$prefix}. '"' } = 1
+                            if ($owner && $prefix ne $owner->namespace_prefix ); 
+                    } 
+                }
+            }            
         }
         $xml .= ' ' . join( ' ', @attrs ) if @attrs;
     }
@@ -67,15 +68,18 @@ sub encode {
         
         #serialize all the children
         foreach my $child (@{$this->child}) {
+        	my $serialized="";
             if($child->isa('WebService::GData::Collection')) {
-                $xmlchild .= encode($_,$owner) for(@$child);
+            	$serialized .= encode($_,$owner) for(@$child);
+                $xmlchild .= $serialized;
             }
             else {
-                $xmlchild .= encode($child,$owner);                
+            	$serialized = encode($child,$owner);
+                $xmlchild .= $serialized;                
             }
             
             #we append the namespace prefix and uri to the root
-            __add_namespace_uri($child,$owner) if $owner;
+            __add_namespace_uri($child,$owner) if $owner && length($serialized);
  
         }
         
@@ -94,6 +98,10 @@ sub encode {
         $xml .= $xmlchild . qq[</$tag>];
     }
     else {
+    	#need to output tags with no attributes working as a flag: <yt:private/>
+    	#so only if they have attributes but none of them are set and there is no text
+    	#we can return early
+    	return "" if  @{ $this->attributes } > 0 && !@attrs && !$this->{text};
         $xml .= '/>';
     }
     return $xml;

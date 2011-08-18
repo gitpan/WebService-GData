@@ -132,6 +132,7 @@ lib/WebService/GData/YouTube/Feed/Playlist.pm
 lib/WebService/GData/YouTube/Feed/PlaylistLink.pm
 lib/WebService/GData/YouTube/Feed/UserProfile.pm
 lib/WebService/GData/YouTube/Feed/Video.pm
+lib/WebService/GData/YouTube/Feed/VideoMessage.pm
 lib/WebService/GData/YouTube/Query.pm
 lib/WebService/GData/YouTube/StagingServer.pm
 lib/WebService/GData/YouTube/YT.pm
@@ -233,6 +234,7 @@ t/56-WebService-GData-YouTube-Feed-Video-instance.t
 t/57-WebService-Gdata-Youtube-StagingServer.t
 t/58-WebService-GData-YouTube-Feed-UserProfile-instance.t
 t/59-WebService-GData-YouTube-Feed-Complaint-instance.t
+t/60-WebService-GData-YouTube-Feed-VideoMessage-instance.t
 t/JSONResponse.pm
 t/MyWeb.pm
 t/UserProfileFeedResponse.pm

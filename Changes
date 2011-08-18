@@ -1,5 +1,38 @@
 Revision history for Perl extension WebService::GData.
 
+0.04_09 2011/08/18 00:00
+        
+    - NEW
+    
+     GDATA RELATED
+    
+      - XML now avoids to output unnecessary namespaces and empty tags
+      This modification could lead to errors, feel free to contact me if you meet any problem!   
+    
+     YOUTUBE RELATED
+     
+      - WebService::GData::YouTube
+         - DOC: listed get_user_profile twice instead of get_user_contacts
+         
+         - new methods:
+         
+           - get_user_inbox
+           - message
+           
+           
+      - WebService::GData::YouTube::Feed::VideoMessage
+        A new feed  to access logged in user inbox (video messages only)         
+
+            
+    - NEXT RELEASE
+    
+      - start mocking some of the live tests I use on my side...
+      - lazy up thing more and get rid of old variables that take up memory for nothing...
+      - add a bit of doc for YouTube package
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 
 0.04_08 2011/06/28 00:00
         

@@ -6,6 +6,7 @@ use WebService::GData::Base;
 use WebService::GData::YouTube::Constants;
 use WebService::GData::YouTube::Query;
 use WebService::GData::YouTube::StagingServer ();
+
 #TODO: load these packages on demand
 use WebService::GData::YouTube::Feed;
 use WebService::GData::YouTube::Feed::PlaylistLink;
@@ -13,6 +14,8 @@ use WebService::GData::YouTube::Feed::Video;
 use WebService::GData::YouTube::Feed::Comment;
 use WebService::GData::YouTube::Feed::Complaint;
 use WebService::GData::YouTube::Feed::Friend;
+use WebService::GData::YouTube::Feed::VideoMessage;
+#end
 
 our $PROJECTION        = WebService::GData::YouTube::Constants::PROJECTION;
 our $BASE_URI          = WebService::GData::YouTube::Constants::BASE_URI;
@@ -21,7 +24,7 @@ if(WebService::GData::YouTube::StagingServer->is_on){
   $BASE_URI          = WebService::GData::YouTube::Constants::STAGING_BASE_URI;
 }
 
-our $VERSION    = 0.0204;
+our $VERSION    = 0.0205;
 
 sub __init {
 	my ( $this, $auth ) = @_;
@@ -130,6 +133,19 @@ sub get_user_contacts {
     return $contacts->entry;
 }
 
+sub get_user_inbox {
+    my ( $this ) = @_;
+
+    #by default, the one connected is returned
+    my $uri = $this->{_baseuri} . 'users/default/inbox';
+
+    my $res = $this->{_request}->get($uri);
+
+    return
+      new WebService::GData::YouTube::Feed( $res, $this->{_request} )->entry;
+
+}
+
 #video related
 
 sub like_video {
@@ -194,6 +210,11 @@ sub complaint {
 sub contact {
     my $this = shift;
     return new WebService::GData::YouTube::Feed::Friend( $this->{_request} );
+}
+
+sub message {
+    my $this = shift;
+    return new WebService::GData::YouTube::Feed::VideoMessage( $this->{_request} );
 }
 
 sub search_video {
@@ -1314,6 +1335,10 @@ Return a L<WebService::GData::YouTube::Feed::Complaint> instance
  
 Return a L<WebService::GData::YouTube::Feed::Friend> instance
 
+=head3 message
+ 
+Return a L<WebService::GData::YouTube::Feed::VideoMessage> instance
+
 Example:
     
     use constant KEY=>'...';
@@ -1397,7 +1422,7 @@ Example:
 
 =back
 
-=head3 get_user_profile
+=head3 get_user_contacts
 
 =over
 
@@ -1416,7 +1441,7 @@ B<Returns>
 
 =over 4
 
-=item L<WebService::GData::YouTube::Feed::Friend> instance
+=item L<WebService::GData::Collection> instance containing L<WebService::GData::YouTube::Feed::Friend> instances
 
 
 =back
@@ -1445,7 +1470,56 @@ Example:
 
 =back
 
+=head3 get_user_inbox
 
+=over
+
+Get the user inbox for the logged in user.
+
+B<Parameters>
+
+=over 4
+
+=item C<none>
+
+=back
+
+B<Returns>
+
+=over 4
+
+=item L<WebService::GData::Collection> instance containing L<WebService::GData::YouTube::Feed::VideoMessage> instances
+
+
+=back
+
+B<Throws>
+
+=over 4 
+
+=item L<WebService::GData::Error> 
+
+=back
+
+Example:
+
+    use WebService::GData::ClientLogin;
+    use WebService::GData::YouTube;
+
+    my $auth = new WebService::GData::ClientLogin(email=>...);
+    
+    my $yt   = new WebService::GData::YouTube($auth);
+    
+    my $messages = $yt->get_user_inbox;
+    
+    foreach my $message (@$messages){
+    	say $message->subject;
+    	say $message->content;
+    	say $message->from->name;
+    	say $message->sent;
+    } 
+
+=back
 
 =head2 USER PLAYLIST METHODS
 

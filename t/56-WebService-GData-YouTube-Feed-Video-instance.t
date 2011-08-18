@@ -167,3 +167,7 @@ ok(
 "http://gdata.youtube.com/feeds/api/videos/qWAY3YvHqLE/comments?client=ytapi-google-jsdemo",
     'comments url properly set.'
 );
+
+#TODO: test is_private is output in XML
+#$entry->is_private(1);
+

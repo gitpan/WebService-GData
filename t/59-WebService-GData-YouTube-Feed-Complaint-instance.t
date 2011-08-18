@@ -14,7 +14,7 @@ ok($complaint->reason eq "SPAM",'reason properly set by default');
 $complaint->reason('VIOLENCE');
 ok($complaint->reason eq "VIOLENCE",'reason properly set');
 
-my $expected =q[<entry xmlns="http://www.w3.org/2005/Atom" xmlns:gd="http://schemas.google.com/g/2005"><summary>test</summary><category scheme="http://gdata.youtube.com/schemas/2007/complaint-reasons.cat" term="VIOLENCE"/></entry>];
+my $expected =q[<entry xmlns="http://www.w3.org/2005/Atom"><summary>test</summary><category scheme="http://gdata.youtube.com/schemas/2007/complaint-reasons.cat" term="VIOLENCE"/></entry>];
 
 ok($complaint->serialize eq $expected,'serialization properly done');
 
