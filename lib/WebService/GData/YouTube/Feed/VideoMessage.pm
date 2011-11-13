@@ -102,8 +102,9 @@ WebService::GData::YouTube::Feed::VideoMessage - a video message (read/write) fo
         say $message->sent;
         say $message->from->name;
         say $message->title;     #video title
-        if($message->subject()=~m/SPAM/)
+        if($message->subject()=~m/SPAM/){
             $message->delete();
+        }
     }
     
     #send a video message

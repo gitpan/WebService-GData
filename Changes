@@ -1,5 +1,24 @@
 Revision history for Perl extension WebService::GData.
 
+
+0.05_01 2011/11/13 15:57
+        
+    - NEW
+    
+     YOUTUBE RELATED
+     
+      - WebService::GData::YouTube
+         - get_user_playlists
+           you can now loop through it in order to get all the playlists in a channel (above the limit of 50)
+  
+     
+      - playslits: WebService::GData::YouTube::Feed::PlaylistLink
+         - new method:
+           - add_video        
+      
+    - YouTube service may not work properly right now!
+    - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
 0.04_09 2011/08/18 00:00
         
     - NEW

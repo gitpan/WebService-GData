@@ -8,7 +8,7 @@ use WebService::GData::YouTube::StagingServer ();
 use WebService::GData::Node::Atom::Category();
 use WebService::GData::Collection();
 
-our $VERSION = 0.01_02;
+our $VERSION = 0.01_03;
 
 our $PROJECTION = WebService::GData::YouTube::Constants::PROJECTION;
 our $BASE       = WebService::GData::YouTube::Constants::BASE_URI;
@@ -113,21 +113,17 @@ sub save {
 	return $ret;
 }
 
-#TODO: rewrite & move this in YouTube? other package?
+sub add_video {
+	my ($this,$video_id) = @_;
+	
+	$this->id($video_id);
+	
+	my $content = XML_HEADER. $this->serialize;
+	
+	return $this->{_request}->insert('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlist_id,$content);
+}
 
-#	sub get_videos {
-#		my $this = shift;
 
-#		my $res = $this->{_request}->get($this->{_feed}->{'content'}->{src} || 'http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId);
-
-#		$this->{videosInPlaylist} = new WebService::GData::YouTube::Feed($res,$this->{_request})->entry;
-#		return $this->{videosInPlaylist};
-#	}
-
-#sub add_video {
-#	my ($this,%params) = @_;
-#	   	$this->{_request}->insert('http://gdata.youtube.com/feeds/api/playlists/'.$this->playlistId,"<id>$params{videoId}</id>");
-#}
 #sub delete_video {
 #	my ($this,%params) = @_;
 #	if($params{videoId}) {
@@ -333,21 +329,54 @@ You must specify the playlist to erase by setting its unique id via playlist_id.
 
 The save method will do an insert if there is no playlist_id or an update if there is one.
 
+=head3 add_video
+ 
+=over
 
-=head1  CONFIGURATION AND ENVIRONMENT
+Append an existing video into a playlist(query the API to insert the data, you must be logged in programmatically).
 
-none
+B<Parameters>
 
+=over 
 
-=head1  DEPENDENCIES
+=item C<video_id:Scalar> - the video id to add
 
-L<JSON>
+=back
 
-L<LWP>
+B<Returns> 
 
-=head1  INCOMPATIBILITIES
+=over 
 
-none
+=item void
+
+=back
+
+B<Throws>
+
+=over 5
+
+=item L<WebService::GData::Error> in case of an error
+
+=back
+
+Example:
+
+   my $yt = new WebService::GData::YouTube($auth); 
+
+   my $playlist = $yt->playlists;
+   
+   $playlist->playlist_id("playlist_id");
+   $playlist->add_video("video_id");
+   
+   #or
+   
+   my $yt = new WebService::GData::YouTube($auth); 
+
+   my $playlist = $yt->get_user_playlists()->[0];//example:the first playlist in the list 
+      $playlist->add_video("video_id"); 
+    
+=back
+
 
 =head1 BUGS AND LIMITATIONS
 

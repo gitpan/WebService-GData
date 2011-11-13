@@ -24,7 +24,7 @@ if(WebService::GData::YouTube::StagingServer->is_on){
   $BASE_URI          = WebService::GData::YouTube::Constants::STAGING_BASE_URI;
 }
 
-our $VERSION    = 0.0205;
+our $VERSION    = 0.0206;
 
 sub __init {
 	my ( $this, $auth ) = @_;
@@ -87,20 +87,33 @@ sub get_user_playlist_by_id {
 }
 
 sub get_user_playlists {
-	my ( $this, $channel, $full ) = @_;
+	my ( $this, $channel,$preserve_start_index ) = @_;
 
 	#by default, the one connected is returned
 	my $uri = $this->{_baseuri} . 'users/default/playlists';
 	$uri = $this->{_baseuri} . 'users/' . $channel . '/playlists' if ($channel);
+	
+   return if(exists $this->{__cache__}->{$uri} && !$this->{__cache__}->{$uri});
+    
+    my $next_url;
+    if($this->{__cache__}->{$uri}){
+        $next_url = $this->{__cache__}->{$uri};
+    }
+    else {
+        $this->query->start_index(1) if !$preserve_start_index;
+    }
 
-	my $res = $this->{_request}->get($uri);
+    my @request=$next_url ? ($next_url,1) : $uri;	
+	
 
-	my $playlists =
+	my $res = $this->{_request}->get(@request);
+
+	my $feed =
 	  new WebService::GData::YouTube::Feed( $res, $this->{_request} );
 
-	return $playlists if ($full);
+    $this->{__cache__}->{$uri}= $feed->next_link;
 
-	return $playlists->entry;
+    return wantarray ? ($feed->entry,$feed):$feed->entry;
 }
 
 sub get_user_profile {
@@ -1638,6 +1651,33 @@ Example:
 	
     #or if you did not pass a $auth object:
     my $playlists = $yt->get_user_playlists('live');	
+    
+    #a feed returns by default up to 25 entries/playlists. 
+    #you can loop over the channel playlists (if you have more than 25 playlists)
+    #if your channels contains more than 50 playlists, you can set the query limit to be 50
+    #it will result in less calls to the server.    
+    
+    #this is a working example 
+    #list all the programming related tutorials from thenewboston channel:
+    my $yt = new WebService::GData::YouTube(); 
+       $yt->query->max_results(50);
+       
+    my $playlist_counter=1;
+    while(my $playlists = $yt->get_user_playlists("thenewboston")) {
+
+        foreach my $playlist (@$playlists) {
+            say($playlist_counter.':'.$playlist->title);
+            
+            my $video_counter=1;
+            while(my $videos = $yt->get_user_playlist_by_id($playlist->playlist_id)) {
+            	foreach my $vid (@$videos){
+                say(" ".$video_counter.':'.$vid->title);
+                $video_counter++;
+            	}
+            }
+        }
+        $playlist_counter++;
+    }
 
 =back
 
