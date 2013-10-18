@@ -9,8 +9,8 @@ use 5.008008;
   requires    'Test::More'  => 0;
   requires    'Test::Mock::LWP'  => '0.05';
   recommends  'Crypt::SSLeay'=> 0;
-  bugtracker  'http://rt.cpan.org';
-  repository  'http://code.google.com/p/perl-gdata-youtube-api-v2/source/browse/';
+#  bugtracker  'http://rt.cpan.org';
+  repository  'https://github.com/szabgab/WebService-GData';
 
   
   WriteAll;

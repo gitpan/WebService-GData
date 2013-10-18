@@ -2,7 +2,7 @@ package WebService::GData::Node;
 use WebService::GData;
 use base 'WebService::GData';
 
-our $VERSION = 0.01_03;
+our $VERSION = 0.06;
 
 my $attributes = [];
 
@@ -59,8 +59,8 @@ sub __init {
             delete $args[0]->{'$t'};
         }
         my %args = %{ $args[0] };
-        while ( my ( $attr, $val ) = each %args ) {
-            delete $args{$attr};
+        foreach my $attr (keys %args) {
+            my $val = delete $args{$attr};
             $attr =~ s/\$/:/;
             $args{$attr} = $val;
         }

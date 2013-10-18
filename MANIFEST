@@ -172,6 +172,7 @@ lib/WebService/GData/YouTube/YT/Username.pm
 lib/WebService/GData/YouTube/YT/Videoid.pm
 Makefile.PL
 MANIFEST			This list of files
+MANIFEST.SKIP
 META.yml
 README
 t/00-WebService-GData-load.t

@@ -1,36 +1,40 @@
 Revision history for Perl extension WebService::GData.
 
+0.06 2013-10-18
 
-0.05_01 2011/11/13 15:57
+    - Fix RT #88899 warning on each in perl 5.18
+    - New maintainer
+
+0.05_01 2011-11-13
         
     - NEW
     
-     YOUTUBE RELATED
+    - YOUTUBE RELATED
      
-      - WebService::GData::YouTube
+    - WebService::GData::YouTube
          - get_user_playlists
            you can now loop through it in order to get all the playlists in a channel (above the limit of 50)
   
      
-      - playslits: WebService::GData::YouTube::Feed::PlaylistLink
+    - playslits: WebService::GData::YouTube::Feed::PlaylistLink
          - new method:
            - add_video        
       
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.04_09 2011/08/18 00:00
+0.04_09 2011-08-18
         
     - NEW
     
-     GDATA RELATED
+    - GDATA RELATED
     
-      - XML now avoids to output unnecessary namespaces and empty tags
+    - XML now avoids to output unnecessary namespaces and empty tags
       This modification could lead to errors, feel free to contact me if you meet any problem!   
     
-     YOUTUBE RELATED
+    - YOUTUBE RELATED
      
-      - WebService::GData::YouTube
+    - WebService::GData::YouTube
          - DOC: listed get_user_profile twice instead of get_user_contacts
          
          - new methods:
@@ -39,7 +43,7 @@ Revision history for Perl extension WebService::GData.
            - message
            
            
-      - WebService::GData::YouTube::Feed::VideoMessage
+    - WebService::GData::YouTube::Feed::VideoMessage
         A new feed  to access logged in user inbox (video messages only)         
 
             
@@ -53,7 +57,7 @@ Revision history for Perl extension WebService::GData.
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
 
-0.04_08 2011/06/28 00:00
+0.04_08 2011-06-28
         
     - NEW
     
@@ -80,16 +84,16 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.04_07 2011/05/06 12:23
+0.04_07 2011-05-06
 
- fix some doc problem for the YouTube packages...
+    - fix some doc problem for the YouTube packages...
 
-0.04_06 2011/05/05 0:48
+0.04_06 2011-05-05
 
- fix some doc problem for the YouTube packages...
+    - fix some doc problem for the YouTube packages...
 
 
-0.04_05 2011/05/03 16:49
+0.04_05 2011-05-03
         
     - NEW
     
@@ -145,7 +149,7 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.04_04 2011/04/17 11:49
+0.04_04 2011-04-17
         
     - NEW
     
@@ -173,7 +177,7 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.04_03  2011/03/10 19:49
+0.04_03 2011-03-10
 
     - NON BACKWARD COMPATIBLE
     
@@ -216,7 +220,7 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.04_02  2011/01/30 21:44
+0.04_02 2011-01-30
     
     - NON BACKWARD COMPATIBLE
     
@@ -255,7 +259,7 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.04_01  2011/01/23 22:44
+0.04_01  2011-01-23
         
     - NEW
     
@@ -277,7 +281,7 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_09  2011/01/17 12:28
+0.03_09  2011-01-17
 
     - BUG FIX
         
@@ -309,7 +313,7 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_08  2011/01/03 23:07
+0.03_08  2011-01-03
 
     - BUG FIX
     
@@ -346,14 +350,16 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work properly right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_07  2010/12/19 16:23
+0.03_07  2010-12-19
+
     small update for bug fix.
 	- YouTube Video access_control could not be edited (only newly created)
 	- Collection class was loosing its binding to the array
     - YouTube service may not work right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_06  2010/12/17 23:43
+0.03_06  2010-12-17
+
     small update for bug fix.
 	- The XML serializer now encode html entities (querying YouTube then updating the queried result failed)
 	  -> quick fix for now.
@@ -362,7 +368,8 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_05  2010/12/05 16:51
+0.03_05  2010-12-05
+
     - the Collection serialize method has been removed 
       and the class now inherits from BaseCollection which implements Iterator, tie array.
       The mechanism will check for only allowed class and create them in a lazy fashion (next release)
@@ -373,7 +380,8 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_04  2010/11/03 16:51
+0.03_04  2010-11-03
+
     This update contains many changes that would be hard to list...
     The next update should deal with lazy loading the classes that are for now loaded in bunch...
     and separate the storage layers/serialization formats available
@@ -387,13 +395,13 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_03  2010/11/01 11:19
+0.03_03 2010-11-01
 
 	- I messed up with subversion and upload the wrong package it seems. should be ok.
     - YouTube service may not work entirely right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_02  2010/10/30 14:08
+0.03_02 2010-10-30
 
     - Created a Collection class and related tests
     - WebService::GData::Node can understand camelCase and hyphen based functions
@@ -404,7 +412,7 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work entirely right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.03_01  2010/10/24 22:45
+0.03_01 2010-10-24
 
     - Added __set and __get autoload methods in WebService::GData
     - Created the abstract Node package and implemented some nodes. 
@@ -414,7 +422,7 @@ Revision history for Perl extension WebService::GData.
     - YouTube service may not work right now!
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_09  2010/10/11 23:05
+0.02_09 2010-10-11
 
     - Documented a bit more the WebService::GData::Feed entry sub.
     - the above sub now loads a package only once 
@@ -425,7 +433,7 @@ Revision history for Perl extension WebService::GData.
     - will start rewriting the YouTube service which certainly does not work now.
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_08  2010/10/10 0:27
+0.02_08 2010-10-10
 
     - Moved disable sub to WebService::GData and add doc about it.
     - Fixed small typo in WebService::GData::Query doc
@@ -434,7 +442,7 @@ Revision history for Perl extension WebService::GData.
     - Added new tests for the above package and for WebService::GData::Feed::Entry
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_07  2010/10/03 0:27
+0.02_07 2010-10-03
 
     - Modified WebService::GData::Feed so that complex data return an object
     - Added 3 classes: WebService::GData::Feed::Author,WebService::GData::Feed::Link,WebService::GData::Feed::Category
@@ -442,7 +450,7 @@ Revision history for Perl extension WebService::GData.
     - Added tests for the above 3 classes and for WebService::GData::Feed.
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_06  2010/09/18 23:45
+0.02_06 2010-09-18
 
     - updated/fix WebService::GData::ClientLogin doc
     - ClientLogin throws an error if the password/email is not set before querying the service.
@@ -454,25 +462,25 @@ Revision history for Perl extension WebService::GData.
     - created a load instance test for WebService::GData::Feed.
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_05  2010/09/18 12:03
+0.02_05 2010-09-18
 
     - updated/fix WebService::GData::ClientLogin doc
     - ClientLogin throws an error if the password/email is not set before querying the service.
     - added tests for ClientLogin.
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_04  2010/09/17 11:42
+0.02_04 2010-09-17
 
     - updated/fix WebService::GData::YouTube doc
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_03  2010/09/17 11:00
+0.02_03 2010-09-17
 
     - updated/fix WebService::GData::YouTube where $auth was required where it should be optional
     - fix WebService::GData::YouTube the standard feed functions not in sync with doc
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_02  2010/09/12 23:46
+0.02_02 2010-09-12
 
     - updated/fix the doc for WebService::GData::ClientLogin
     - added a loading test for the above package.
@@ -480,40 +488,40 @@ Revision history for Perl extension WebService::GData.
       will see if I can fix.
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.02_01  2010/09/12 23:46
+0.02_01 2010-09-12
 
     - updated/fix the doc
     - added new tests for WebService::GData::Base
     - added get_uri and get_user_agent_name in WebService::GData::Base
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.01_09  2010/09/09 22:11
+0.01_09 2010-09-09
 
     - updated/fix the doc
     - added some tests for WebService::GData::Base
     - modified some behavior in WebService::GData::Base
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.01_08  2010/09/08 12:18
+0.01_08 2010-09-08
 
     - updated/fix the doc
     - fix http status code in WebService::GData::Constants
     - added override_method in WebService::GData::Base
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.01_07  2010/09/05 22:52
+0.01_07 2010-09-05
 
     - updated/fix the doc
     - added http status code in WebService::GData::Constants
     - added a basic date format validation logic in WebService::GData::Query
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 	
-0.01_06  2010/09/05 23:52
+0.01_06 2010-09-05
 
     - updated/fix the doc
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.01_05  2010/09/05 16:17
+0.01_05 2010-09-05
 
     - updated/fix the doc
     - created new tests
@@ -521,7 +529,8 @@ Revision history for Perl extension WebService::GData.
     - added some new feature to WebService::GData: private
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.01_04  2010/09/02 19:10
+0.01_04 2010-09-02
+
     - updated/fix the doc
     - created new tests
     - created new doc
@@ -531,19 +540,21 @@ Revision history for Perl extension WebService::GData.
     - modified install_in_package to accept an optional package
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.01_03  2010/09/02 19:10
+0.01_03 2010-09-02
 
     - updated the doc
     - created new tests
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.01_02  2010/09/02 19:10
+0.01_02 2010-09-02
 
     - updated the doc
     - created tests for WebService::GData
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
 
-0.01_01  Wed Sep  1 23:57:09 2010
+0.01_01 2010-09-01
+
     - original version; created by h2xs 1.23 with options
     -AX -n WebService::GData -b 5.8.8
     - !DEVELOPER RELEASE! Please feel free to try it and send me feedbacks!
+
